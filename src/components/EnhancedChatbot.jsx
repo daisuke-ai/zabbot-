@@ -8,8 +8,8 @@ import {
   useToast,
   Flex,
   Avatar,
-  keyframes
 } from '@chakra-ui/react';
+import { keyframes } from '@emotion/react';
 import { chatService } from '../services/chatService';
 
 // Typing animation keyframes
