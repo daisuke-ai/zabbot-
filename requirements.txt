@@ -1,0 +1,7 @@
+Flask==3.0.3
+Flask-Cors==5.0.0
+llama-index-core==0.11.20
+llama-index-embeddings-openai==0.2.5
+llama-index-llms-openai==0.2.16
+llama-index-readers-file==0.2.2
+python-dotenv==1.0.1

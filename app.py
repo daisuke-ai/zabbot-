@@ -6,13 +6,17 @@ from llama_index.core import Settings, VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core.chat_engine import CondensePlusContextChatEngine
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 # Enable CORS for all routes and origins
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Initialize OpenAI API key
-os.environ["OPENAI_API_KEY"] = "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"
+# Initialize OpenAI API key from environment variable
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 # Get the absolute path to the data directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
