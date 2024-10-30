@@ -10,6 +10,7 @@ import Admissions from './pages/Admissions';
 import Research from './pages/Research';
 import Portal from './pages/Portal';
 import Login from './pages/Login';
+import ChatbotPage from './pages/ChatbotPage';
 
 const theme = extendTheme({
   colors: {
@@ -45,6 +46,7 @@ function App() {
           <Route path="/research" element={<Research />} />
           <Route path="/portal" element={<Portal />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/chatbot" element={<ChatbotPage />} />
         </Routes>
         <Footer />
       </Router>

@@ -22,7 +22,8 @@ function Header() {
           <Button as={Link} to="/academics" variant="ghost" colorScheme="szabist">Academics</Button>
           <Button as={Link} to="/admissions" variant="ghost" colorScheme="szabist">Admissions</Button>
           <Button as={Link} to="/research" variant="ghost" colorScheme="szabist">Research</Button>
-          <Button as={Link} to="/portal" colorScheme="szabist">Portal</Button>
+          <Button as={Link} to="/chatbot" colorScheme="szabist">AI Assistant</Button>
+          <Button as={Link} to="/portal" variant="ghost" colorScheme="szabist">Portal</Button>
         </HStack>
       </Flex>
     </Box>

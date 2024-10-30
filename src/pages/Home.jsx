@@ -1,9 +1,8 @@
 import React from 'react';
 import { Box, Heading, Text, Container, Image, SimpleGrid, Button, VStack, Flex, Stack, Icon } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
-import { FaGraduationCap, FaBook, FaChartBar, FaUsers } from 'react-icons/fa';
+import { FaGraduationCap, FaBook, FaChartBar, FaUsers, FaRobot } from 'react-icons/fa';
 import { BsBuilding } from 'react-icons/bs';
-import Chatbot from '../components/Chatbot';
 
 function Home() {
   return (
@@ -39,9 +38,21 @@ function Home() {
           <Text fontSize="xl" mb={8}>
             Empowering Minds, Shaping Futures
           </Text>
-          <Button as={Link} to="/admissions" colorScheme="szabist" size="lg">
-            Apply Now
-          </Button>
+          <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
+            <Button as={Link} to="/admissions" colorScheme="szabist" size="lg">
+              Apply Now
+            </Button>
+            <Button 
+              as={Link} 
+              to="/chatbot" 
+              colorScheme="white" 
+              variant="outline" 
+              size="lg"
+              _hover={{ bg: 'whiteAlpha.200' }}
+            >
+              Try Our AI Assistant
+            </Button>
+          </Stack>
         </Flex>
       </Box>
 
@@ -74,7 +85,7 @@ function Home() {
           <Heading as="h2" size="xl" mb={12} textAlign="center">
             Explore SZABIST
           </Heading>
-          <SimpleGrid columns={{ base: 2, md: 5 }} spacing={8}>
+          <SimpleGrid columns={{ base: 2, md: 6 }} spacing={8}>
             <VStack>
               <Icon as={BsBuilding} w={12} h={12} color="szabist.600" />
               <Text fontWeight="bold">University Life</Text>
@@ -95,32 +106,39 @@ function Home() {
               <Icon as={FaUsers} w={12} h={12} color="szabist.600" />
               <Text fontWeight="bold">EDC</Text>
             </VStack>
+            <VStack as={Link} to="/chatbot" _hover={{ transform: 'scale(1.05)', transition: '0.2s' }}>
+              <Icon as={FaRobot} w={12} h={12} color="szabist.600" />
+              <Text fontWeight="bold">AI Assistant</Text>
+            </VStack>
           </SimpleGrid>
         </Container>
       </Box>
 
       <Container maxW="container.xl" py={16}>
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={16}>
-          <Box>
-            <Heading as="h2" size="xl" mb={6}>
-              Admissions Open
-            </Heading>
-            <Text fontSize="lg" mb={6}>
-              Join SZABIST and embark on a journey of academic excellence and personal growth. We welcome applications
-              from motivated individuals who are ready to challenge themselves and make a positive impact on society.
-            </Text>
-            <Button as={Link} to="/admissions" colorScheme="szabist">
-              Apply Now
-            </Button>
-          </Box>
-          <Box bg="szabist.100" p={8} borderRadius="md" boxShadow="lg">
-            <Heading as="h3" size="lg" mb={4}>
-              Have a question?
-            </Heading>
-            <Text mb={4}>Ask our University Chatbot for quick answers.</Text>
-            <Chatbot />
-          </Box>
-        </SimpleGrid>
+        <Box 
+          bg="szabist.700" 
+          p={12} 
+          borderRadius="xl" 
+          color="white"
+          textAlign="center"
+        >
+          <Heading size="xl" mb={6}>
+            Meet Our AI Assistant
+          </Heading>
+          <Text fontSize="lg" mb={8}>
+            Get instant answers to your questions about SZABIST, admissions, programs, and more.
+          </Text>
+          <Button 
+            as={Link} 
+            to="/chatbot" 
+            size="lg" 
+            colorScheme="white" 
+            variant="outline"
+            _hover={{ bg: 'whiteAlpha.200' }}
+          >
+            Chat Now
+          </Button>
+        </Box>
       </Container>
     </Box>
   );
