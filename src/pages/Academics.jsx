@@ -5,7 +5,7 @@ import { CheckCircleIcon } from '@chakra-ui/icons';
 function Academics() {
   return (
     <Container maxW="container.xl" py={8}>
-      <Heading mb={4}>Academics at SZABIST</Heading>
+      <Heading mb={4}>Academics at SZABIST UNIVERSITY</Heading>
       <Text mb={8}>
         SZABIST offers a wide range of undergraduate and graduate programs across various disciplines. 
         Our academic programs are designed to provide students with a strong foundation in their chosen fields 

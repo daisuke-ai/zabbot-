@@ -4,17 +4,17 @@ import { Box, Heading, Text, Container, Image, SimpleGrid, VStack } from '@chakr
 function About() {
   return (
     <Container maxW="container.xl" py={8}>
-      <Heading mb={4}>About SZABIST</Heading>
+      <Heading mb={4}>About SZABIST University</Heading>
       <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
         <Box>
           <Text mb={4}>
-            Shaheed Zulfikar Ali Bhutto Institute of Science and Technology (SZABIST) is a highly ranked and
+            Shaheed Zulfikar Ali Bhutto Institute of Science and Technology (SZABIST University) is a highly ranked and
             fully chartered institute of Pakistan established through a Legislative Act of Sindh Assembly
             (Sindh Act No. XI of 1995). It is approved and recognized by the Higher Education Commission (HEC),
             Pakistan, as a degree-awarding institution.
           </Text>
           <Text mb={4}>
-            All the programs offered at SZABIST are consistent with the guidelines set by HEC and other
+            All the programs offered at SZABIST University are consistent with the guidelines set by HEC and other
             regulatory bodies, for example, National Business Education Accreditation Council (NBEAC),
             and the National Computing Education Accreditation Council (NCEAC).
           </Text>
@@ -29,7 +29,7 @@ function About() {
           <VStack align="stretch">
             <Heading size="md" mb={2}>Powerful Alumni</Heading>
             <Text>
-              SZABIST is nurturing the intellect of more than 12,500 enrolled students through its five
+              SZABIST University is nurturing the intellect of more than 12,500 enrolled students through its five
               campuses located in Karachi, Hyderabad, Larkana, Islamabad and Dubai. Up till now, degrees
               have been awarded to almost 16,500 graduates. Our alumni are sought by national and multinational
               organizations and hold key positions in several reputable firms at national and international level.
@@ -38,7 +38,7 @@ function About() {
           <VStack align="stretch">
             <Heading size="md" mb={2}>Academic Excellence</Heading>
             <Text>
-              SZABIST is proud to offer education par excellence in the fields that are crucial for Pakistan's
+              SZABIST University is proud to offer education par excellence in the fields that are crucial for Pakistan's
               socio-economic development. Our commitment to quality education and research has made us one of
               the leading institutions in the country.
             </Text>

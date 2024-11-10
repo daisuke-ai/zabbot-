@@ -8,10 +8,10 @@ function ChatbotPage() {
       <VStack spacing={6} align="stretch">
         <Box textAlign="center" mb={8}>
           <Heading size="2xl" mb={4} color="szabist.700">
-            SZABIST AI Assistant
+            SZABIST University AI Assistant
           </Heading>
           <Text fontSize="xl" color="gray.600">
-            Get instant answers to your questions about SZABIST
+            Get instant answers to your questions about SZABIST University
           </Text>
         </Box>
         <Box 

@@ -8,12 +8,12 @@ function Header() {
       <Flex alignItems="center" maxW="container.xl" mx="auto">
         <Flex alignItems="center">
           <Image 
-            src="https://szabist-isb.edu.pk/wp-content/uploads/2020/05/SZABIST-Logo-002-400x198.png" 
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwJFS_dbw5OC93W4rA4UY0_EIKZkhA9dU7Uw&s" 
             alt="SZABIST Logo" 
-            height="50px"
+            height="100px"
             mr={4}
           />
-          <Heading color="szabist.700" size="lg">SZABIST Pakistan</Heading>
+          <Heading color="szabist.700" size="lg">SZABIST University Pakistan</Heading>
         </Flex>
         <Spacer />
         <HStack spacing={4}>

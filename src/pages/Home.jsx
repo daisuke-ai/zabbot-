@@ -33,7 +33,7 @@ function Home() {
           textAlign="center"
         >
           <Heading as="h1" size="3xl" mb={4}>
-            Welcome to SZABIST Pakistan
+            Welcome to SZABIST University Pakistan
           </Heading>
           <Text fontSize="xl" mb={8}>
             Empowering Minds, Shaping Futures
@@ -60,11 +60,11 @@ function Home() {
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={16}>
           <Box>
             <Heading as="h2" size="xl" mb={6}>
-              About SZABIST
+              About SZABIST University
             </Heading>
             <Text fontSize="lg" mb={6}>
-              Shaheed Zulfikar Ali Bhutto Institute of Science and Technology (SZABIST) is a fully Chartered Institute
-              established through a Legislative Act of Sindh Assembly. SZABIST is approved and recognized by the Higher
+              Shaheed Zulfikar Ali Bhutto Institute of Science and Technology (SZABIST UNIVERSITY) is a fully Chartered Institute
+              established through a Legislative Act of Sindh Assembly. SZABIST UNIVERSITY is approved and recognized by the Higher
               Education Commission (HEC) of Pakistan as a degree awarding institution.
             </Text>
             <Button as={Link} to="/about" colorScheme="szabist">
@@ -83,7 +83,7 @@ function Home() {
       <Box bg="szabist.50" py={16}>
         <Container maxW="container.xl">
           <Heading as="h2" size="xl" mb={12} textAlign="center">
-            Explore SZABIST
+            Explore SZABIST University
           </Heading>
           <SimpleGrid columns={{ base: 2, md: 6 }} spacing={8}>
             <VStack>
@@ -126,7 +126,7 @@ function Home() {
             Meet Our AI Assistant
           </Heading>
           <Text fontSize="lg" mb={8}>
-            Get instant answers to your questions about SZABIST, admissions, programs, and more.
+            Get instant answers to your questions about SZABIST University, admissions, programs, and more.
           </Text>
           <Button 
             as={Link} 
