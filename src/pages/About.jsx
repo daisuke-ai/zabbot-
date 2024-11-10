@@ -1,54 +1,226 @@
 import React from 'react';
-import { Box, Heading, Text, Container, Image, SimpleGrid, VStack } from '@chakra-ui/react';
+import { 
+  Box, 
+  Heading, 
+  Text, 
+  Container, 
+  Image, 
+  SimpleGrid, 
+  VStack, 
+  Stat,
+  StatNumber,
+  StatLabel,
+  Grid,
+  Icon,
+  useColorModeValue,
+  Flex
+} from '@chakra-ui/react';
+import { FaGraduationCap, FaUniversity, FaUsers, FaGlobe } from 'react-icons/fa';
 
 function About() {
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const statBg = useColorModeValue('szabist.50', 'szabist.900');
+
   return (
-    <Container maxW="container.xl" py={8}>
-      <Heading mb={4}>About SZABIST University</Heading>
-      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
-        <Box>
-          <Text mb={4}>
-            Shaheed Zulfikar Ali Bhutto Institute of Science and Technology (SZABIST University) is a highly ranked and
-            fully chartered institute of Pakistan established through a Legislative Act of Sindh Assembly
-            (Sindh Act No. XI of 1995). It is approved and recognized by the Higher Education Commission (HEC),
-            Pakistan, as a degree-awarding institution.
-          </Text>
-          <Text mb={4}>
-            All the programs offered at SZABIST University are consistent with the guidelines set by HEC and other
-            regulatory bodies, for example, National Business Education Accreditation Council (NBEAC),
-            and the National Computing Education Accreditation Council (NCEAC).
-          </Text>
-        </Box>
-        <Box>
-          <Image src="https://szabist-isb.edu.pk/wp-content/uploads/2020/05/356A8016-3.jpg" alt="SZABIST Campus" borderRadius="md" />
-        </Box>
-      </SimpleGrid>
-      <Box mt={8}>
-        <Heading size="lg" mb={4}>Our Impact</Heading>
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
-          <VStack align="stretch">
-            <Heading size="md" mb={2}>Powerful Alumni</Heading>
-            <Text>
-              SZABIST University is nurturing the intellect of more than 12,500 enrolled students through its five
-              campuses located in Karachi, Hyderabad, Larkana, Islamabad and Dubai. Up till now, degrees
-              have been awarded to almost 16,500 graduates. Our alumni are sought by national and multinational
-              organizations and hold key positions in several reputable firms at national and international level.
-            </Text>
-          </VStack>
-          <VStack align="stretch">
-            <Heading size="md" mb={2}>Academic Excellence</Heading>
-            <Text>
-              SZABIST University is proud to offer education par excellence in the fields that are crucial for Pakistan's
-              socio-economic development. Our commitment to quality education and research has made us one of
-              the leading institutions in the country.
-            </Text>
-          </VStack>
-        </SimpleGrid>
+    <Box>
+      {/* Hero Section */}
+      <Box
+        bg="szabist.700"
+        color="white"
+        py={20}
+        position="relative"
+        overflow="hidden"
+      >
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bg="szabist.800"
+          transform="skewY(-6deg)"
+          transformOrigin="top left"
+        />
+        <Container maxW="container.xl" position="relative">
+          <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={8} alignItems="center">
+            <Box>
+              <Heading 
+                as="h1" 
+                size="3xl" 
+                mb={6}
+                lineHeight="1.2"
+              >
+                About SZABIST University
+              </Heading>
+              <Text fontSize="xl" maxW="600px">
+                A premier institution committed to academic excellence and innovation since 1995
+              </Text>
+            </Box>
+            <Box>
+              <Image 
+                src="https://szabist-isb.edu.pk/wp-content/uploads/2020/05/356A8016-3.jpg" 
+                alt="SZABIST Campus" 
+                borderRadius="xl"
+                boxShadow="2xl"
+                objectFit="cover"
+                h="400px"
+                w="100%"
+              />
+            </Box>
+          </Grid>
+        </Container>
       </Box>
-      <Box mt={8}>
-        <Image src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Students at SZABIST" borderRadius="md" w="100%" />
+
+      {/* Stats Section */}
+      <Box py={16}>
+        <Container maxW="container.xl">
+          <SimpleGrid columns={{ base: 2, md: 4 }} spacing={8}>
+            <Stat bg={statBg} p={8} borderRadius="lg" textAlign="center">
+              <Icon as={FaGraduationCap} w={10} h={10} color="szabist.600" mb={4} />
+              <StatNumber fontSize="4xl" fontWeight="bold" color="szabist.600">16,500+</StatNumber>
+              <StatLabel fontSize="lg">Graduates</StatLabel>
+            </Stat>
+            <Stat bg={statBg} p={8} borderRadius="lg" textAlign="center">
+              <Icon as={FaUsers} w={10} h={10} color="szabist.600" mb={4} />
+              <StatNumber fontSize="4xl" fontWeight="bold" color="szabist.600">12,500+</StatNumber>
+              <StatLabel fontSize="lg">Current Students</StatLabel>
+            </Stat>
+            <Stat bg={statBg} p={8} borderRadius="lg" textAlign="center">
+              <Icon as={FaUniversity} w={10} h={10} color="szabist.600" mb={4} />
+              <StatNumber fontSize="4xl" fontWeight="bold" color="szabist.600">5</StatNumber>
+              <StatLabel fontSize="lg">Campuses</StatLabel>
+            </Stat>
+            <Stat bg={statBg} p={8} borderRadius="lg" textAlign="center">
+              <Icon as={FaGlobe} w={10} h={10} color="szabist.600" mb={4} />
+              <StatNumber fontSize="4xl" fontWeight="bold" color="szabist.600">50+</StatNumber>
+              <StatLabel fontSize="lg">Global Partners</StatLabel>
+            </Stat>
+          </SimpleGrid>
+        </Container>
       </Box>
-    </Container>
+
+      {/* Main Content */}
+      <Box py={16} bg="gray.50">
+        <Container maxW="container.xl">
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={16}>
+            <VStack align="stretch" spacing={6}>
+              <Heading as="h2" size="xl" color="szabist.700">
+                Our Legacy
+              </Heading>
+              <Text fontSize="lg" lineHeight="tall">
+                Shaheed Zulfikar Ali Bhutto Institute of Science and Technology (SZABIST University) 
+                is a fully chartered institute established through a Legislative Act of Sindh Assembly 
+                (Sindh Act No. XI of 1995).
+              </Text>
+              <Text fontSize="lg" lineHeight="tall">
+                Approved and recognized by the Higher Education Commission (HEC) of Pakistan, 
+                SZABIST has established itself as a premier institution of higher learning in the country.
+              </Text>
+            </VStack>
+            <Box>
+              <Image
+                src="https://images.unsplash.com/photo-1523580494863-6f3031224c94"
+                alt="SZABIST Campus Life"
+                borderRadius="xl"
+                boxShadow="2xl"
+                objectFit="cover"
+                h="400px"
+                w="100%"
+              />
+            </Box>
+          </SimpleGrid>
+        </Container>
+      </Box>
+
+      {/* Features Section */}
+      <Box py={16}>
+        <Container maxW="container.xl">
+          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={10}>
+            <Box 
+              bg={cardBg} 
+              p={8} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              transition="all 0.3s"
+              _hover={{ transform: 'translateY(-8px)', shadow: '2xl' }}
+            >
+              <Heading size="md" mb={4} color="szabist.700">Academic Excellence</Heading>
+              <Text>
+                Our programs are designed to meet international standards and are regularly updated 
+                to reflect the latest developments in respective fields.
+              </Text>
+            </Box>
+            <Box 
+              bg={cardBg} 
+              p={8} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              transition="all 0.3s"
+              _hover={{ transform: 'translateY(-8px)', shadow: '2xl' }}
+            >
+              <Heading size="md" mb={4} color="szabist.700">Research Focus</Heading>
+              <Text>
+                We maintain a strong emphasis on research and innovation, encouraging both faculty 
+                and students to contribute to their fields of study.
+              </Text>
+            </Box>
+            <Box 
+              bg={cardBg} 
+              p={8} 
+              borderRadius="xl" 
+              boxShadow="lg"
+              transition="all 0.3s"
+              _hover={{ transform: 'translateY(-8px)', shadow: '2xl' }}
+            >
+              <Heading size="md" mb={4} color="szabist.700">Global Network</Heading>
+              <Text>
+                Our partnerships with international universities and organizations provide students 
+                with global exposure and opportunities.
+              </Text>
+            </Box>
+          </SimpleGrid>
+        </Container>
+      </Box>
+
+      {/* Campus Life Section */}
+      <Box py={16} bg="gray.50">
+        <Container maxW="container.xl">
+          <Heading textAlign="center" mb={12} size="xl" color="szabist.700">
+            Campus Life at SZABIST
+          </Heading>
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+            <Image
+              src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1"
+              alt="Campus Life 1"
+              borderRadius="xl"
+              boxShadow="lg"
+              objectFit="cover"
+              h="300px"
+              w="100%"
+            />
+            <Image
+              src="https://images.unsplash.com/photo-1562774053-701939374585"
+              alt="Campus Life 2"
+              borderRadius="xl"
+              boxShadow="lg"
+              objectFit="cover"
+              h="300px"
+              w="100%"
+            />
+            <Image
+              src="https://images.unsplash.com/photo-1523580494863-6f3031224c94"
+              alt="Campus Life 3"
+              borderRadius="xl"
+              boxShadow="lg"
+              objectFit="cover"
+              h="300px"
+              w="100%"
+              display={{ base: 'none', lg: 'block' }}
+            />
+          </SimpleGrid>
+        </Container>
+      </Box>
+    </Box>
   );
 }
 

@@ -1,31 +1,138 @@
 import React from 'react';
-import { Box, Flex, Heading, Spacer, Button, HStack, Image } from '@chakra-ui/react';
+import { Box, Flex, Heading, Spacer, Button, HStack, Image, Container } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
 
 function Header() {
   return (
-    <Box bg="white" py={4} px={8} boxShadow="md">
-      <Flex alignItems="center" maxW="container.xl" mx="auto">
-        <Flex alignItems="center">
-          <Image 
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwJFS_dbw5OC93W4rA4UY0_EIKZkhA9dU7Uw&s" 
-            alt="SZABIST Logo" 
-            height="100px"
-            mr={4}
-          />
-          <Heading color="szabist.700" size="lg">SZABIST University Pakistan</Heading>
+    <Box 
+      bg="white" 
+      py={4}
+      position="sticky" 
+      top={0} 
+      zIndex={1000} 
+      boxShadow="lg"
+      borderBottom="4px solid"
+      borderColor="szabist.500"
+    >
+      <Container maxW="container.xl">
+        <Flex alignItems="center" height="70px">
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Heading 
+              color="szabist.700" 
+              size="xl"
+              display={{ base: 'none', md: 'block' }}
+              _hover={{ opacity: 0.9 }}
+              cursor="pointer"
+              fontWeight="bold"
+              letterSpacing="tight"
+            >
+              SZABIST University
+            </Heading>
+          </Link>
+          <Spacer />
+          <HStack spacing={3}>
+            <Button 
+              as={Link} 
+              to="/" 
+              variant="ghost" 
+              colorScheme="szabist" 
+              size="lg"
+              fontWeight="500"
+              px={4}
+            >
+              Home
+            </Button>
+            <Button 
+              as={Link} 
+              to="/about" 
+              variant="ghost" 
+              colorScheme="szabist" 
+              size="lg"
+              fontWeight="500"
+              px={4}
+            >
+              About
+            </Button>
+            <Button 
+              as={Link} 
+              to="/academics" 
+              variant="ghost" 
+              colorScheme="szabist" 
+              size="lg"
+              fontWeight="500"
+              px={4}
+            >
+              Academics
+            </Button>
+            <Button 
+              as={Link} 
+              to="/admissions" 
+              variant="ghost" 
+              colorScheme="szabist" 
+              size="lg"
+              fontWeight="500"
+              px={4}
+            >
+              Admissions
+            </Button>
+            <Button 
+              as={Link} 
+              to="/research" 
+              variant="ghost" 
+              colorScheme="szabist" 
+              size="lg"
+              fontWeight="500"
+              px={4}
+            >
+              Research
+            </Button>
+            <Button 
+              as={Link} 
+              to="/portal" 
+              colorScheme="szabist"
+              variant="solid"
+              size="lg"
+              fontWeight="500"
+              px={6}
+              _hover={{ 
+                transform: 'translateY(-2px)', 
+                shadow: 'lg' 
+              }}
+              transition="all 0.2s"
+            >
+              Portal
+            </Button>
+            <Button 
+              as={Link} 
+              to="/chatbot"
+              colorScheme="szabist"
+              variant="solid"
+              size="lg"
+              fontWeight="500"
+              px={6}
+              bg="szabist.600"
+              _hover={{ 
+                bg: 'szabist.700',
+                transform: 'translateY(-2px)',
+                shadow: 'lg'
+              }}
+              leftIcon={
+                <Box 
+                  as="span" 
+                  fontSize="1.4em"
+                  role="img" 
+                  aria-label="AI"
+                >
+                  🤖
+                </Box>
+              }
+              transition="all 0.2s"
+            >
+              AI Assistant
+            </Button>
+          </HStack>
         </Flex>
-        <Spacer />
-        <HStack spacing={4}>
-          <Button as={Link} to="/" variant="ghost" colorScheme="szabist">Home</Button>
-          <Button as={Link} to="/about" variant="ghost" colorScheme="szabist">About</Button>
-          <Button as={Link} to="/academics" variant="ghost" colorScheme="szabist">Academics</Button>
-          <Button as={Link} to="/admissions" variant="ghost" colorScheme="szabist">Admissions</Button>
-          <Button as={Link} to="/research" variant="ghost" colorScheme="szabist">Research</Button>
-          <Button as={Link} to="/chatbot" colorScheme="szabist">AI Assistant</Button>
-          <Button as={Link} to="/portal" variant="ghost" colorScheme="szabist">Portal</Button>
-        </HStack>
-      </Flex>
+      </Container>
     </Box>
   );
 }
