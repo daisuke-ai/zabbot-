@@ -8,7 +8,7 @@ function ChatbotPage() {
   }, []);
 
   return (
-    <Container maxW="container.xl" py={8}>
+    <Container maxW="container.xl" py={0}>
       <VStack spacing={6} align="stretch">
         <Box textAlign="center" mb={8}>
           <Heading size="2xl" mb={4} color="szabist.700">

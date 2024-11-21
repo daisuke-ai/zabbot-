@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Flex, Heading, Spacer, Button, HStack, Image, Container } from '@chakra-ui/react';
+import { Box, Flex, Heading, Spacer, Button, HStack, Container } from '@chakra-ui/react';
 import { Link, useNavigate } from 'react-router-dom';
 
 function Header() {
@@ -23,7 +23,7 @@ function Header() {
     >
       <Container maxW="container.xl">
         <Flex alignItems="center" height="70px">
-          <Link to="/" style={{ textDecoration: 'none' }} onClick={() => window.scrollTo(0, 0)}>
+          <Link to="/" style={{ textDecoration: 'none' }}>
             <Heading 
               color="szabist.700" 
               size="xl"
@@ -39,7 +39,8 @@ function Header() {
           <Spacer />
           <HStack spacing={3}>
             <Button 
-              onClick={() => handleNavigation('/')}
+              as={Link} 
+              to="/" 
               variant="ghost" 
               colorScheme="szabist" 
               size="lg"
@@ -49,7 +50,8 @@ function Header() {
               Home
             </Button>
             <Button 
-              onClick={() => handleNavigation('/about')}
+              as={Link} 
+              to="/about" 
               variant="ghost" 
               colorScheme="szabist" 
               size="lg"
@@ -59,7 +61,8 @@ function Header() {
               About
             </Button>
             <Button 
-              onClick={() => handleNavigation('/academics')}
+              as={Link} 
+              to="/academics" 
               variant="ghost" 
               colorScheme="szabist" 
               size="lg"
@@ -69,7 +72,8 @@ function Header() {
               Academics
             </Button>
             <Button 
-              onClick={() => handleNavigation('/admissions')}
+              as={Link} 
+              to="/admissions" 
               variant="ghost" 
               colorScheme="szabist" 
               size="lg"
@@ -79,7 +83,8 @@ function Header() {
               Admissions
             </Button>
             <Button 
-              onClick={() => handleNavigation('/research')}
+              as={Link} 
+              to="/research" 
               variant="ghost" 
               colorScheme="szabist" 
               size="lg"
@@ -89,7 +94,8 @@ function Header() {
               Research
             </Button>
             <Button 
-              onClick={() => handleNavigation('/portal')}
+              as={Link} 
+              to="/portal" 
               colorScheme="szabist"
               variant="solid"
               size="lg"
@@ -128,7 +134,7 @@ function Header() {
               }
               transition="all 0.2s"
             >
-              ZABBOT
+              AI Assistant
             </Button>
           </HStack>
         </Flex>

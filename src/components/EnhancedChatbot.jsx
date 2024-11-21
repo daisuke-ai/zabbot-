@@ -8,7 +8,6 @@ import {
   useToast,
   Flex,
   Avatar,
-  Heading,
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
 import { chatService } from '../services/chatService';
