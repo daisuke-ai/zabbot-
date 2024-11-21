@@ -8,11 +8,11 @@ import {
   useToast,
   Flex,
   Avatar,
+  Heading,
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
 import { chatService } from '../services/chatService';
 
-// Typing animation keyframes
 const blink = keyframes`
   0% { opacity: .2; }
   20% { opacity: 1; }
@@ -21,7 +21,7 @@ const blink = keyframes`
 
 const TypingIndicator = () => (
   <Flex align="center" p={4}>
-    <Avatar size="sm" name="SZABIST Bot" src="/bot-avatar.png" mr={2} />
+    <Avatar size="sm" name="ZABBOT" bg="szabist.600" color="white" mr={2} />
     <Flex>
       <Box
         animation={`${blink} 1.4s infinite both`}
@@ -58,7 +58,7 @@ const MessageBubble = ({ message, sender }) => (
     align="start"
   >
     {sender === 'bot' && (
-      <Avatar size="sm" name="SZABIST Bot" src="/bot-avatar.png" mr={2} />
+      <Avatar size="sm" name="ZABBOT" bg="szabist.600" color="white" mr={2} />
     )}
     <Box
       maxW="80%"
@@ -96,6 +96,14 @@ function EnhancedChatbot() {
   const messagesEndRef = useRef(null);
   const toast = useToast();
 
+  useEffect(() => {
+    // Welcome message
+    setMessages([{
+      text: "Hello! I'm ZABBOT, your SZABIST University AI assistant. How can I help you today?",
+      sender: 'bot'
+    }]);
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -105,7 +113,6 @@ function EnhancedChatbot() {
   }, [messages]);
 
   const formatResponse = (text) => {
-    // Split text into paragraphs and add proper spacing
     return text.split('\n\n').join('\n\n');
   };
 
@@ -171,7 +178,7 @@ function EnhancedChatbot() {
         <Input
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
-          placeholder="Type your message..."
+          placeholder="Ask ZABBOT anything about SZABIST..."
           size="lg"
           bg="white"
           onKeyPress={(e) => e.key === 'Enter' && sendMessage()}

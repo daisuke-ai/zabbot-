@@ -1,8 +1,15 @@
 import React from 'react';
 import { Box, Flex, Heading, Spacer, Button, HStack, Image, Container } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Header() {
+  const navigate = useNavigate();
+
+  const handleNavigation = (path) => {
+    window.scrollTo(0, 0);
+    navigate(path);
+  };
+
   return (
     <Box 
       bg="white" 
@@ -16,7 +23,7 @@ function Header() {
     >
       <Container maxW="container.xl">
         <Flex alignItems="center" height="70px">
-          <Link to="/" style={{ textDecoration: 'none' }}>
+          <Link to="/" style={{ textDecoration: 'none' }} onClick={() => window.scrollTo(0, 0)}>
             <Heading 
               color="szabist.700" 
               size="xl"
@@ -32,8 +39,7 @@ function Header() {
           <Spacer />
           <HStack spacing={3}>
             <Button 
-              as={Link} 
-              to="/" 
+              onClick={() => handleNavigation('/')}
               variant="ghost" 
               colorScheme="szabist" 
               size="lg"
@@ -43,8 +49,7 @@ function Header() {
               Home
             </Button>
             <Button 
-              as={Link} 
-              to="/about" 
+              onClick={() => handleNavigation('/about')}
               variant="ghost" 
               colorScheme="szabist" 
               size="lg"
@@ -54,8 +59,7 @@ function Header() {
               About
             </Button>
             <Button 
-              as={Link} 
-              to="/academics" 
+              onClick={() => handleNavigation('/academics')}
               variant="ghost" 
               colorScheme="szabist" 
               size="lg"
@@ -65,8 +69,7 @@ function Header() {
               Academics
             </Button>
             <Button 
-              as={Link} 
-              to="/admissions" 
+              onClick={() => handleNavigation('/admissions')}
               variant="ghost" 
               colorScheme="szabist" 
               size="lg"
@@ -76,8 +79,7 @@ function Header() {
               Admissions
             </Button>
             <Button 
-              as={Link} 
-              to="/research" 
+              onClick={() => handleNavigation('/research')}
               variant="ghost" 
               colorScheme="szabist" 
               size="lg"
@@ -87,8 +89,7 @@ function Header() {
               Research
             </Button>
             <Button 
-              as={Link} 
-              to="/portal" 
+              onClick={() => handleNavigation('/portal')}
               colorScheme="szabist"
               variant="solid"
               size="lg"
@@ -103,8 +104,7 @@ function Header() {
               Portal
             </Button>
             <Button 
-              as={Link} 
-              to="/chatbot"
+              onClick={() => handleNavigation('/chatbot')}
               colorScheme="szabist"
               variant="solid"
               size="lg"
@@ -128,7 +128,7 @@ function Header() {
               }
               transition="all 0.2s"
             >
-              AI Assistant
+              ZABBOT
             </Button>
           </HStack>
         </Flex>

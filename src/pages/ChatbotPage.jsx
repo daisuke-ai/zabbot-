@@ -1,17 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Container, Heading, Text, VStack } from '@chakra-ui/react';
 import EnhancedChatbot from '../components/EnhancedChatbot.jsx';
 
 function ChatbotPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={6} align="stretch">
         <Box textAlign="center" mb={8}>
           <Heading size="2xl" mb={4} color="szabist.700">
-            SZABIST University AI Assistant
+            ZABBOT - Your SZABIST AI Assistant
           </Heading>
           <Text fontSize="xl" color="gray.600">
-            Get instant answers to your questions about SZABIST University
+            Your intelligent companion for all SZABIST-related queries
           </Text>
         </Box>
         <Box 
