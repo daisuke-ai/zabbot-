@@ -3,6 +3,7 @@ import { Box, Heading, Text, Container, Image, SimpleGrid, Button, VStack, Flex,
 import { Link } from 'react-router-dom';
 import { FaGraduationCap, FaBook, FaChartBar, FaUsers, FaRobot, FaArrowRight } from 'react-icons/fa';
 import { BsBuilding } from 'react-icons/bs';
+import szabistImage from '../public/images/szabist.jpg';
 
 function Home() {
   const cardBg = useColorModeValue('white', 'gray.800');
@@ -11,7 +12,7 @@ function Home() {
     <Box>
       {/* Hero Section */}
       <Box
-        bgImage="url('https://scontent.fisb17-1.fna.fbcdn.net/v/t39.30808-6/462314461_8512920555461698_5973199187798216552_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=86c6b0&_nc_eui2=AeHR7GQmdrzisUaQlgGRnpeTUeb7kVgCFp5R5vuRWAIWnsE-XcN_-W05uX0FuB7hz8n9bLCf2A8wrrbYMqx-bcMs&_nc_ohc=J5s6cg7iu1kQ7kNvgHZAaN_&_nc_zt=23&_nc_ht=scontent.fisb17-1.fna&_nc_gid=A_QI7wQo08tU9LXOr6ndX3v&oh=00_AYCO7HGidEMUEilROxUB0E8KmRRdR6XbFJnLTztgBiiM_w&oe=6736C521')"
+        bgImage={`url(${szabistImage})`}
         bgPosition="center"
         bgRepeat="no-repeat"
         bgSize="cover"

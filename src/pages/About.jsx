@@ -16,6 +16,7 @@ import {
   Flex
 } from '@chakra-ui/react';
 import { FaGraduationCap, FaUniversity, FaUsers, FaGlobe } from 'react-icons/fa';
+import szabistImage2 from '../public/images/szabist-1.jpg';
 
 function About() {
   const cardBg = useColorModeValue('white', 'gray.800');
@@ -58,7 +59,7 @@ function About() {
             </Box>
             <Box>
               <Image 
-                src="https://szabist-isb.edu.pk/wp-content/uploads/2020/05/356A8016-3.jpg" 
+                src={szabistImage2}
                 alt="SZABIST Campus" 
                 borderRadius="xl"
                 boxShadow="2xl"
