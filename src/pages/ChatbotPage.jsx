@@ -3,9 +3,9 @@ import { Box, Container, Heading, Text, VStack } from '@chakra-ui/react';
 import EnhancedChatbot from '../components/EnhancedChatbot.jsx';
 
 function ChatbotPage() {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, []);
 
   return (
     <Container maxW="container.xl" py={0}>
