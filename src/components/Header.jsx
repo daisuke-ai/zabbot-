@@ -94,22 +94,6 @@ function Header() {
               Research
             </Button>
             <Button 
-              as={Link} 
-              to="/portal" 
-              colorScheme="szabist"
-              variant="solid"
-              size="lg"
-              fontWeight="500"
-              px={6}
-              _hover={{ 
-                transform: 'translateY(-2px)', 
-                shadow: 'lg' 
-              }}
-              transition="all 0.2s"
-            >
-              Portal
-            </Button>
-            <Button 
               onClick={() => handleNavigation('/chatbot')}
               colorScheme="szabist"
               variant="solid"
@@ -125,7 +109,7 @@ function Header() {
               leftIcon={
                 <Box 
                   as="span" 
-                  fontSize="1.4em"
+                  fontSize="1.3em"
                   role="img" 
                   aria-label="AI"
                 >
@@ -136,6 +120,23 @@ function Header() {
             >
               AI Assistant
             </Button>
+            <Button 
+              as={Link} 
+              to="/portal" 
+              colorScheme="szabist"
+              variant="solid"
+              size="lg"
+              fontWeight="500"
+              px={6}
+              _hover={{ 
+                transform: 'translateY(-2px)', 
+                shadow: 'lg' 
+              }}
+              transition="all 0.2s"
+            >
+              Portal
+            </Button>
+          
           </HStack>
         </Flex>
       </Container>
