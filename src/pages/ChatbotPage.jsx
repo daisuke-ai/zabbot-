@@ -147,7 +147,6 @@ function ChatbotPage() {
           <VStack spacing={4} align="stretch" h="full">
             <Box
               flex="1"
-              overflowY="auto"
               p={4}
               bg="gray.50"
               borderRadius="xl"
