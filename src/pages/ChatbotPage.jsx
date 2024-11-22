@@ -1,15 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
+  Container,
+  Heading,
+  Text,
   VStack,
   Input,
   Button,
-  Text,
   useToast,
   Flex,
   Avatar,
   Spinner,
 } from '@chakra-ui/react';
+import { useLocation } from 'react-router-dom';
 import { keyframes } from '@emotion/react';
 import { chatService } from '../services/chatService';
 
@@ -64,12 +67,18 @@ const MessageBubble = ({ message, sender }) => (
   </Flex>
 );
 
-function EnhancedChatbot() {
+function ChatbotPage() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const toast = useToast();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Scroll to top when the location changes
+    window.scrollTo(0, 0);
+  }, [location]);
 
   useEffect(() => {
     // Welcome message
@@ -118,60 +127,80 @@ function EnhancedChatbot() {
   };
 
   return (
-    <VStack spacing={4} align="stretch" h="full">
-      <Box
-        flex="1"
-        p={4}
-        bg="gray.50"
-        borderRadius="xl"
-        sx={{
-          '&::-webkit-scrollbar': {
-            width: '4px',
-          },
-          '&::-webkit-scrollbar-track': {
-            width: '6px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: 'gray.300',
-            borderRadius: '24px',
-          },
-        }}
-      >
-        {messages.map((message, index) => (
-          <MessageBubble
-            key={index}
-            message={message.text}
-            sender={message.sender}
-          />
-        ))}
-        {isLoading && <TypingIndicator />}
-        <div ref={messagesEndRef} />
-      </Box>
-      
-      <Box p={4} bg="white" borderTop="1px" borderColor="gray.200">
-        <Input
-          value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
-          placeholder="Ask ZABBOT anything about SZABIST..."
-          size="lg"
-          bg="white"
-          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-          disabled={isLoading}
-        />
-        <Button
-          mt={2}
-          colorScheme="szabist"
-          onClick={sendMessage}
-          isLoading={isLoading}
-          loadingText="Sending..."
-          w="full"
-          size="lg"
+    <Container maxW="container.xl" py={0}>
+      <VStack spacing={6} align="stretch">
+        <Box textAlign="center" mb={8}>
+          <Heading size="2xl" mb={4} color="szabist.700">
+            ZABBOT - Your SZABIST AI Assistant
+          </Heading>
+          <Text fontSize="xl" color="gray.600">
+            Your intelligent companion for all SZABIST-related queries
+          </Text>
+        </Box>
+        <Box 
+          bg="white" 
+          borderRadius="xl" 
+          boxShadow="2xl"
+          p={6}
+          minH="600px"
         >
-          Send Message
-        </Button>
-      </Box>
-    </VStack>
+          <VStack spacing={4} align="stretch" h="full">
+            <Box
+              flex="1"
+              p={4}
+              bg="gray.50"
+              borderRadius="xl"
+              sx={{
+                '&::-webkit-scrollbar': {
+                  width: '4px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  width: '6px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: 'gray.300',
+                  borderRadius: '24px',
+                },
+              }}
+            >
+              {messages.map((message, index) => (
+                <MessageBubble
+                  key={index}
+                  message={message.text}
+                  sender={message.sender}
+                />
+              ))}
+              {isLoading && <TypingIndicator />}
+              <div ref={messagesEndRef} />
+            </Box>
+            
+            <Box p={4} bg="white" borderTop="1px" borderColor="gray.200">
+              <Input
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder="Ask ZABBOT anything about SZABIST..."
+                size="lg"
+                bg="white"
+                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                disabled={isLoading}
+              />
+              <Button
+                mt={2}
+                colorScheme="szabist"
+                onClick={sendMessage}
+                isLoading={isLoading}
+                loadingText="Sending..."
+                w="full"
+                size="lg"
+              >
+                Send Message
+              </Button>
+            </Box>
+          </VStack>
+        </Box>
+      </VStack>
+    </Container>
   );
 }
 
-export default EnhancedChatbot;
+export default ChatbotPage;
