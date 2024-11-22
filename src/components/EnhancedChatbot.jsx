@@ -79,14 +79,6 @@ function EnhancedChatbot() {
     }]);
   }, []);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   const formatResponse = (text) => {
     return text.split('\n\n').join('\n\n');
   };
@@ -120,23 +112,11 @@ function EnhancedChatbot() {
   return (
     <VStack spacing={4} align="stretch" h="full">
       <Box
-        flex="1"
-        overflowY="auto"
         p={4}
         bg="gray.50"
         borderRadius="xl"
-        sx={{
-          '&::-webkit-scrollbar': {
-            width: '4px',
-          },
-          '&::-webkit-scrollbar-track': {
-            width: '6px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: 'gray.300',
-            borderRadius: '24px',
-          },
-        }}
+        position="relative"
+        height="500px"
       >
         {messages.map((message, index) => (
           <MessageBubble
@@ -146,7 +126,6 @@ function EnhancedChatbot() {
           />
         ))}
         {isLoading && <TypingIndicator />}
-        <div ref={messagesEndRef} />
       </Box>
       
       <Box p={4} bg="white" borderTop="1px" borderColor="gray.200">
