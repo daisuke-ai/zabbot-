@@ -12,6 +12,7 @@ import {
   Avatar,
   Spinner,
 } from '@chakra-ui/react';
+import { useLocation } from 'react-router-dom';
 import { keyframes } from '@emotion/react';
 import { chatService } from '../services/chatService';
 
@@ -72,6 +73,12 @@ function ChatbotPage() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const toast = useToast();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Scroll to top when the location changes
+    window.scrollTo(0, 0);
+  }, [location]);
 
   useEffect(() => {
     // Welcome message
