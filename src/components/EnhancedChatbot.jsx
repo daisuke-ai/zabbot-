@@ -8,6 +8,7 @@ import {
   useToast,
   Flex,
   Avatar,
+  Spinner,
 } from '@chakra-ui/react';
 import { keyframes } from '@emotion/react';
 import { chatService } from '../services/chatService';
@@ -21,32 +22,7 @@ const blink = keyframes`
 const TypingIndicator = () => (
   <Flex align="center" p={4}>
     <Avatar size="sm" name="ZABBOT" bg="szabist.600" color="white" mr={2} />
-    <Flex>
-      <Box
-        animation={`${blink} 1.4s infinite both`}
-        borderRadius="full"
-        bg="gray.400"
-        h="2"
-        w="2"
-        mx="1"
-      />
-      <Box
-        animation={`${blink} 1.4s infinite both .2s`}
-        borderRadius="full"
-        bg="gray.400"
-        h="2"
-        w="2"
-        mx="1"
-      />
-      <Box
-        animation={`${blink} 1.4s infinite both .4s`}
-        borderRadius="full"
-        bg="gray.400"
-        h="2"
-        w="2"
-        mx="1"
-      />
-    </Flex>
+    <Spinner size="sm" color="szabist.600" />
   </Flex>
 );
 
