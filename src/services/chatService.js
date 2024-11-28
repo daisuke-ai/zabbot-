@@ -1,4 +1,4 @@
-const API_URL = 'https://zabbot-77cc2c8ce224.herokuapp.com/';
+const API_URL = 'https://zabbot-77cc2c8ce224.herokuapp.com';
 
 export const chatService = {
   async sendMessage(message) {
