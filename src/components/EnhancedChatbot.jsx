@@ -68,11 +68,28 @@ function EnhancedChatbot() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
   const toast = useToast();
 
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      const { scrollHeight, clientHeight } = chatContainerRef.current;
+      const maxScroll = scrollHeight - clientHeight;
+      
+      chatContainerRef.current.scrollTo({
+        top: maxScroll,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   useEffect(() => {
-    // Welcome message
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages]);
+
+  useEffect(() => {
     setMessages([{
       text: "Hello! I'm ZABBOT, your SZABIST University AI assistant. How can I help you today?",
       sender: 'bot'
@@ -112,23 +129,48 @@ function EnhancedChatbot() {
   return (
     <VStack spacing={4} align="stretch" h="full">
       <Box
+        ref={chatContainerRef}
         p={4}
         bg="gray.50"
         borderRadius="xl"
-        position="relative"
         height="500px"
+        overflowY="auto"
+        css={{
+          '&::-webkit-scrollbar': {
+            width: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: '#f1f1f1',
+            borderRadius: '8px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#888',
+            borderRadius: '8px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: '#555',
+          },
+          scrollBehavior: 'smooth',
+        }}
       >
-        {messages.map((message, index) => (
-          <MessageBubble
-            key={index}
-            message={message.text}
-            sender={message.sender}
-          />
-        ))}
-        {isLoading && <TypingIndicator />}
+        <VStack spacing={4} align="stretch">
+          {messages.map((message, index) => (
+            <MessageBubble
+              key={index}
+              message={message.text}
+              sender={message.sender}
+            />
+          ))}
+          {isLoading && <TypingIndicator />}
+        </VStack>
       </Box>
       
-      <Box p={4} bg="white" borderTop="1px" borderColor="gray.200">
+      <Box 
+        p={4} 
+        bg="white" 
+        borderTop="1px" 
+        borderColor="gray.200"
+      >
         <Input
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
