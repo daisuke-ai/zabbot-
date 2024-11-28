@@ -58,7 +58,7 @@ function Footer() {
           justify={{ md: 'space-between' }}
           align={{ md: 'center' }}
         >
-          <Text>© 2023 SZABIST University Pakistan. All rights reserved</Text>
+          <Text>© 2024 SZABIST University Pakistan. All rights reserved</Text>
           <Stack direction={'row'} spacing={6}>
             <Link href={'#'}>Facebook</Link>
             <Link href={'#'}>Twitter</Link>
