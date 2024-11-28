@@ -5,10 +5,6 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Ignore Python files
-[build.ignore]
-  command = "git diff --quiet HEAD^ HEAD ./app.py ./requirements.txt ./runtime.txt"
-
 [[redirects]]
   from = "/*"
   to = "/index.html"
