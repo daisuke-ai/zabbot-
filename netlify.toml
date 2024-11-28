@@ -6,14 +6,10 @@
   NODE_VERSION = "18"
 
 # Ignore Python files
-[build.processing]
-  skip_processing = true
+[build.ignore]
+  command = "git diff --quiet HEAD^ HEAD ./app.py ./requirements.txt ./runtime.txt"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Ignore Python-related files
-[build.ignore]
-  command = "git diff --quiet HEAD^ HEAD ./app.py ./requirements.txt ./runtime.txt"

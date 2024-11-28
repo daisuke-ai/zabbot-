@@ -1,0 +1,6 @@
+# Ignore Python files
+*.py
+requirements.txt
+__pycache__/
+*.pyc
+data/
