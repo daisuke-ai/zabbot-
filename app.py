@@ -31,23 +31,37 @@ embed_model = OpenAIEmbedding(model="text-embedding-3-small")
 Settings.llm = llm
 Settings.embed_model = embed_model
 
-# Check if PDF files exist in the data directory
-pdf_files = [f for f in os.listdir(data_dir) if f.endswith('.pdf')]
-if not pdf_files:
-    raise ValueError(f"No PDF files found in {data_dir}. Please add your PDF files to this directory.")
+# Check if Markdown files exist in the data directory
+md_files = [f for f in os.listdir(data_dir) if f.endswith('.md')]
+if not md_files:
+    raise ValueError(f"No Markdown files found in {data_dir}. Please add your Markdown files to this directory.")
 
-# Load and initialize the index
-data = SimpleDirectoryReader(
-    input_dir=data_dir,
-    required_exts=[".pdf"]
-).load_data()
+# Load and initialize the index from Markdown files
+def rebuild_index():
+    data = SimpleDirectoryReader(
+        input_dir=data_dir,
+        required_exts=[".md"]
+    ).load_data()
+    return VectorStoreIndex.from_documents(data)
 
-index = VectorStoreIndex.from_documents(data)
+index = rebuild_index()  # Initialize the index
 memory = ChatMemoryBuffer.from_defaults(token_limit=4500)
+
+# Custom System Prompt
+system_prompt = """
+You are a dedicated university assistant chatbot named ZABBOT designed to provide accurate, reliable, and helpful information specifically related to university queries and technology that supports students' academic and campus life. Your role is to assist students with their questions about courses, admissions, schedules, resources, events, and technology that enhances their learning or campus experience.
+
+You are accountable for every response and must ensure that all answers are derived only from the Markdown documents provided in your knowledge base. If a query is unrelated to the university or beyond your scope, politely inform the user that you cannot assist with that and redirect them to focus on university-related matters.
+
+Your purpose is to maintain focus, relevance, and clarity while upholding a professional and supportive tone.
+"""
+
+# Modify chat engine to include the system prompt
 chat_engine = CondensePlusContextChatEngine.from_defaults(
    retriever=index.as_retriever(),
    memory=memory,
-   llm=llm
+   llm=llm,
+   system_prompt=system_prompt
 )
 
 @app.route('/')
@@ -73,5 +87,15 @@ def chat():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/rebuild_index', methods=['POST'])
+def rebuild_index_route():
+    try:
+        global index  # Use the global index variable
+        index = rebuild_index()  # Rebuild the index
+        return jsonify({"message": "Index rebuilt successfully."}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000) 
+    app.run(debug=True, port=5000)
+    
