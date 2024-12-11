@@ -18,31 +18,47 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # Initialize OpenAI API key from environment variable
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-# Get the absolute path to the data directory
+# Get the absolute path to the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(current_dir, 'data')
 
-# Create data directory if it doesn't exist
+# Define directories for data and scraped pages
+data_dir = os.path.join(current_dir, 'data')
+scraped_pages_dir = os.path.join(current_dir, 'scraped_pages')
+
+# Create data and scraped_pages directories if they don't exist
 os.makedirs(data_dir, exist_ok=True)
+os.makedirs(scraped_pages_dir, exist_ok=True)
 
 # Initialize the models and settings
-llm = OpenAI(model="gpt-4o-mini")
+llm = OpenAI(model="gpt-4o-mini", temperature=0)
 embed_model = OpenAIEmbedding(model="text-embedding-3-large")
 Settings.llm = llm
 Settings.embed_model = embed_model
 
-# Check if Markdown files exist in the data directory
-md_files = [f for f in os.listdir(data_dir) if f.endswith('.md')]
-if not md_files:
-    raise ValueError(f"No Markdown files found in {data_dir}. Please add your Markdown files to this directory.")
+# Check if Markdown files exist in both data and scraped_pages directories
+def check_markdown_files():
+    data_md_files = [f for f in os.listdir(data_dir) if f.endswith('.md')]
+    scraped_md_files = [f for f in os.listdir(scraped_pages_dir) if f.endswith('.md')]
+    if not data_md_files and not scraped_md_files:
+        raise ValueError(
+            f"No Markdown files found in {data_dir} and {scraped_pages_dir}. "
+            "Please add your Markdown files to these directories."
+        )
 
-# Load and initialize the index from Markdown files
+check_markdown_files()
+
+# Load and initialize the index from Markdown files in both directories
 def rebuild_index():
-    data = SimpleDirectoryReader(
-        input_dir=data_dir,
-        required_exts=[".md"]
-    ).load_data()
-    return VectorStoreIndex.from_documents(data)
+    data_dirs = [data_dir, scraped_pages_dir]
+    all_documents = []
+    for dir_path in data_dirs:
+        reader = SimpleDirectoryReader(
+            input_dir=dir_path,
+            required_exts=[".md"]
+        )
+        documents = reader.load_data()
+        all_documents.extend(documents)
+    return VectorStoreIndex.from_documents(all_documents)
 
 index = rebuild_index()  # Initialize the index
 memory = ChatMemoryBuffer.from_defaults(token_limit=4500)
@@ -103,12 +119,11 @@ You are ZABBOT, a highly advanced university assistant chatbot developed exclusi
 By following these guidelines, you will serve as a reliable and secure assistant, enhancing the academic and campus life of SZABIST Islamabad students with professionalism and expertise.
 """
 
-# Modify chat engine to include the system prompt
 chat_engine = CondensePlusContextChatEngine.from_defaults(
-   retriever=index.as_retriever(),
-   memory=memory,
-   llm=llm,
-   system_prompt=system_prompt
+    retriever=index.as_retriever(),
+    memory=memory,
+    llm=llm,
+    system_prompt=system_prompt
 )
 
 @app.route('/')
@@ -138,11 +153,13 @@ def chat():
 def rebuild_index_route():
     try:
         global index  # Use the global index variable
-        index = rebuild_index()  # Rebuild the index
+        index = rebuild_index()  # Rebuild the index from both directories
+        # Reinitialize the retriever with the new index
+        chat_engine.retriever = index.as_retriever()
         return jsonify({"message": "Index rebuilt successfully."}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
-    
+    rebuild_index()
