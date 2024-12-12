@@ -161,5 +161,11 @@ def rebuild_index_route():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
+    try:
+        index = rebuild_index()
+        chat_engine.retriever = index.as_retriever()
+        print("Index built successfully.")
+    except Exception as e:
+        print(f"Error building index: {e}")
+        exit(1)
     app.run(debug=True, port=5000)
-    rebuild_index()
