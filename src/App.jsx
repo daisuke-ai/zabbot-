@@ -11,6 +11,8 @@ import Research from './pages/Research';
 import Portal from './pages/Portal';
 import Login from './pages/Login';
 import ChatbotPage from './pages/ChatbotPage';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const theme = extendTheme({
   colors: {
@@ -37,18 +39,27 @@ function App() {
   return (
     <ChakraProvider theme={theme}>
       <Router>
-        <Header />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/academics" element={<Academics />} />
-          <Route path="/admissions" element={<Admissions />} />
-          <Route path="/research" element={<Research />} />
-          <Route path="/portal" element={<Portal />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/chatbot" element={<ChatbotPage />} />
-        </Routes>
-        <Footer />
+        <AuthProvider>
+          <Header />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/academics" element={<Academics />} />
+            <Route path="/admissions" element={<Admissions />} />
+            <Route path="/research" element={<Research />} />
+            <Route 
+              path="/portal" 
+              element={
+                <ProtectedRoute>
+                  <Portal />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/chatbot" element={<ChatbotPage />} />
+          </Routes>
+          <Footer />
+        </AuthProvider>
       </Router>
     </ChakraProvider>
   );
