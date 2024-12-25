@@ -1,0 +1,46 @@
+.blog-content {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.blog-content h1 {
+  font-size: 2em;
+  margin-bottom: 1em;
+  color: var(--chakra-colors-szabist-700);
+}
+
+.blog-content h2 {
+  font-size: 1.5em;
+  margin-bottom: 0.8em;
+  color: var(--chakra-colors-szabist-600);
+}
+
+.blog-content p {
+  margin-bottom: 1em;
+  line-height: 1.6;
+}
+
+.blog-content ul, .blog-content ol {
+  margin-bottom: 1em;
+  padding-left: 2em;
+}
+
+.blog-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1em 0;
+  box-shadow: var(--chakra-shadows-lg);
+}
+
+.blog-content a {
+  color: var(--chakra-colors-szabist-600);
+  text-decoration: underline;
+}
+
+.blog-content blockquote {
+  border-left: 4px solid var(--chakra-colors-szabist-500);
+  padding-left: 1em;
+  margin: 1em 0;
+  font-style: italic;
+} 

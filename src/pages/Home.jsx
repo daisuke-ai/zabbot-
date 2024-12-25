@@ -44,7 +44,7 @@ function Home() {
               lineHeight="1.2"
               fontWeight="bold"
             >
-              Welcome to SZABIST University Pakistan
+              Welcome to SZABIST University
             </Heading>
             <Text fontSize="2xl" mb={8} lineHeight="1.6">
               Empowering Minds, Shaping Futures through Excellence in Education

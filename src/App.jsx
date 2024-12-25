@@ -13,6 +13,8 @@ import Login from './pages/Login';
 import ChatbotPage from './pages/ChatbotPage';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
 
 const theme = extendTheme({
   colors: {
@@ -57,6 +59,8 @@ function App() {
             />
             <Route path="/login" element={<Login />} />
             <Route path="/chatbot" element={<ChatbotPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:id" element={<BlogPostPage />} />
           </Routes>
           <Footer />
         </AuthProvider>
