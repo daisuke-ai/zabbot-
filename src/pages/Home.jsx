@@ -1,6 +1,5 @@
 import React from 'react';
-import { Box, Heading, Text, Container, Image, SimpleGrid, Button, VStack, Flex, Stack, Icon, useColorModeValue } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
+import { Box, Heading, Text, Container, Image, SimpleGrid, Button, VStack, Flex, Stack, Icon, useColorModeValue, Link } from '@chakra-ui/react';
 import { FaGraduationCap, FaBook, FaChartBar, FaUsers, FaRobot, FaArrowRight } from 'react-icons/fa';
 import { BsBuilding } from 'react-icons/bs';
 import szabistImage from '../public/images/szabist.jpg';
@@ -166,51 +165,80 @@ function Home() {
       <Box py={16}>
         <Container maxW="container.xl">
           <SimpleGrid columns={{ base: 2, md: 5 }} spacing={8}>
-            <VStack 
-              p={6} 
-              borderRadius="lg" 
-              transition="all 0.3s"
-              _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
+            <Link 
+              href="https://szabist-isb.edu.pk/event-calendar/"
+              _hover={{ textDecoration: 'none' }}
             >
-              <Icon as={BsBuilding} w={10} h={10} color="szabist.600" />
-              <Text fontWeight="bold">University Life</Text>
-            </VStack>
-            <VStack 
-              p={6} 
-              borderRadius="lg"
-              transition="all 0.3s"
-              _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
+              <VStack 
+                p={6} 
+                borderRadius="lg" 
+                transition="all 0.3s"
+                _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
+              >
+                <Icon as={BsBuilding} w={10} h={10} color="szabist.600" />
+                <Text fontWeight="bold">University Life</Text>
+              </VStack>
+            </Link>
+
+            <Link 
+              href="https://szabist-isb.edu.pk/academics/"
+              _hover={{ textDecoration: 'none' }}
             >
-              <Icon as={FaGraduationCap} w={10} h={10} color="szabist.600" />
-              <Text fontWeight="bold">Academics</Text>
-            </VStack>
-            <VStack 
-              p={6} 
-              borderRadius="lg"
-              transition="all 0.3s"
-              _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
+              <VStack 
+                p={6} 
+                borderRadius="lg"
+                transition="all 0.3s"
+                _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
+              >
+                <Icon as={FaGraduationCap} w={10} h={10} color="szabist.600" />
+                <Text fontWeight="bold">Academics</Text>
+              </VStack>
+            </Link>
+
+            <Link 
+              href="https://szabist-isb.edu.pk/library/"
+              _hover={{ textDecoration: 'none' }}
             >
-              <Icon as={FaBook} w={10} h={10} color="szabist.600" />
-              <Text fontWeight="bold">Library</Text>
-            </VStack>
-            <VStack 
-              p={6} 
-              borderRadius="lg"
-              transition="all 0.3s"
-              _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
+              <VStack 
+                p={6} 
+                borderRadius="lg"
+                transition="all 0.3s"
+                _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
+              >
+                <Icon as={FaBook} w={10} h={10} color="szabist.600" />
+                <Text fontWeight="bold">Library</Text>
+              </VStack>
+            </Link>
+
+            <Link 
+              href="https://szabist-isb.edu.pk/oric/"
+              _hover={{ textDecoration: 'none' }}
             >
-              <Icon as={FaChartBar} w={10} h={10} color="szabist.600" />
-              <Text fontWeight="bold">IR/QEC</Text>
-            </VStack>
-            <VStack 
-              p={6} 
-              borderRadius="lg"
-              transition="all 0.3s"
-              _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
+              <VStack 
+                p={6} 
+                borderRadius="lg"
+                transition="all 0.3s"
+                _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
+              >
+                <Icon as={FaChartBar} w={10} h={10} color="szabist.600" />
+                <Text fontWeight="bold">IR/QEC</Text>
+              </VStack>
+            </Link>
+
+            <Link 
+              href="https://szabist-isb.edu.pk/EDC/"
+              _hover={{ textDecoration: 'none' }}
             >
-              <Icon as={FaUsers} w={10} h={10} color="szabist.600" />
-              <Text fontWeight="bold">EDC</Text>
-            </VStack>
+              <VStack 
+                p={6} 
+                borderRadius="lg"
+                transition="all 0.3s"
+                _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
+              >
+                <Icon as={FaUsers} w={10} h={10} color="szabist.600" />
+                <Text fontWeight="bold">EDC</Text>
+              </VStack>
+            </Link>
           </SimpleGrid>
         </Container>
       </Box>
