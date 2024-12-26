@@ -28,11 +28,13 @@ function BlogPage() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
+        console.log('Fetching posts...');
         const response = await client.getEntries({
           content_type: 'universityBlog',
-          order: '-fields.publishedDate',
+          order: '-sys.createdAt',
           include: 2,
         });
+        console.log('Response:', response);
         setPosts(response.items);
       } catch (err) {
         setError('Failed to load blog posts');
@@ -86,7 +88,7 @@ function BlogPage() {
                 <VStack align="stretch" p={6} spacing={3}>
                   <Heading size="md">{post.fields.title}</Heading>
                   <Text color="gray.500">
-                    {format(new Date(post.fields.publishedDate), 'MMMM d, yyyy')}
+                    {format(new Date(post.sys.createdAt), 'MMMM d, yyyy')}
                   </Text>
                 </VStack>
               </Box>

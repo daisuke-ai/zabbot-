@@ -83,14 +83,37 @@ function BlogPostPage() {
           <Heading size="2xl">{post.fields.title}</Heading>
           
           <Text color="gray.500">
-            Published on {format(new Date(post.fields.publishedDate), 'MMMM d, yyyy')}
+            Published on {format(new Date(post.sys.createdAt), 'MMMM d, yyyy')}
           </Text>
 
           <Box className="blog-content">
             {documentToReactComponents(post.fields.content)}
           </Box>
 
-          {/* Rest of the component stays the same as in your original code */}
+          {post.fields.relatedBlogs && post.fields.relatedBlogs.length > 0 && (
+            <Box mt={16}>
+              <Heading size="xl" mb={8}>Related Posts</Heading>
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={8}>
+                {post.fields.relatedBlogs.map((relatedPost) => (
+                  <Link key={relatedPost.sys.id} to={`/blog/${relatedPost.sys.id}`}>
+                    <Box
+                      bg={cardBg}
+                      p={6}
+                      borderRadius="xl"
+                      boxShadow="lg"
+                      transition="all 0.3s"
+                      _hover={{ transform: 'translateY(-4px)', shadow: '2xl' }}
+                    >
+                      <Heading size="md" mb={2}>{relatedPost.fields.title}</Heading>
+                      <Text color="gray.500">
+                        {format(new Date(relatedPost.sys.createdAt), 'MMMM d, yyyy')}
+                      </Text>
+                    </Box>
+                  </Link>
+                ))}
+              </SimpleGrid>
+            </Box>
+          )}
         </VStack>
       </Container>
     </Box>
