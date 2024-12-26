@@ -1,32 +1,33 @@
 import React from 'react';
-import { Box, Container, SimpleGrid, Stack, Text, Link, Input, Button, Heading } from '@chakra-ui/react';
+import { Box, Container, SimpleGrid, Stack, Text, Link as ChakraLink, Input, Button, Heading } from '@chakra-ui/react';
+import { Link as RouterLink } from 'react-router-dom';
+import { FaFacebook, FaTwitter, FaYoutube, FaLinkedin } from 'react-icons/fa';
 
 function Footer() {
   return (
     <Box bg="szabist.900" color="white">
       <Container as={Stack} maxW={'6xl'} py={10}>
-        <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={8}>
+        <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={8}>
           <Stack align={'flex-start'}>
-            <Heading as="h4" size="md" mb={3}>Company</Heading>
-            <Link href={'#'}>About Us</Link>
-            <Link href={'#'}>Blog</Link>
-            <Link href={'#'}>Careers</Link>
-            <Link href={'#'}>Contact Us</Link>
+            <Heading as="h4" size="md" mb={3}>Navigation</Heading>
+            <ChakraLink as={RouterLink} to="/">Home</ChakraLink>
+            <ChakraLink as={RouterLink} to="/about">About Us</ChakraLink>
+            <ChakraLink as={RouterLink} to="/blog">Blog</ChakraLink>
+            <ChakraLink as={RouterLink} to="/portal">Portal</ChakraLink>
+            <ChakraLink as={RouterLink} to="/chatbot">AI Assistant</ChakraLink>
           </Stack>
 
           <Stack align={'flex-start'}>
             <Heading as="h4" size="md" mb={3}>Support</Heading>
-            <Link href={'#'}>Help Center</Link>
-            <Link href={'#'}>Safety Center</Link>
-            <Link href={'#'}>Community Guidelines</Link>
-          </Stack>
-
-          <Stack align={'flex-start'}>
-            <Heading as="h4" size="md" mb={3}>Legal</Heading>
-            <Link href={'#'}>Cookies Policy</Link>
-            <Link href={'#'}>Privacy Policy</Link>
-            <Link href={'#'}>Terms of Service</Link>
-            <Link href={'#'}>Law Enforcement</Link>
+            <ChakraLink href="https://szabist-isb.edu.pk/" isExternal>
+              Help Center
+            </ChakraLink>
+            <ChakraLink href="https://szabist-isb.edu.pk/contact/" isExternal>
+              Safety Center
+            </ChakraLink>
+            <ChakraLink href="https://szabist-isb.edu.pk/faqs/" isExternal>
+              Community Guidelines
+            </ChakraLink>
           </Stack>
 
           <Stack align={'flex-start'}>
@@ -35,9 +36,10 @@ function Footer() {
               <Input
                 placeholder={'Your email address'}
                 bg="white"
+                color="gray.800"
                 border={0}
                 _focus={{
-                  bg: 'whiteAlpha.300',
+                  bg: 'white',
                 }}
               />
               <Button bg="szabist.500" color="white" _hover={{ bg: 'szabist.600' }}>
@@ -60,10 +62,34 @@ function Footer() {
         >
           <Text>© 2025 SZABIST University. All rights reserved</Text>
           <Stack direction={'row'} spacing={6}>
-            <Link href={'#'}>Facebook</Link>
-            <Link href={'#'}>Twitter</Link>
-            <Link href={'#'}>YouTube</Link>
-            <Link href={'#'}>Instagram</Link>
+            <ChakraLink 
+              href="https://www.facebook.com/SZABIST.Islamabad.Official/" 
+              isExternal
+              _hover={{ color: 'szabist.500' }}
+            >
+              <FaFacebook size={20} />
+            </ChakraLink>
+            <ChakraLink 
+              href="https://twitter.com/szabistofficial" 
+              isExternal
+              _hover={{ color: 'szabist.500' }}
+            >
+              <FaTwitter size={20} />
+            </ChakraLink>
+            <ChakraLink 
+              href="https://www.youtube.com/channel/UCk380f87fnnKe7yB7sHpwIA" 
+              isExternal
+              _hover={{ color: 'szabist.500' }}
+            >
+              <FaYoutube size={20} />
+            </ChakraLink>
+            <ChakraLink 
+              href="https://www.linkedin.com/company/szabist-islamabad/" 
+              isExternal
+              _hover={{ color: 'szabist.500' }}
+            >
+              <FaLinkedin size={20} />
+            </ChakraLink>
           </Stack>
         </Container>
       </Box>
