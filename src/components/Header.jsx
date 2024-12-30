@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HamburgerIcon } from '@chakra-ui/icons';
-import szabistLogo from '../public/images/szabist-logo2.png';
+import szabistLogo from '../public/images/szabist-header.png';
 
 function Header() {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ function Header() {
       variant="ghost"
       colorScheme="szabist"
       size="lg"
-      fontWeight="500"
+      fontWeight="700"
       px={4}
       fontFamily="'Poppins', sans-serif"
       fontSize="md"
@@ -77,18 +77,34 @@ function Header() {
 
           {/* Desktop Navigation */}
           <HStack spacing={1} display={{ base: 'none', lg: 'flex' }}>
+            <NavButton 
+              as="a" 
+              href="http://edc.szabist.edu.pk/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              EDC
+            </NavButton>
+            <NavButton 
+              as="a" 
+              href="https://zabcms.szabist.edu.pk/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              CMS
+            </NavButton>
             <NavButton to="/about">About</NavButton>
             <NavButton to="/academics">Academics</NavButton>
             <NavButton to="/admissions">Admissions</NavButton>
             <NavButton to="/research">Research</NavButton>
-            <NavButton to= "/blog">Blog</NavButton>
+            <NavButton to="/blog">Blog</NavButton>
             
             <Button
               onClick={() => handleNavigation('/chatbot')}
               colorScheme="szabist"
               variant="solid"
               size="lg"
-              fontWeight="500"
+              fontWeight="700"
               px={6}
               bg="szabist.600"
               fontFamily="'Poppins', sans-serif"
@@ -113,7 +129,7 @@ function Header() {
               colorScheme="szabist"
               variant="solid"
               size="lg"
-              fontWeight="500"
+              fontWeight="700"
               px={6}
               fontFamily="'Poppins', sans-serif"
               _hover={{ 
@@ -137,6 +153,8 @@ function Header() {
                 size="lg"
               />
               <MenuList>
+                <MenuItem as="a" href="http://edc.szabist.edu.pk/" target="_blank" rel="noopener noreferrer">EDC</MenuItem>
+                <MenuItem as="a" href="https://zabcms.szabist.edu.pk/" target="_blank" rel="noopener noreferrer">CMS</MenuItem>
                 <MenuItem as={Link} to="/">Home</MenuItem>
                 <MenuItem as={Link} to="/about">About</MenuItem>
                 <MenuItem as={Link} to="/academics">Academics</MenuItem>

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Heading, Text, Container, Image, SimpleGrid, Button, VStack, Flex, Stack, Icon, useColorModeValue, Link } from '@chakra-ui/react';
+import { Link as RouterLink } from 'react-router-dom';
+import { Box, Heading, Text, Container, Image, SimpleGrid, Button, VStack, Flex, Stack, Icon, useColorModeValue, Link} from '@chakra-ui/react';
 import { FaGraduationCap, FaBook, FaChartBar, FaUsers, FaRobot, FaArrowRight } from 'react-icons/fa';
 import { BsBuilding } from 'react-icons/bs';
 import szabistImage from '../public/images/szabist.jpg';
@@ -107,7 +108,7 @@ function Home() {
               <Heading size="md" mb={4} textAlign="center">AI Assistant</Heading>
               <Text textAlign="center" mb={4}>Get instant answers to your questions about SZABIST</Text>
               <Button 
-                as={Link}
+                as={RouterLink}
                 to="/chatbot"
                 colorScheme="szabist"
                 rightIcon={<FaArrowRight />}
@@ -128,7 +129,7 @@ function Home() {
               <Heading size="md" mb={4} textAlign="center">Student Portal</Heading>
               <Text textAlign="center" mb={4}>Access your courses, grades, and resources</Text>
               <Button 
-                as={Link}
+                as={RouterLink}
                 to="/portal"
                 colorScheme="szabist"
                 rightIcon={<FaArrowRight />}
@@ -149,7 +150,7 @@ function Home() {
               <Heading size="md" mb={4} textAlign="center">Admissions</Heading>
               <Text textAlign="center" mb={4}>Start your journey with SZABIST</Text>
               <Button 
-                as={Link}
+                as={RouterLink}
                 to="/admissions"
                 colorScheme="szabist"
                 rightIcon={<FaArrowRight />}
@@ -164,9 +165,10 @@ function Home() {
       {/* Quick Links Section */}
       <Box py={16}>
         <Container maxW="container.xl">
-          <SimpleGrid columns={{ base: 2, md: 5 }} spacing={8}>
+          <SimpleGrid columns={{ base: 2, md: 4 }} spacing={8}>
             <Link 
               href="https://szabist-isb.edu.pk/event-calendar/"
+              isExternal
               _hover={{ textDecoration: 'none' }}
             >
               <VStack 
@@ -182,6 +184,7 @@ function Home() {
 
             <Link 
               href="https://szabist-isb.edu.pk/academics/"
+              isExternal
               _hover={{ textDecoration: 'none' }}
             >
               <VStack 
@@ -197,6 +200,7 @@ function Home() {
 
             <Link 
               href="https://szabist-isb.edu.pk/library/"
+              isExternal
               _hover={{ textDecoration: 'none' }}
             >
               <VStack 
@@ -212,6 +216,7 @@ function Home() {
 
             <Link 
               href="https://szabist-isb.edu.pk/oric/"
+              isExternal
               _hover={{ textDecoration: 'none' }}
             >
               <VStack 
@@ -222,21 +227,6 @@ function Home() {
               >
                 <Icon as={FaChartBar} w={10} h={10} color="szabist.600" />
                 <Text fontWeight="bold">IR/QEC</Text>
-              </VStack>
-            </Link>
-
-            <Link 
-              href="https://szabist-isb.edu.pk/EDC/"
-              _hover={{ textDecoration: 'none' }}
-            >
-              <VStack 
-                p={6} 
-                borderRadius="lg"
-                transition="all 0.3s"
-                _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
-              >
-                <Icon as={FaUsers} w={10} h={10} color="szabist.600" />
-                <Text fontWeight="bold">EDC</Text>
               </VStack>
             </Link>
           </SimpleGrid>
