@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HamburgerIcon } from '@chakra-ui/icons';
-import szabistLogo from '../public/images/szabist-header.png';
+import szabistLogo from '../public/images/images.png';
 
 function Header() {
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ function Header() {
             <Image
               src={szabistLogo}
               alt="SZABIST Logo"
-              height="60px"
+              height="100px"
               objectFit="contain"
               transition="transform 0.2s"
               _hover={{ transform: 'scale(1.05)' }}

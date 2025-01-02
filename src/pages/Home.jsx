@@ -46,12 +46,15 @@ function Home() {
             >
               Welcome to SZABIST University
             </Heading>
-            <Text fontSize="2xl" mb={8} lineHeight="1.6">
+            <Text fontSize="2xl" mb={2} lineHeight="1.6">
               Empowering Minds, Shaping Futures through Excellence in Education
+            </Text>
+            <Text fontSize="lg" mb={8} lineHeight="1.6">
+              Islamabad Campus
             </Text>
             <Stack direction={{ base: 'column', md: 'row' }} spacing={5}>
               <Button 
-                as={Link} 
+                as={RouterLink} 
                 to="/admissions" 
                 size="lg" 
                 colorScheme="szabist"
@@ -79,7 +82,7 @@ function Home() {
               established through a Legislative Act of Sindh Assembly. SZABIST UNIVERSITY is approved and recognized by the Higher
               Education Commission (HEC) of Pakistan as a degree awarding institution.
             </Text>
-            <Button as={Link} to="/about" colorScheme="szabist">
+            <Button as={RouterLink} to="/about" colorScheme="szabist">
               Learn More
             </Button>
           </Box>
