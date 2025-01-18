@@ -10,6 +10,7 @@ import {
   Avatar,
   Spinner,
 } from '@chakra-ui/react';
+import { chatService } from '../services/chatService';
 
 function EnhancedChatbot() {
   const [messages, setMessages] = useState([]);
@@ -47,18 +48,26 @@ function EnhancedChatbot() {
     if (!inputMessage.trim()) return;
     setIsLoading(true);
 
-    // add user's message
+    // Add user's message
     setMessages((prev) => [...prev, { text: inputMessage, sender: 'user' }]);
-    setInputMessage('');
-
-    // mock delayed response (replace with chatService)
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { text: "Here's a response from ZABBOT!", sender: 'bot' },
-      ]);
+    
+    try {
+      // Get response from chatService
+      const response = await chatService.sendMessage(inputMessage);
+      
+      // Add bot's response
+      setMessages((prev) => [...prev, { text: response, sender: 'bot' }]);
+    } catch (error) {
+      console.error('Error:', error);
+      // Show error message to user
+      setMessages((prev) => [...prev, { 
+        text: "Sorry, I'm having trouble connecting right now. Please try again later.", 
+        sender: 'bot' 
+      }]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+      setInputMessage('');
+    }
   };
 
   return (

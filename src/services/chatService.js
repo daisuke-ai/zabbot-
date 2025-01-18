@@ -1,14 +1,14 @@
-const API_URL = 'https://zabbot-77cc2c8ce224.herokuapp.com/';
+const API_URL = 'http://localhost:3035';
 
 export const chatService = {
   async sendMessage(message) {
     try {
-      const response = await fetch(`${API_URL}/api/chat`, {
+      const response = await fetch(`${API_URL}/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ query: message }),
       });
 
       if (!response.ok) {
@@ -16,7 +16,7 @@ export const chatService = {
       }
 
       const data = await response.json();
-      return data.response;
+      return data;
     } catch (error) {
       console.error('Error:', error);
       throw error;

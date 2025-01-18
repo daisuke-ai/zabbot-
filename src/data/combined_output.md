@@ -1,3 +1,191 @@
+# executive programs.md
+
+# Executive-Programs Emba
+
+# EMBA
+
+### Executive MBA
+
+### Executive Program
+
+### Department Info
+
+### Admission
+
+### Our Campuses
+
+### Departments
+
+### Admissions
+
+“We lead you towards your destiny”
+
+Executive MBA (EMBA) is a post-graduate degree program offered by SZABIST and designed for professionals with significant work experience.
+
+The EMBA is a two years program with four semesters and 66 credit hours. 20 courses, 1 Business Project (3 credits), and 1 Research Project (3 credits) to graduate. The maximum time limit to complete the EMBA degree is four years.
+
+If a candidate finishes the first year of study, he/she will be awarded a Professional MBA (PMBA) degree. After finishing two years of study (66 credits) including the business project, the student will be awarded HEC recognized EMBA degree. An academic year has two semesters (starting February & September).
+
+In our Executive MBA program, will be part of a group of people who share a passion and curiosity for going deeper to evaluate issues and arrive at innovative solutions. We recognize in each student the inner spark; we then provide knowledge and reinforce character by bringing the students together with professors and peers who share our values so in the end, the graduates become the change agents that our businesses and community need. The practice-oriented approach in the SZABIST Executive MBA enables you to apply the gained knowledge and skills directly to solve real-time problems of your organization.
+
+Why SZABIST EMBA?
+
+Benefit from the weekend structure of the program while allowing participants to hold their full-time job. Classes regularly held on Friday with lectured activity between 6:00 pm to 9:00 pm, Saturday from 2:00 pm to 9:00 pm and on Sunday from 10:00 am to 5:00 pm.
+
+Ideal location
+
+Economical fee structure with quality education
+
+Highly Qualified & Experienced Faculty having both academic & corporate experience to provide practical insights of organizations.
+
+Designed for:
+
+Professionals responsible for functional areas such as Operations, Finance, IT, Marketing, Production, Human Resource, Law and Government Affairs.
+
+Suitable for Board Members as well as Top Management including Managing Directors, Chief Financial Officers, Chief Executive Officers, Chief Operating Officers, Secretaries to the Boards of Directors, Legal Advisors, Company Secretaries and Corporate Governance Executives of listed companies who envision moving into a director’s role in future.
+
+Professionals of Life Sciences, Food Sciences at Private and Government Institutions related to any field who desire to acquire cutting-edge business knowledge relevant to their field.
+
+Eligibility criteria
+
+For admission in the EMBA program, the candidate must possess 16-year education or a 4-year bachelor degree with a minimum of 50% marks/ 2.0 CGPA from a university recognized by the Higher Education Commission (HEC) in any field of study with 3 years of professional work experience (verifiable) at some well-known organization. This requirement is necessary to seek admission in this program.
+
+Three years managerial level work experience
+
+Two letters of recommendation are required
+
+Required to pass the SZABIST entrance test and interview.
+
+Objectives:
+
+Give executives the knowledge and understanding of business trends and processes in the Pakistani business environment.
+
+Build interaction among the executives through brainstorming sessions.
+
+Develop critical & analytical thinking.
+
+Learn the fundamentals of effective business communication in the current context.
+
+Enhance your personal communication style that inspires others to action.
+
+Effectively manage risk and develop more effective control mechanisms.
+
+Enhance leadership skills and develop strategic insights.
+
+Acquire management knowledge, tools, and techniques useful in making sound business decisions.
+
+Develop entrepreneurial abilities essential for recognising and capitalising on value creation opportunities.
+
+Examine and integrate workplace/life experiences with course and program concepts in order to generate appropriate business action plans.
+
+Apply appropriate leadership behavior and skills for enhancing personal and organizational effectiveness.
+
+Foster teamwork and leadership in the business environment.
+
+Teaching Methodology
+
+Lectures/
+
+Individual & Group Assignments
+
+Role-Playing, Simulations,
+
+Problem-based learning
+
+Learning with new Technologies. We offer electives of SAP i-e
+
+SAP Financial Accounting Module
+
+SAP Human Capital Module
+
+SAP Sales & Distribution Module
+
+SAP Procurement Module
+
+Transfer to other campuses
+
+The EMBA is also offered at Karachi and Dubai campuses. Transfer to EMBA Programs at other campuses is possible, subject to transfer rules. Academic calendar and fee may vary.
+
+SZABIST has been offering MBA and MS programs for the last several years The MBA program covers almost every area of business organization with specialization in HR, Marketing, and Finance. MS program looks after the diverse research needs of these areas with a specific research viewpoint. There has always been a need to initiate a highly diversified and unique program to address a variety of HR issues concerning the field of HRM with a new angle from and scope. The Masters in HRM program encompasses almost all major areas of the HRM discipline having international dimensions while taking cognizance of the impulsive technological and competitive scenario in the wake of globalization.
+
+Introduction
+
+Being first of its kind in the country, the MHRM is a 1-year degree program and is designed to provide a comprehensive curriculum in the field of HRM to cater to the requirements of the changing business and technology landscape. Every organization relies heavily on HR departments to coordinate and implement a wide array of employee programs and services. This program is for the current as well as the prospective HR professionals from the public, private, and development sectors. It is intended to meet the requirements of business organizations, with a holistic philosophy based on industry-led approach. Through this program, learners will learn the diverse skills needed to succeed in almost every sphere of the HR field. The program also addresses the emerging challenges in the highly volatile and competitive environment by employing the latest techniques to impart knowledge of the important developments taking place in domestic and global settings. This allows learners to maximize their learning in varied areas of strategic HRM and HRD, and succeed in their educational and career goals.
+
+For admission in the MHRM program, the applicant must possess a minimum of sixteen years of education/4-year Bachelor/Masters degree from an HEC recognized educational institute with a minimum of 50% marks/2.0 CGPA.
+
+An entrance test and group discussion/ interview will be given to all applicants at SZABIST. NTS score in lieu of the SZABIST entrance test is also acceptable.
+
+Significance & Rationale
+
+The Masters in HRM program is designed to provide an excellent opportunity to learners to prepare themselves for adapting to and application of the learning in the real world HR field. The program offers an opening to all those aspiring for a bright career in this field with a practical insight in almost every area of this rapidly emerging and changing field. This also provides learners with the requisite skills to be able to transfer the acquired knowledge not only in the academic fields but also to business houses, public sector organizations, and non-governmental organizations.
+
+The students begin with the study of HRM with strategic and global perspectives, recruitment and selection, employee development, training needs assessment, and advanced learning and development. Specific courses focus on rewards management system, organizational behavior and managing with difficult employees. Another unique feature of the program is inclusion of symposia, seminars and workshops, where learners are required to focus more in just one area of HRM, and complete a comprehensive project dealing with a specialty area of their choice. This activity allows learners maximum opportunities to experience the real world of HRM.
+
+Objectives
+
+The objective of this postgraduate degree program is to cover a wide range of career fields for a diverse audience, such as:
+
+Human Resource ManagerHuman Resource TrainerLabor Relation Manager/SpecialistHuman Resource ExecutiveHuman Resource CoordinatorEmployee CoachHuman Resource ConsultantRewards professional
+
+Duration
+
+The normal duration of the MHRM program will be 12 months, spanning 02 semesters, a total of 33 credit hours.
+
+Classes’ Schedule:
+
+Friday (6:00pm – 9:00pm)
+
+Saturday two classes (3:00pm – 9:00pm) and
+
+Sunday two classes (10:00am – 1:00pm) and (2:00pm – 5:00pm).
+
+Each semester will comprise l6-weeks and each class will be of three hour duration.
+
+A 3-credit hour projects in the last semester .
+
+Designated advisors will monitor and assist the students with their projects.
+
+### Admissions
+
+MPM Mission Statement
+
+The MPM program is designed to enhance competencies of working professionals and students in areas of strategic intent, leadership skills and professional behaviour, tools, techniques, processes, contemporary best practices and emerging trends in managing projects effectively through project life cycle in multi-context environment
+
+About the Program
+
+SZABIST is the first and only university in Pakistan to offer a program in Project Management accredited by a global body, the PMI Institute, USA. SZABIST started its HEC-approved Master in Project Management (MPM) program in Spring 2009. Admissions are offered twice a year: Fall & Spring. With more than 1000 students already graduated,  SZABIST has a  widespread alumni nationwide. More than 50 students of SZABIST Islamabad have obtained PMI certification of Project Management Professional (PMP). The program was Globally Accredited in June 2021 by PMI, USA and recognized internationally by prestigious employers, universities and professional associations.  SZABIST offers an excellent opportunity for PMP aspirants as MPM graduates automatically earn 35 PDUs and one year of project management work experience required for the PMP exam  on the completion of the degree”
+
+MPM provides students with the tools and techniques to manage day-to-day activities of projects of different nature. The course is designed for people from all walks of life. For practicing project managers, it is a guide to enhance their capabilities and to solve typical problems that may arise from time to time. The concepts, principles and techniques taught in this course are based on, but not limited to, the Project Management Institute (PMI) framework, which is universally accepted and practiced. The program takes about a calendar year, comprising of 30 credit hours & spread over two semesters.
+
+To obtain the MPM degree, 9 courses and 1 Computer Base Training (CBT) must be completed. Each taught course comprises 16 classes of 3 hours each. Computer software and related material along with technical assistance is provided to students to assist in preparing their projects after training. Classroom seminars, project management related games, visits to project sites, and guest lectures from international speakers are part of this program
+
+Classes will take place on weekends only.
+
+Classes:Friday evening (06:30pm – 09:30pm) one class, Saturday & Sunday (10:00 am-01:00 pm) & (02:00 pm-05:00 pm) two classes held both days
+
+MS (Project Management) Bridge Arrangement:This arrangement allows MPM graduates to enhance their academic qualification. For MPM graduates, a maximum of 6 courses would be transferred to the MSPM program subject to passing the courses with a minimum 2.75-grade point and surrendering the MPM degree. The Project, Project in Primavera, Software Tools for Project Management, and SAP Training are not transferrable towards MSPM degree completion requirements for MPM graduates.
+
+SZABIST offers the One year PMBA program for the executives and the middle level managers who strive for excellence and greater challenges in their professional life. The program is conveniently scheduled to accommodate the busy Executives keeping in view their own job related deadlines and travel schedules. The PMBA is a one year program spread over two semesters and consists of 33 credit hours. PMBA have Eleven courses. Each course is of four months duration. The candidate registers for 5/6 courses offered every semester to complete the degree within one year. Classes are regularly held on Friday between 6:00 pm to 9:00 pm , Saturday and Sunday from 10:00 am to 5:00pm.
+
+For admission in the PMBA program, the applicant must possess a minimum of 16 years of education/4-year Bachelor/Master degree with a minimum of 2.0 CGPA or a minimum 50% marks from an HEC recognized university.
+
+PMBA is not equivalent to EMBA degree, no transfer courses are allowed into PMBA, and PMBA courses are not transferable to any other program. However, PMBA program is transferable to EMBA at SZABIST. The PMBA is equivalent to Post Graduate Diploma as per HEC guidelines.
+
+Focus
+
+Different programs in Pakistan stress different elements within the PMBA program or Regular MBA program. Some of them are churning out finance and management genius, others marketing genius. While the PMBA program at SZABIST is focused on building knowledge of the participants in all areas of business operations, action oriented teaching, a right mix of Pakistani and global focus, and problem solving approach-plus an extensive executive network are among the best competitive advantages that have made the PMBA program of SZABIST as one of the leading programs in Pakistan.
+
+Objectives
+
+The Professional Program at SZABIST aims to:Give students the knowledge and understanding of business trends and processes in Pakistani business environment.Develop critical thinking, leadership qualities and other skills to analyze problems encountered at their workplace.Answer leading question: What do I need to know?Build confidence among the participants through brainstorming sessions, group discussions, and presentations.
+
+Teaching Pedagogy
+
+The PMBA program at SZABIST includes a mix bag of lectures, individual and group assignments, case studies, presentations and seminars. The program is split over two semesters, each of which corresponds in course content to the goal of the program. Participants study an integrated curriculum which focuses on diagnosing and analyzing a management dilemma, creating analytical and leadership skills and improving communication skills.Besides the innovative curriculum and excellent faculty, students benefit from the organizational diversity and professional experiences of classmates. The classroom environment and assignments encourage networking and team sprit among the participants- real world experiences is shared and a sense of belonging evolves as they develop friendships during the study period.
+
+# StudentHandBook.md
+
 SZABIST UNIVERSITY
 Islamabad Campus
 
@@ -2526,3 +2714,2045 @@ SCAN ME
 |---|---|---|---|---|
 | in | 🎥 | f | 📷 | 🐦 |
 | szabist-islamabad | szabistofficial | szabist.islamabad.official | szabist.islamabad.official | szabistofficial |
+
+# faculty-of-social-sciences.md
+
+# Faculty-Of-Social-Sciences
+
+# Faculty of Social Sciences
+
+### Dr. Taraq Waheed
+
+### Faculty
+
+### Dr. Muhammad Mazhar Iqbal
+
+### Dr. Rashida Qureshi
+
+### Dr. Huma Haque
+
+### Dr. Abdur Rashid
+
+### Dr. Muhammad Arshad
+
+### Dr. Wajid Hussain
+
+### Dr. Syeda Razia Bukhari
+
+### Dr. Syed Aziz Rasool
+
+### Dr. M. Abo ul Hassan Rashid
+
+### Dr. Abdul Razzaq Khan
+
+### Ms. Aliya Abdul Hayee
+
+### Dr. Muhammad Saifullah Qureshi
+
+### Ms. Sana Mukhtar
+
+### Ms. Maria Rafique
+
+### Ms. Huma Maqsood
+
+### Mr. Abdul Hanan Sami
+
+### Ms. Amber Gillani
+
+### Ms. Ahmareen Farah
+
+### Our Campuses
+
+### Departments
+
+### Admissions
+
+PhD– Political Sciences (Aligarh Muslim University) – 1982E-mail: taraq.waheed@szabist-isb.edu.pk
+
+PhD – Economics (University of Norte Dame, Indiana, USA) – 1995
+
+E-mail: dr.mazhar@szabist-isb.edu.pk
+
+PhD– Sociology (Kansas State University, USA) – 1996E-mail: dr.rashida@szabist-isb.edu.pk
+
+PhD – Cultural Anthropology (University of Washington, Seattle WA, USA) – 1995
+
+E-mail: dr.huma@szabist-isb.edu.pk
+
+PhD– Clinical Psychology (Bahria University, Islamabad ) – 2001E-mail: dr.rashid@szabist-isb.edu.pk
+
+PhD– Development Policy (Korea Development Institute, Korea) – 2010E-mail: dr.arshad@szabist-isb.edu.pk
+
+PhD– English Literature (National University of Modern Languages, Islamabad) 2019E-mail: hussain@szabist-isb.edu.pk
+
+PhD– Clinical Psychology (Institute of Clinical Psychology University of Karachi ) – 2015E-mail: dr.razia@szabist-isb.edu.pk
+
+PhD– Economics (Federal Urdu University of Arts, Science & Technology, Islamabad) – 2019Email: dr.aziz@szabist-isb.edu.pk
+
+PhD– Sociology (International Islamic University, Islamabad) – 2020
+
+E-mail: hassan.rashid@szabist-isb.edu.pk
+
+PhD– Development Studies (University of Sindh) – 2015E-mail: dr.razzaq@szabist-isb.edu.pk
+
+M.Phil– Psychology (Quaid-e-Azam University, Islamabad) – 2013E-mail: aliya.abdulhayee@szabist-isb.edu.pk
+
+PhD– Psychology (International Islamic University, Islamabad) – 2023E-mail: dr.saifullah@szabist-isb.edu.pk
+
+MS– Speech Language Pathology/Therapy (Ripah International University, Islamabad) – 2019E-mail: sana@szabist-isb.edu.pk
+
+MS – Clinical Psychology (Foundation University, Islamabad) – 2021
+
+Email: maria.rafique@szabist-isb.edu.pk
+
+M.S– Development Studies (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Islamabad) – 2019E-mail: huma.maqsood@szabist-isb.edu.pk
+
+MS– Psychology (International Islamic University, Islamabad) – 2019
+
+E-mail: abdul.hanan@szabist-isb.edu.pk
+
+MS – Clinical Psychology (University of Lahore) – 2020
+
+Email : amber.gillani@szabist-isb.edu.pk
+
+M.Phil. – Government and Public Policy (National Defence University, Islamabad) – 2016
+
+Email: ahmareen.farah@szabist-isb.edu.pk
+
+Street # 09, Plot # 67Sector H-8/4, Islamabad,Pakistan
+
+051-4863363-65info@szabist-isb.edu.pk
+
+For Admissions OfficeWhatsapp: 0309-1122208admissions@szabist-isb.edu.pk
+
+
+
+# BSAI.pdf.md
+
+The image provides detailed information about the BS Artificial Intelligence program offered by the Faculty of Computing and Engineering Sciences. Here are the key points:
+
+1. Program Overview:
+   - Offered by the Department of Robotics and Artificial Intelligence
+   - 4-year program with 44 courses totaling 130 credit hours
+   - Includes internship opportunities
+   - Full-time, daytime curriculum
+   - Covers advanced topics like Machine Learning, Deep Learning, Explainable AI, etc.
+
+2. Program Structure:
+   - 46 credit hours of Computing Core courses
+   - 18 credit hours of Domain Core courses
+   - 21 credit hours of Domain Electives
+   - 9 credit hours of Mathematics and Supporting courses
+   - 3 credit hours of Elective Supporting courses
+   - 33 credit hours of General Education Requirement courses
+   - Maximum duration: 6 years
+
+3. Mission Statement:
+   To provide quality education in AI to produce competent graduates who can contribute to local and global society transformation.
+
+4. Program Educational Objectives (PEO):
+   - PEO 1: Equip students to solve complex real-world problems
+   - PEO 2: Produce graduates who practice AI ethically and responsibly
+   - PEO 3: Prepare students for lifelong learning in AI and related fields
+
+5. Graduate Attributes:
+   The program aims to develop various abilities in graduates, including:
+   - Applying knowledge to solve complex problems
+   - Analyzing and designing solutions for complex issues
+   - Investigating problems methodically
+   - Using modern IT tools and techniques
+   - Understanding societal and environmental impacts
+   - Applying ethical principles
+   - Working effectively in teams
+   - Communicating effectively
+   - Demonstrating management skills
+   - Recognizing the importance of lifelong learning
+
+This comprehensive program seems designed to prepare students for the rapidly evolving field of Artificial Intelligence with a blend of technical skills and broader professional competencies.
+---
+# FACULTY OF COMPUTING AND ENGINEERING SCIENCES
+
+## BS ARTIFICIAL INTELLIGENCE CURRICULUM
+
+| Codes | Course Title | Cr.Hrs. | Pre-Req. |
+|-------|--------------|---------|----------|
+| **First Year** |
+| **Semester - I** |
+| CSC 1101 | Calculus and Analytical Geometry | 3, 0 | - |
+| CSC 1102 | English Composition and Comprehension | 3, 0 | - |
+| CSC 1103 | Fundamentals of Programming | 3, 0 | - |
+| CSCL 1103 | Lab: Fundamentals of Programming | 0, 1 | - |
+| CSC 1108 | Introduction to Computer Science | 2, 0 | - |
+| CSCL1108 | Lab: Introduction to Computer Science | 0, 1 | - |
+| CSC 1107 | Applied Physics | 2, 0 | - |
+| CSCL 1107 | Lab: Applied Physics | 0, 1 | - |
+| | Sub-total | 16 | |
+| **Semester - II** |
+| CSC 1208 | Object Oriented Programming Techniques | 3, 0 | CSC 1103, CSCL 1103 |
+| CSCL 1208 | Lab: Object Oriented Programming Techniques | 0, 1 | CSC 1103, CSCL 1103 |
+| CSC 1206 | Probability and Statistics | 3, 0 | - |
+| CSC 1207 | Digital Logic Design | 2, 0 | - |
+| CSCL 1207 | Lab: Digital Logic Design | 0, 1 | - |
+| CSC 1209 | Islamic Studies/ Humanities | 2, 0 | - |
+| CSC 1211 | Ideology and Constitution of Pakistan | 2, 0 | - |
+| CSC 2101 | Communication and Presentation Skills | 3, 0 | CSC 1102 |
+| | Sub-total | 17 | |
+| **Second Year** |
+| **Semester - III** |
+| CSC 2102 | Data Structures and Algorithms | 3,0 | CSC 1208, CSCL 1208 |
+| CSCL 2102 | Lab: Data Structures and Algorithms | 0,1 | CSC 1208, CSCL 1208 |
+| CSC 3105 | Computer Organization and Assembly Language | 2,0 | CSC 1207, CSCL 1207 |
+| CSCL 3105 | Lab: Computer Organization and Assembly Language | 0,1 | CSC 1207, CSCL 1207 |
+| CSC 1201 | Discrete Mathematical Structures | 3,0 | - |
+| CSC 3206 | Artificial Intelligence | 2,0 | CSC 1208, CSCL 1208 |
+| CSCL 3206 | Lab: Artificial Intelligence | 0,1 | CSC 1208, CSCL 1208 |
+| CSC 1202 | Multivariate Calculus | 3,0 | CSC 1101 |
+| | Sub-total | 16 | |
+| **Semester - IV** |
+| CSC 3209 | Computer Networks | 2,0 | - |
+| CSCL 3209 | Lab: Computer Networks | 0,1 | - |
+| CSC 2203 | Database Systems | 3,0 | CSC 2102, CSCL 2102 |
+| CSCL 2203 | Lab: Database Systems | 0,1 | CSC 2102, CSCL 2102 |
+| CSC 3202 | Design and Analysis of Algorithms | 3,0 | CSC 2102, CSCL 2102 |
+| AIC 2401 | Programming for Artificial Intelligence | 2,0 | CSC 3206, CSCL 3206 |
+| AICL 2401 | Lab: Programming for Artificial Intelligence | 0,1 | CSC 3206, CSCL 3206 |
+| CSC 2206 | Linear Algebra | 3,0 | CSC 1101 |
+| AIC xxxx | AI Elective - I | 3,0 | |
+| | Sub-total | 19 | |
+
+59 Prospectus 2024
+---
+# FACULTY OF COMPUTING AND ENGINEERING SCIENCES
+
+## BS ARTIFICIAL INTELLIGENCE CURRICULUM
+
+| Codes | Course Title | Cr.Hrs. | Pre-Req. |
+|-------|--------------|---------|----------|
+| **Third Year** |
+| **Semester - V** |
+| CSC 3107 | Operating Systems | 2, 0 | - |
+| CSCL 3107 | Lab: Operating Systems | 0, 1 | - |
+| AIC 3501 | Artificial Neural Networks | 2, 0 | AIC 2401, AICL 2401 |
+| AICL 3501 | Lab: Artificial Neural Networks | 0, 1 | AIC 2401, AICL 2401 |
+| AIC 3503 | Machine Learning | 2, 0 | AIC 2401, AICL 2401 |
+| AICL 3503 | Lab: Machine Learning | 0, 1 | AIC 2401, AICL 2401 |
+| AIC 3502 | Knowledge Representation and Reasoning | 3, 0 | AIC 2401, AICL 2401 |
+| AIC xxxx | AI Elective - II | 3, 0 | - |
+| CSC 3111 | Entrepreneurship | 2, 0 | - |
+| | Sub-total | 17 |
+
+| **Semester - VI** |
+| CSC 1205 | Technical and Business Writing | 3,0 | CSC 1102 |
+| AIC 3605 | Computer Vision | 2, 0 | AIC 3501, AICL 3501 |
+| AICL 3605 | Lab: Computer Vision | 0, 1 | AIC 3501, AICL 3501 |
+| AIC xxxx | University Elective - I | 3, 0 | - |
+| CSC 3109 | Software Engineering | 3, 0 | - |
+| AIC xxxx | AI Elective - III | 3,0 | - |
+| CSC 3110 | Civics & Community Engagement | 2, 0 | - |
+| | Sub-total | 17 |
+
+| **Fourth Year** |
+| **Semester - VII** |
+| CSC 4107 | Information Security | 2, 0 | - |
+| CSCL 4107 | Lab: Information Security | 0, 1 | - |
+| CSC 4109 | Professional Practices | 2, 0 | - |
+| AIC 4xxx | AI Elective - IV | 3, 0 | - |
+| AIC 4xxx | AI Elective - V | 3, 0 | - |
+| AIC 4707 | Final Year Project - I | 0, 3 | - |
+| AIC xxxx | AI Elective - VI | 3, 0 | - |
+| | Sub-total | 17 |
+
+| **Semester - VIII** |
+| AIC 4807 | Final Year Project-II | 0, 3 | AIC 4707 |
+| AIC 4xxx | AI Elective – VII | 3, 0 | - |
+| CSC 4106 | Parallel and Distributed Computing | 3, 0 | CSC 3107, CSCL 3107 |
+| CSC xxxx | University Elective - II | 2, 0 | - |
+| | Sub-total | 11 |
+| | Total Credit Hours | 130 |
+
+All the undergraduate Muslim students are required to complete the non-credit course CSC 1215 Teachings of the Holy Quran, to qualify for the degree.
+
+The following two mathematics deficiency courses (non-credit courses) will be offered to students with limited mathematical background, as identified by the relevant PM/HOD.
+
+**Deficiency Courses**
+
+CSC xxxx Differential and Integral Calculus in Computing
+CSC xxxx Algebraic Foundations and Applications in Computing
+
+Prospectus 2024 60
+---
+The image provides information about the Faculty of Computing and Engineering Sciences, including details about domain electives, university electives, and the distribution of credit hours for a program.
+
+The top section lists various domain electives in artificial intelligence and computing, such as Natural Language Processing, Deep Learning, Big Data Analytics, and Generative AI.
+
+University electives are also listed, covering a range of subjects from Business and Technology Ethics to Introduction to Marketing.
+
+A table shows the distribution of credit hours across different domains:
+- Computing Core: 46 credit hours, 14 courses
+- Domain Core: 18 credit hours, 6 courses
+- Domain Elective: 21 credit hours, 7 courses
+- Mathematics and Supporting Courses: 9 credit hours, 3 courses
+- Elective Supporting Courses: 3 credit hours, 1 course
+- General Education Requirement: 33 credit hours, 13 courses
+
+The total program consists of 130 credit hours across 44 courses.
+
+At the bottom of the image, there's a group photograph showing several individuals, presumably faculty or staff members, standing on steps in front of a brick building. They are dressed in professional attire, mostly suits and formal wear.
+
+The document is labeled as "Prospectus 2024" at the bottom right corner.
+
+# staff-all.md
+
+# Staff-All
+
+# Staff
+
+## Head of Campus
+
+## Mr. Khusro Pervaiz Khan
+
+## Head of Campus
+
+### MR. ABDUL QADIR LODHI
+
+## Human Resources
+
+### MR. MUHAMMAD ALI
+
+### MR. KHURRAM SHAHZAD
+
+### MR. MUHAMMAD BILAL ABBASI
+
+### MR. MUHAMMAD BILAL
+
+## Admissions
+
+### MR. SAID GHULAM
+
+### MR. SALEEM UD DIN
+
+### MS. MAIMOONAH
+
+### MS. FARHEEN BIBI
+
+### MR. MUHAMMAD TAYYAB
+
+### MR. WALEED SHEHZAD
+
+### Ms. Binyaz Sher Muhammad
+
+## Academics
+
+### Academics
+
+### MS. NAYYER SULTANA
+
+### DR. MUHAMMAD USMAN
+
+### MR. MOHSIN SHAHZAD
+
+### MR. MUHAMMAD SOHAIL SHAFIQ
+
+### MR. FAROOQ SHEIKH
+
+### SYED TURRAB HAIDER BUKHARI
+
+### MR. MUNEEB-UR-REHMAN
+
+### DR. MUHAMMAD IMRAN TANVEER OPEL
+
+### Mr. Muhammad Rafiq Abbas Khan
+
+## Program Support Officer (Academics)
+
+### MR. MUHAMMAD AQEEL AHMED
+
+### SYED HARIS AZAM
+
+### MR. ABDULLAH YOUNAS
+
+### MS. KHADIJA KHAWAJA
+
+### MS. FATIMA BASHIR
+
+## Examination
+
+### MR. MUHAMMAD HUMAYUN
+
+### MR. WAQAS IQBAL
+
+### MR. ADEEL HUSSAIN
+
+### MR. SAMI UR REHMAN
+
+## Records
+
+### MR. NASIR ATEEQ
+
+### Tasmina Perveen
+
+### MR. FAISAL NAWAZ
+
+### MR. MUHAMMAD FAHAD
+
+### Mr. Abdul Wasiu Alias Shahriyar
+
+## Library
+
+### MR. TARIQ HASHMI
+
+### MR. ATIF HUSSAIN
+
+### MR. SHAKEEL SALEEM
+
+### MS. SANIA GULFARAZ
+
+### MR. FURQAN AHMAD
+
+## Quality Enhancement Cell
+
+### DR. AYESHA NOOR
+
+### MR. RASHID JAMIL SATTI
+
+### MS. ANAM AMJAD
+
+### MS. IQRA UMER
+
+### MS. MEMOONA HANIF
+
+## Office of Research Innovation & Commercialization (ORIC)
+
+### DR. KHANSA ZAMAN
+
+### Dr. M. Abo ul Hassan Rashid
+
+### MR. MUHAMMAD IRFAN KHAN
+
+### SYED ABDUL HAMEED
+
+### MS. MAHNOOR ALTAF
+
+## ZabSolutions
+
+### MR. TOUSIF-UR-REHMAN
+
+### MR. HAROON SIDDIQUE
+
+### MR. TaimoOr Amjad
+
+### MR. HAMZA SHABBIR
+
+### MR. MUHAMMAD ABUZAR
+
+### Mr. Talha Manzoor
+
+## IT
+
+### MR. MUHAMMAD SAJID IQBAL
+
+### MR. FAISAL JAMIL
+
+### MR. MUHAMMAD ZEESHAN KHAN
+
+### MIAN MUHAMMAD MAJID ALI
+
+### MR. IMRAN RAZAQ
+
+### MALIK WAQAS HAIDER
+
+### MR. AITZAZ ANJUM
+
+### MR. GUL HAMEED ASMAT
+
+### Mr. SHAHID KHAN
+
+### MR. MUHAMMAD ARSALAN ARSHAD
+
+## Marketing
+
+### MR. ABDULLAH HAIDER GILANI
+
+### MS. KASHAF SHABBIR
+
+### MR. MUHAMMAD UMER IQBAL
+
+## Media Lab
+
+### MR. MOHAMMAD ALI
+
+### MR. NABEEL TAHIR
+
+## TV Studio
+
+### MR. MUHAMMAD HUMAYOUN RASHID
+
+### MR. GHULAM HAIDER
+
+## ZabFM
+
+### DR. WAJID ZULQURNAIN
+
+### MR. MUHAMMAD RIZWAN
+
+### MR. FAISAL SHEHZAD
+
+## External Relations and Financial Assistance
+
+### DR. KHANSA ZAMAN
+
+### MR. MUBASHIR ALI
+
+## Student Career Services & Alumni Relations
+
+### MR. MUHAMMAD MUMTAZ
+
+### MS. NADIA ZOHAIB
+
+### MR. SHERAZ MEHMOOD
+
+## Finance
+
+### MR. AMER ALI KHAN
+
+### SYED ARSHAD HUSSAIN SHAH
+
+### MR. MANZOOR HUSSAIN
+
+### MR. ADIL SALIM
+
+### MR. TANVEER AKHTAR
+
+## Procurement
+
+### MR. MUHAMMAD IMRAN
+
+### MR. JAVED IQBAL KHAN
+
+## Administration
+
+### MR. SOHAIL SALEEM
+
+### SYED MUJTABA HASSAN
+
+### MR. GUL ALAM
+
+### MR. MUHAMMAD SHAFIQ
+
+### Mr. Hammad Ur Rehman
+
+### MR. IMRAN ZAIB
+
+### MR. IMRAN HAMEED
+
+### MR. MUHAMMAD SHABBIR
+
+### MS. UZMA SHAHBAZ
+
+### MR. DANIAL SAEED
+
+### MR. MUHMMAD ISHFAQ
+
+### Mr. Sajid Ali
+
+### MS. ASMA HUSSAIN
+
+### MR. MUHAMMAD SHARIF KHAN
+
+### MR. SHUAIB HANIF MALIK
+
+### Our Campuses
+
+### Departments
+
+### Admissions
+
+Executive Assistant to HOC
+
+F.Sc (Board of Intermediate & Secondary Education, Peshawar)
+
+hr@szabist-isb.edu.pk
+
+Manager HR
+
+MS – HRM (Federal Urdu University of Arts,Science and Technology, Islamabad)
+
+Officer HR
+
+M.Sc – Economics (Pakistan Institute of Development Economics, Islamabad)
+
+Officer HR
+
+MBA – Finance (COMSATS Institute of Information Technology, Islamabad)
+
+Assistant Officer HR
+
+BBA (Bahria University, Islamabad)
+
+admissions@szabist-isb.edu.pk
+
+Manager Admissions
+
+M.Phil – Economics (Quaid-i-Azam University, Islamabad)
+
+Assistant Manager Admissions
+
+M.Com – (Gomal University, Dera Ismail Khan)
+
+Officer Admissions
+
+M.Sc – Gender & Women Studies (Allama Iqbal Open University, Islamabad)
+
+Assistant Officer Admissions
+
+BS (Hons) – Computer Science (Preston University, Islamabad)
+
+Assistant Officer Admissions
+
+M.Sc – Economics (PMAS Arid Agriculture University, Rawalpindi)
+
+Assistant Admissions
+
+B.Com. (Allama Iqbal Open University, Islamabad)
+
+Assistant Admissions
+
+MBA (International Islamic University, Islamabad)
+
+aso@szabist-isb.edu.pk
+
+Controller Academics
+
+MBA  – HRM (Bahria Univeristy, Islambad)
+
+Assistant Controller Academics
+
+PhD (Marketing) – University Malaysia Terengganu, Malaysia
+
+Assistant Controller Academics
+
+MS – Development Studies (SZABIST University Islamabad)
+
+Officer Academics
+
+MS – Management Science (Shaheed Zulfikar Ali Bhutto Institute of Information Technology, Islamabad)
+
+Assistant Officer Academics
+
+BS – Computer Sciences (COMSATS)
+
+Graduate Support Officer
+
+M.Com – (Federal Urdu University of Arts, Science & Technology, Islamabad)
+
+Assistant Officer Academics
+
+M.A – (Allama Iqbal Open University, Islamabad)
+
+Assistant Controller Academics (On leave)
+
+PhD – Management (Universiti Malaysia Terengganu, Malaysia)
+
+Assistant Academics
+
+MSc – Mass Communication (Allama Iqbal Open University, Islamabad)
+
+Program Support Officer (Management Sciences)
+
+BS – CS (University of Lahore, Islamabad Campus)
+
+Program Support Officer (Computer Sciences)
+
+BBA – (Quaid e Azam University, Islamabad)
+
+Program Support Officer (Media Science)
+
+M.Com – (Allama iqbal Open University Islamabad)
+
+Program Support Officer (Social Sciences)
+
+MCS – (The Government Sadiq College Women University, Bahawalpur)
+
+Program Support Officer (Media Sciences)
+On leave
+
+M.Sc. Sociology (Allama Iqbal Open University, Islamabad)
+
+exams@szabist-isb.edu.pk
+
+Controller Examinations
+
+MS – Management Science (Riphah International University, Islamabad)
+
+Assistant Controller Examinations
+
+Master of Banking & Finance –  (Sarhad University of Science & Information Technology, Peshawar)
+
+Officer Examination
+
+MBA –  (Shaheed Zulfikar Ali Bhutto Institute of Information Technology, Islamabad)
+
+Assistant Officer Exams
+
+M.Com – (University of Central Punjab,Lahore)
+
+records@szabist-isb.edu.pk
+
+Controller Records
+
+MS- Management Science (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology)
+
+Officer Records
+
+M.Phil. – Economics and Finance (Pakistan Institute of Development Economics, Islamabad)
+
+Officer Records
+
+MA – Education (Allama Iqbal Open University, Islamabad)
+
+Assistant Officer Records
+
+BBA – IUSE School of Engineering & Management Sciences, Rawalpindi
+
+Assistant Records
+
+BS – Pakistan Studies (International Islamic University, Islamabad)
+
+librarian@szabist-isb.edu.pk
+
+Librarian
+
+MLIS – (University of the Punjab, Lahore)
+
+Assistant Librarian
+
+MLIS – (Allama Iqbal Open University, Islamabad)
+
+Assistant Librarian
+
+B.A – (Allama Iqbal Open University, Islamabad)
+
+Library Assistant
+
+Associate Degree – Library and Information Sciences (Allama Iqbal Open University, Islamabad)
+
+Library Assistant
+
+MBA Finance – (Qurtuba University of Science and Technology,Dera Ismail Khan)
+
+qec@szabist-isb.edu.pk
+
+Incharge QEC
+
+PhD– Management Science (Capital University of Science & Technology, Islamabad)
+
+Manager QEC
+
+MS – Electrical Engineering (COMSATS Institute of Information Technology, Wah Campus)
+
+Assistant Manager QEC
+
+M.Phil – Statistics (Quaid-e-Azam University, Islamabad)
+
+Officer QEC
+
+MSc – Media & Communication Studies (International Islamic University, Islamabad)
+
+Officer QEC
+
+M.Sc – Gender & Women Studies (Allama Iqbal Open University, Islamabad)
+
+oric@szabist-isb.edu.pk
+
+Focal Person for ORIC
+
+PhD – MS (Capital University of Science & Technology, Islamabad)
+
+Secretary Research Committee
+
+PhD– Sociology (International Islamic University, Islamabad) – 2020
+
+Manager Industrial Liaison
+
+MBA – (Institute of Business & Technology, Karachi)
+
+Content Writer
+
+MA – English Literature (University of Punjab, Lahore)
+
+Research Associate
+
+MS – Management (Institute of Management Sciences, Peshawar)
+
+zabsolutions@szabist-isb.edu.pk
+
+Manager ZabSolutions
+
+MS – SE (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Islamabad)
+
+Senior Software Engineer
+
+BS – CS (International Islamic University, Islamabad)
+
+Software Engineer
+
+MS – Computer Science (Capital University of Science and Technology, Islamabad)
+
+Software Application Developer
+
+BS – CS (University of Central Punjab, Lahore)
+
+Software Quality Assurance (SQA) Engineer
+
+MS – Computer Science (Capital University of Science and Technology, Islamabad)
+
+Penetration Tester
+
+BS – Computer Science (Government College University, Faisalabad)
+
+systems@szabist-isb.edu.pk
+
+Manager IT
+
+MS – CS (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Islamabad)
+
+Lab Administrator
+
+B.Tech – Electronics (Preston University, Islamabad)
+
+Lab Administrator
+
+BS – CS ( Allama Iqbal Open University, Islamabad)
+
+Assistant Network Administrator
+
+ICS – (Federal Board of Intermediate & Secondary Education, Islamabad)
+
+System Engineer
+
+M.A. – International Relations (University of Sargodha)
+
+System Engineer
+
+MCS – (Virtual University of Pakistan, Lahore)
+
+Associate System Engineer
+
+BS – CS (Hamdard University, Islamabad)
+
+Associate System Engineer
+
+BCS – Hons (Edwardes College, Peshawar)
+
+Associate System Engineer
+
+BS (Hons.) – Computer Science (Abdul Wali Khan University, Mardan)
+
+Telecom Lab Assistant
+
+B.A – (Allama Iqbal Open University, Islamabad)
+
+marketing@szabist-isb.edu.pk
+
+Manager Marketing
+
+MBA – NUST Business School, Islamabad.
+
+Officer Marketing
+
+MBA (Marketing) – International Islamic University, Islamabad
+
+Photographer
+
+DAE – Electronics (International Islamic University, Islamabad)
+
+Media Lab Assistant
+
+BA – (Allama Iqbal Open University, Islamabad)
+
+Associate System Engineer - Media Lab
+
+BS – CS (Allama Iqbal Open University, Islamabad)
+
+Assistant Cameraman
+
+SSC – General (Allama Iqbal Open University, Islamabad)
+
+TV Assistant Studio
+
+MSc – Mass Communication (Allama Iqbal Open University, Islamabad)
+
+zab-fm@szabist-isb.edu.pk
+
+Manager Operations - ZAB FM
+
+PhD – Mass Communication (Beaconhouse  Nation University, Lahore)
+
+Radio Engineer
+
+Masters of Media Science (SZABIST University, Islamabad Campus)
+
+Radio Shift Supervisor
+
+F.Sc – (Board of Intermediate & Secondary Education, Rawalpindi)
+
+erfa@szabist-isb.edu.pk
+
+Manager ERFA
+
+PhD – MS (Capital University of Science & Technology, Islamabad)
+
+Officer ERFA
+
+BS – Electrical Engineering (COMSATS Institute of Information Technology, Wah Cantt)
+
+edc@szabist-isb.edu.pk
+
+Manager SCS & ARUniversity Affairs
+
+MBA-HRM (Sarhad University of Science & Technology, Peshawar)
+
+Assistant Manager SCS & AR
+
+MBA – Marketing (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Karachi)
+
+Assistant SCS & AR
+
+MBA – Marketing (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Islamabad Campus)
+
+finance@szabist-isb.edu.pk
+
+Controller Finance
+
+MBA – Finance (Preston University, Islamabad)
+
+Assistant Controller Finance
+
+MS – FM (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Islamabad)
+
+Officer Finance
+
+MA – Political Science (University of Sargodha)
+
+Officer Accounts
+
+ACCA – (Foundation)M.Com – (University of the Punjab, Lahore)
+
+Assistant Finance
+
+B.A – (Allama Iqbal Open University, Islamabad)
+
+procurement@szabist-isb.edu.pk
+
+Assistant Manager Procurement
+
+MS – Management Science (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Islamabad)
+
+Assistant Officer Procurement
+
+B.A – (University of the Punjab, Lahore)
+
+administration@szabist-isb.edu.pk
+
+Manager Administration
+
+MA – Teacher Education (Allama Iqbal Open University, Islamabad)
+
+Assistant Manager Administration
+
+M.Sc – Economics (Federal Urdu University of Arts, Science & Technology, Islamabad)
+
+Officer Stores
+
+B.A – (Abdul Wali Khan University, Mardan)
+
+Officer Administration (E & W)
+
+MA – Political Science (University of Sargodha)
+
+Officer Administration
+
+BS – Mathematics (Air University, Islamabad)
+
+Assistant Officer Administration
+
+MA – Education (Allama Iqbal Open University, Islamabad)
+
+Assistant Officer Administration (Campus Security Incharge)
+
+B.A – (University of Punjab, Lahore)
+
+Assistant Officer Administration
+
+B.A – (Allama Iqbal Open University, Islamabad)
+
+Assistant Administration
+
+B.A – (Allama Iqbal Open University, Islamabad)
+
+Assistant Administration
+
+BBA (Hons.) – Kohat University of Science and Technology, Kohat
+
+Assistant Administration
+
+Associate Degree in Arts – (Allama Iqbal Open University, Islamabad)
+
+Assistant Administration
+
+BS – Biotechnology (Mirpur University of Science & Technology, Mirpur)
+
+Receptionist
+
+F.A – (Allama Iqbal Open University, Islamabad)
+
+Security Supervisor cum CCTV Operator
+
+SSC – (Board of Intermediate & Secondary Education, Peshawar)
+
+Duplicate Machine Operator
+
+D.Com – (Punjab Board of Technical Education, Lahore)
+
+Street # 09, Plot # 67Sector H-8/4, Islamabad,Pakistan
+
+051-4863363-65info@szabist-isb.edu.pk
+
+For Admissions OfficeWhatsapp: 0309-1122208admissions@szabist-isb.edu.pk
+
+
+
+# contact.md
+
+# Contact
+
+### Contact Us
+
+### Phone
+
+### Email
+
+### Admissions
+
+### Location
+
+### Our Campuses
+
+### Departments
+
+### Admissions
+
+Full name:
+
+Contact Email:
+
+Contact Number:
+
+Are you interested in Admissions?YesNo
+
+Degree Level:UndergraduatePost Graduate
+
+Program:BBABS(AF)MBA-DayMBA-EveningMS(MS)MS(PM)MS(Business Analytics)PhD(MS)BS(CS)BS(SE)BS(AI)MS(CS)MS(Data Science)MS(Cyber Security)BS(SS)MSSSMSDSMS(Clicical Psychology)MS(Sociology)BS(MS) MediaEMBAPMBAMHRMMPM
+
+Remarks (optional)
+
+Get latest updates on admissions for SZABIST Islamabad!
+
+We are available from 09:00 am to 05:00 pm
+
+051-4863363-65
+
+100% response rate
+
+info@szabist-isb.edu.pk
+
+For admissions contact
+
+admissions@szabist-isb.edu.pkWhatsapp: 0309-1122208 , 0336-1122208Phone:  051 4863371 – 2
+
+Street # 09, Plot # 67Sector H-8/4, Islamabad, Pakistan.
+
+View On Google Map
+
+Street # 09, Plot # 67Sector H-8/4, Islamabad,Pakistan
+
+051-4863363-65info@szabist-isb.edu.pk
+
+For Admissions OfficeWhatsapp: 0309-1122208admissions@szabist-isb.edu.pk
+
+
+
+# about-szabist.md
+
+# About-Szabist
+
+# About SZABIST
+
+### SZABIST University Islamabad
+
+### Rank
+
+### Academics
+
+### Powerful Alumni
+
+### Our Campuses
+
+### Departments
+
+### Admissions
+
+Shaheed Zulfikar Ali Bhutto Institute of Science and Technology (SZABIST) is a fully Chartered Institute established through a Legislative Act of  Sindh Assembly (Sindh Act No. XI of 1995).  SZABIST is approved and recognized by the Higher Education Commission (HEC) of Pakistan as a degree awarding institution.
+
+Today SZABIST  is known as a major university comprising of five campuses (including one foreign campus), three diploma centers, three intermediate colleges and one research center. More than 6500 degrees have been awarded by SZABIST to date.
+
+Shaheed Zulfikar Ali Bhutto Institute of Science and Technology (SZABIST) is a highly ranked and fully chartered institute of Pakistan established through a Legislative Act of Sindh Assembly (Sindh Act No. XI of 1995). It is approved and recognized by the Higher Education Commission (HEC), Pakistan, as a degree-awarding institution. All the programs offered at SZABIST are consistent with the guidelines set by HEC and other regulatory bodies, for example, National Business Education Accreditation Council (NBEAC), and the National Computing Education Accreditation Council (NCEAC).
+
+SZABIST University Islamabad offers undergraduate, graduate, and postgraduate degrees in four diversified disciplines including Management Sciences, Computer Sciences, Media Sciences and Social Sciences. SZABIST is proud to offer education par excellence in the fields that are crucial for Pakistan’s socio-economic development.
+
+SZABIST is nurturing the intellect of more than 12,500 enrolled students through its five campuses located in Karachi, Hyderabad, Larkana, Islamabad and Dubai. Also, up till now, degrees have been awarded to almost 16,500 graduates. Our alumni are sought by national and multinational organizations and hold key positions in several reputable firms at national and international level.
+
+Street # 09, Plot # 67Sector H-8/4, Islamabad,Pakistan
+
+051-4863363-65info@szabist-isb.edu.pk
+
+For Admissions OfficeWhatsapp: 0309-1122208admissions@szabist-isb.edu.pk
+
+
+
+# admission-requirement.md
+
+# Admission-Requirement
+
+# Admission Requirement
+
+### Admission Requirements
+
+### GENERAL REQUIREMENTS FOR ADMISSION
+
+### EQUIVALENCY OF GRADES FOR THE CANDIDATES HAVING CAMBRIDGE HIGH SCHOOL CERTIFICATE
+
+### PROGRAM SPECIFIC REQUIREMENTS FOR ADMISSION
+
+#### Admission RequirementManagement Sciences
+
+#### BBA
+
+#### BS (Accounting & Finance)
+
+#### BS (Accounting & Finance) 2.5 year
+
+#### BS (Business Analytics)
+
+#### MBA
+
+#### MPM
+
+#### MS (Project Management)
+
+#### MS (Management Sciences)
+
+#### MS (Business Analytics)
+
+#### PhD (Management Sciences)
+
+#### MHRM
+
+#### PMBA
+
+#### EMBA
+
+#### Admission RequirementComputer Sciences
+
+#### BS (Computer Science)
+
+#### BS (Software Engineering)
+
+#### BS (Artificial Intelligence)
+
+#### MS (Computer Science)
+
+#### MS (Data Science)
+
+#### MS (Cyber Security)
+
+#### PhD Computing
+
+#### Admission RequirementSocial Sciences
+
+#### BS (Social Sciences)
+
+#### BS (Psychology)
+
+#### MS-Social Sciences (International Relations, Economics, Psychology & Sociology)
+
+#### MS (Development Studies)
+
+#### MS (Clinical Psychology)
+
+#### MS (Sociology)
+
+#### PhD (Psychology)
+
+#### Admission RequirementMedia Sciences
+
+#### Bachelor of Media Science
+
+#### Master of Media Science (MMS)
+
+### ADMISSION TEST ALTERNATES
+
+### Our Campuses
+
+### Departments
+
+### Admissions
+
+A-Level Grade
+
+Equivalent Intermediate %
+
+A
+
+85
+
+B
+
+75
+
+C
+
+65
+
+D
+
+55
+
+E
+
+45
+
+The candidate must have completed O-Levels (minimum 8 subjects including 5 compulsory subjects; English, Urdu, Math, Islamiat & Pakistan Studies) and A-levels (minimum 3 Subjects)/ Intermediate or 12th Grade equivalent qualification with minimum 50% marks from a recognized institution.
+
+The candidate must have completed O-Levels (minimum 8 subjects including 5 compulsory subjects; English, Urdu, Math, Islamiat & Pakistan Studies) and A-levels (minimum 3 Subjects)/ Intermediate or 12th Grade equivalent qualification with minimum 50% marks from a recognized institution.
+
+The candidate must have completed O-Levels (minimum 8 subjects including 5 compulsory subjects; English, Urdu, Math, Islamiat & Pakistan Studies) and A-levels (minimum 3 Subjects)/ Intermediate or 12th Grade equivalent qualification with minimum 50% marks from a recognized institution and Certificate in Accounting & Finance (CAF) duly verified by the Institute of Chartered Accountants of Pakistan (ICAP).
+
+The candidate must have completed O-Levels (minimum 8 subjects including 5 compulsory subjects; English, Urdu, Math, Islamiat & Pakistan Studies) and A-levels (minimum 3 Subjects)/ Intermediate or 12th Grade equivalent qualification with minimum 50% marks from a recognized institution.
+
+For admission in the MBA program, the candidate must possess a 4 years bachelor degree with minimum 2.0 CGPA or 16 years of education with minimum 50% marks from a university recognized by the HEC.
+
+For admission in the MPM program, the applicant must possess a minimum of sixteen years of education/4-year Bachelor degree with a minimum of 50% marks / 2.0 CGPA from an HEC recognized educational institute .
+
+For admission in the MSPM program, the applicant must possess a minimum of 16 years of education/4-year Bachelor degree with a minimum of 2.0 CGPA or  50% marks from an HEC recognized university. Candidates are also required to pass GAT General / HAT relevant with a minimum 50% score.
+
+For admission in the MSMS program, the applicant must possess a minimum of 16 years of education/4-year Bachelor degree with a minimum of 2.0 CGPA or 50% marks from an HEC recognized university. Candidates are also required to pass GAT General/HAT relevant with a minimum 50% score.
+
+For admission in the MSBA program, the applicant must possess a minimum of 16 years of relevant education / 4-year Bachelor degree with a minimum of 2.0 CGPA or 50% marks from an HEC recognized university. Candidates are also required to pass GAT General / HAT relevant with a minimum 50% score.
+
+A candidate with MA/MS/MBA/MPhil or any other equivalent degree with minimum 17.5 years of formal education in the relevant field from HEC recognized local or foreign university may apply for direct admission in a PhD program. To apply for admission in PhD program, the candidate must have obtained minimum of 3.0 CGPA, and have passed GAT (subject) with minimum 60% score. The candidates can also appear in GAT Subject equivalent internal test at SZABIST with minimum passing score of 60%.
+
+The candidate may be asked to complete other pre-requisite /deficiency courses/thesis before taking the required courses. The decision on number of pre-requisite courses is taken by the Admissions Committee at the time of interview. For non-relevant degrees, the candidate will be required to register for additional Masters level courses as pre-requisites as per the guidance provided by the Admissions Committee.
+
+The PhD applicant has to submit “Statement of Purpose” at the time of admission.
+
+The statement of purpose shall include the following:
+
+i. Title of the potential research proposal
+
+ii. Clear articulation of the current understanding of the intended field and ideas for potential research
+
+iii. Explanation of the intended impact of the proposed research,
+
+iv. The prospective candidates shall demonstrate passion and enthusiasm for the area of research.
+
+For admission in the MHRM program, the applicant must possess a minimum of sixteen years of education/4-year Bachelor degree with a minimum of 50% marks / 2.0 CGP from an HEC recognized educational institute.
+
+For admission in the PMBA program, the applicant must possess a minimum of 16 years of education/4-year Bachelor degree with a minimum of 2.0 CGPA or 50% marks from an HEC recognized university.The PMBA is equivalent to Post Graduate Diploma as per HEC guidelines.
+
+For admission in the EMBA program, the candidate must possess 16-year education or a 4-year bachelor degree with a minimum of 50% marks/ 2.0 CGPA from a university recognized by the Higher Education Commission (HEC) in any field of study with 3 years of professional work experience (verifiable) at some well-known organization. This requirement is necessary to seek admission in this program.EMBA degree from SZABIST is equal to 18 year education and is recognized by HEC.
+
+The candidate must have completed O-Levels (minimum 8 subjects including 5 compulsory subjects; English, Urdu, Math. Islamiat & Pakistan Studies) and A-levels (minimum 3 Subjects)/ Intermediate or 12th Grade equivalent qualification with minimum 50% marks from a recognized institution.For BS Computer Science, candidates with mathematical background will be preferred.
+
+The candidate must have completed O-Levels (minimum 8 subjects including 5 compulsory subjects; English, Urdu, Math. Islamiat & Pakistan Studies) and A-levels (minimum 3 Subjects)/ Intermediate or 12th Grade equivalent qualification with minimum 50% marks from a recognized institution.For BS Software Engineering, candidates with mathematical background will be preferred.
+
+The candidate must have completed O-Levels (minimum 8 subjects including 5 compulsory subjects; English, Urdu, Math. Islamiat & Pakistan Studies) and A-levels (minimum 3 Subjects)/ Intermediate or 12th Grade equivalent qualification with minimum 50% marks from a recognized institution.For BS Artificial Intelligence, candidates with mathematical background will be preferred.
+
+The candidates must possess 16 years of relevant education with minimum 50% marks / 2.0 CGPA from a university recognized by Higher Education Commission (HEC).GRE/ GAT (General) or HAT relevant with minimum 50% score is a mandatory requirement  for MS Computer Science.
+
+For admission in the MCS (DS) program candidates must possess 16 years of relevant education (4 years BS(CS) or equivalent) with a minimum of 50% marks / 2.0 CGPA from HEC recognized University / Institute. The students with 16 years of education in the disciplines of Information Technology, Software Engineering, Computer Engineering, Electrical Engineering, Statistics, Mathematics, Business Administration, Accounting & Finance, Economics, or other relevant disciplines, are also eligible to apply provided that they take deficiency courses.GAT (General) or HAT relevant is mandatory for MCS (DS) students with a minimum 50% score.
+
+The candidates must possess 16 years of relevant education with minimum 50% marks / 2.0 CGPA from a university recognized by Higher Education Commission  (HEC).GRE/ GAT (General) or HAT relevant with minimum 50% score is mandatory for MS Cyber Security
+
+The candidate must possess a 17.5 – 18 year of education in the relevant field of study with minimum 60% marks /CGPA 3.00 from an Higher Education Commission (HEC) recognized university. GAT Subject with minimum 60% score is mandatory for admission in PhD (Computing).
+
+The candidate must have completed O-Levels (minimum 8 subjects including 5 compulsory subjects; English, Urdu, Math, Islamiat & Pakistan Studies) and A-levels (minimum 3 Subjects)/ Intermediate or 12th Grade equivalent qualifications with minimum 50% marks from a recognized institution.
+
+The candidate must have completed O-Levels (minimum 8 subjects including 5 compulsory subjects; English, Urdu, Math, Islamiat & Pakistan Studies) and A-levels (minimum 3 Subjects)/ Intermediate or 12th Grade equivalent with minimum 50% marks from a recognized institution.
+
+The candidates must possess 16 years of relevant education with a minimum 45% score / 2.0 CGPA from a university recognized by Higher Education Commission (HEC).GRE/ GAT (General) or HAT relevant with minimum 50% score is mandatory for MSSS.
+
+The candidates must possess 16 years of relevant education with a minimum 45% score/ 2.0 CGPA from a university recognized by Higher Education Commission (HEC).GRE/ GAT (General) or HAT relevant with minimum 50% score is mandatory for MSDS.
+
+The candidates must possess 16 years of relevant education with a minimum 50% marks / 2.0 CGPA from a university recognized by Higher Education Commission (HEC).GRE/ GAT (General) or HAT relevant with minimum 50% score is mandatory for MS-Clinical Psychology.
+
+The candidates must possess 16 years of relevant education with a minimum 45% score / 2.0 CGPA from a university recognized by Higher Education Commission (HEC).GRE/ GAT (General) or HAT relevant with minimum 50% score is mandatory for MS-Sociology.
+
+1.	Candidate with MS/M. Phil with minimum 18 years of formal education in the field of psychology from HEC recognized local or foreign university will be eligible for admission in PhD Psychology2.	Candidate must have obtained minimum of 3.0 CGPA in previous degree of MS/M.Phil. Psychology or equivalent degree of psychology.3.	Required to pass GRE/Equivalent internal test /GAT (subject) with minimum 60% score. Clearing GAT (Subject) / GRE/ Equivalent internal test is mandatory for admission in PhD.4.	Student would have to appear before admission committee for interview.5.	A student may be asked to complete pre-requisite /deficiency courses/ thesis before taking the degree courses. The decision on number of pre-requisite courses is taken by the Admissions Committee of relevant department at the time of admission
+
+The candidate must have completed O-Levels (minimum 8 subjects including 5 compulsory subjects; English, Urdu, Math, Islamiat & Pakistan Studies) and A-levels (minimum 3 Subjects)/ Intermediate or 12th Grade equivalent qualification with minimum 50% marks from a recognized institution.
+
+The candidates must possess 16 years of relevant education with a minimum 50% score / 2.0 CGPA from a university recognized by Higher Education Commission (HEC).GAT (General) or HAT relevant with minimum 50% score is mandatory for Master of Media Science (MMS).
+
+For Bachelors Programs Applicants may submit a minimum 1100/1600* score of SAT 1. The scoring of SAT 1 will be considered as follows:
+
+SAT Score
+
+Test Marks (out of 50)
+
+1500-1600
+
+50
+
+1400-1499
+
+45
+
+1300-1399
+
+40
+
+1200-1299
+
+35
+
+1100-1199
+
+30
+
+*Candidates securing 100% marks in SZABIST’s admission test will be equivalent to 50.
+
+For Masters Programs:50% score of GMAT for Master Programs
+
+For MS Programs:GAT (General)/GRE/HAT relevant with minimum 50% score
+
+For PhD Programs:GAT (Subject) with minimum 60% score.
+
+GAT General or HAT relevant is mandatory for MS with minimum 50% score. GAT Subject is mandatory for PhD with minimum 60 % score.
+
+Street # 09, Plot # 67Sector H-8/4, Islamabad,Pakistan
+
+051-4863363-65info@szabist-isb.edu.pk
+
+For Admissions OfficeWhatsapp: 0309-1122208admissions@szabist-isb.edu.pk
+
+
+
+# BSAI-(2022).pdf.md
+
+# FACULTY OF
+# COMPUTING & ENGINEERING SCIENCES
+
+Predicting the future
+isn't magic, it's
+Artificial Intelligence
+-Dave Waters
+
+**ADMISSIONS OPEN**
+
+AI will contribute
+$15.7 trillion to the global
+economy by 2023
+
+AI can increase business
+productivity by 40%
+
+**NCEAC
+APPROVED**
+
+# BS ARTIFICIAL
+# INTELLIGENCE
+
+Apply online at: admissions.szabist-isb.edu.pk
+
+----
+
+[SZABIST ISLAMABAD logo]
+Discover Yourself
+
+**NEW PROGRAM**
+---
+The image provides detailed information about a Bachelor of Science program in Artificial Intelligence offered by SZABIST (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology). Here are the key points:
+
+1. Program Details:
+   - Four-year program (eight semesters)
+   - 41 courses (five courses per semester)
+   - Total of 130 credit hours
+   - Maximum time to complete: six years
+
+2. Program Focus:
+   - Prepares students with in-depth knowledge to transform complex scenarios into actionable decisions
+   - Focuses on complex inputs like knowledge, vision, language, and large databases/dataset repositories
+   - Aims at knowledge extraction and optimum real-time decision making in real-world applications
+
+3. Objectives:
+   - Equip students with skills to solve complex real-world problems
+   - Produce graduates practicing AI in a socially and ethically responsible way
+   - Prepare students for lifelong learning in Artificial Intelligence
+
+4. Eligibility Criteria:
+   - A-Level (minimum 3 passes) or
+   - Intermediate (minimum 50% marks) or equivalent qualification
+   - Preference given to candidates with Mathematics background
+   - Entrance test and group discussion/interview required
+
+The image also includes some quotes about AI and its importance, as well as a futuristic graphic depicting AI-related visualizations like global maps, charts, and data representations.
+---
+# CURRICULUM
+
+## FIRST YEAR
+
+### FIRST SEMESTER
+- Introduction to Computer Science
+- Fundamentals of Programming
+- Computer Organization and Assembly Language
+- Islamic Studies / Ethics
+- Calculus and Analytical Geometry
+- English Composition and Comprehension
+
+### SECOND SEMESTER
+- Object Oriented Programming Techniques
+- Digital Logic Design
+- Linear Algebra
+- Probability and Statistics
+- Communication and Presentation Skills
+- Probability and Statistics
+
+## SECOND YEAR
+
+### THIRD SEMESTER
+- Data Structures and Algorithms
+- Computer Organization and Assembly Language
+- Discrete Mathematical Structures
+- Artificial Intelligence
+- Differential Equations
+
+### FOURTH SEMESTER
+- Computer Networks and Data Communications
+- Database Systems
+- Design and Analysis of Algorithms
+- Programming for Artificial Intelligence
+- AI Elective - I
+
+## THIRD YEAR
+
+### FIFTH SEMESTER
+- Probability and Statistics
+- Artificial Neural Networks
+- Machine Learning
+- Knowledge Representation & Reasoning
+- AI Elective - II
+- University Elective-I
+
+### SIXTH SEMESTER
+- Technical and Business Writing
+- Computer Vision
+- Natural Language Processing
+- Software Engineering
+- AI Elective - III
+- University Elective - II
+
+## FOURTH YEAR
+
+### SEVENTH SEMESTER
+- Parallel and Distributed Computing
+- Professional Practices
+- University Elective - IIIs
+- Final Year Project - I
+
+### EIGHT SEMESTER
+- Information Security
+- Final Year Project - II
+- Pakistan Studies
+- University Elective - IV
+- AI Elective - III
+
+## FEE STRUCTURE
+- Admission Fee: Rs. 20,000
+- Security Deposit: Rs. 10,000
+- Student Activity Fee: Rs. 1,000
+- ID Card Charges: Rs. 150
+- Fee per Course: Rs. 13,200
+- Fee per Semester: Rs. 66,000
+- Total: Rs. 97,150
+---
+```
+[Image of a modern building with red brick and glass facades against a dramatic blue sky]
+
+SZABIST
+ISLAMABAD
+Discover Yourself
+
+Street 9, Plot 67, Sector-8/4 Islamabad, Pakistan
+
+📞 051 - 4863363-65
+🌐 www.szabist-isb.edu.pk
+✉️ info@szabist-isb.edu.pk
+📘 www.facebook.com/SZABIST.Islamabad.Official
+```
+
+# faculty-of-computer-sciences.md
+
+# Faculty-Of-Computer-Sciences
+
+# Faculty of Computer Sciences
+
+### Prof. Dr. Muhammad Usman
+
+### Faculty
+
+### Dr. Tazeen Athar
+
+### Dr. Muhammad Imran
+
+### Dr. Ahsan Abdullah
+
+### Dr. Shahzad Latif
+
+### Dr. Danish Mehmood
+
+### Dr. Fadia Shah
+
+### Mr. Zubair Ahmed
+
+### Mr. Muhammad Nadeem Khokhar
+
+### Mr. Muhammad Usman Ali
+
+### Mr. Muhammad Qasim
+
+### Ms. Arfaa Asaf
+
+### Ms. Zainab Iftikhar Chaudhry
+
+### Mr. Babar Jehangir
+
+### Mr. Mazhar Waqar
+
+### Mr. Fakhar Ul Islam
+
+### Mr. Hasnain Tahir
+
+### Ms. Tehreem Saboor
+
+### Mr. Hamza Imran
+
+### Mr. Aizaz Raziq
+
+### Ms. Aniqa
+
+### Mr. Saad Irfan Khan
+
+### Rana Faisal Hayat
+
+### Mr. Ghaffar Ahmed
+
+### Ms. Sana Jaffery
+
+### Syed Muhammad Aqleem Abbas
+
+### Mr. Muhammad Taseer Ul Islam
+
+### Mr. Safi Ullah
+
+### Ms. Samra Mehboob
+
+### Mr. Muhammad Atif Saeed
+
+### Ms. Sadia Zaib
+
+### Ms. Aqsa Rais
+
+### Mr. Muhammad Ibne Amin
+
+### Mr. Awais Mahmood
+
+### Ms. Saira Shaheen
+
+### Ms. Sidra Safdar
+
+### Syed Muhammad Muslim Rizvi
+
+### Ms. Nadia Bashir
+
+### Ms. Maria Bibi
+
+### Ms. Kashia Riaz
+
+### Mr. Adeel Ahmed
+
+### Mr. Anees Tariq
+
+### Our Campuses
+
+### Departments
+
+### Admissions
+
+PhD– Computer & Information Sciences (Auckland University of Technology, New Zealand) – 2013E-mail: dr.usman@szabist-isb.edu.pk
+
+PhD– Mathematics (University of Saarland, Saarbruecken, Germany) – 2010E-mail: dr.tazeen@szabist-isb.edu.pk
+
+PhD– Information Technology (UTHM, Johor Malaysia) – 2015E-mail: dr.imran@szabist-isb.edu.pk
+
+PhD– Computer Science (The University of Stirling, UK) – 2008E-mail: dr.ahsan@szabist-isb.edu.pk
+
+PhD– Electronics (ISRA University, Islamabad) – 2017E-mail: dr.shahzad@szabist-isb.edu.pk
+
+PhD– Smart Grid (COMSATS Institute of Information Technology, Islamabad) – 2018E-mail: dr.danish@szabist-isb.edu.pk
+
+PhD– Computer Science (University of Electronic Science and Technology of China) – 2019E-mail: dr.fadia@szabist-isb.edu.pk
+
+MS– Software Engineering (Dublin City University, Ireland) – 2010E-mail: zubair@szabist-isb.edu.pk
+
+MS– Computer Information Systems (Western International University, USA) – 1991E-mail: nadeem@szabist-isb.edu.pk
+
+MS– Software Engineering (Abasyn University, Islamabad) – 2015E-mail: usman.ali@szabist-isb.edu.pk
+
+MS– Computer Science (The George Washington University, USA) – 2013E-mail: muhammad.qasim@szabist-isb.edu.pk
+
+MS– Software Engineering (National University of Computer & Emerging Sciences, Islamabad) – 2017E-mail: arfaa.asaf@szabist-isb.edu.pk
+
+MS– Computer Science (National University of Computer and Emerging Sciences, Islamabad) – 2019Email: zainab.iftikhar@szabist-isb.edu.pk
+
+MS – Computer Science (International Islamic University, Islamabad) – 2016E-mail: babar.jehangir@szabist-isb.edu.pk
+
+MS – Computer Science (Abasyn University, Peshawar) – 2022Email: fakhar.islam@szabist-isb.edu.pk
+
+MS– Computer Science (Capital University of Science and Technology, Islamabad)
+
+Email : hasnain.tahir@szabist-isb.edu.pk
+
+MS– Electronic Engineering (ISRA University, Hyderabad) – 2017Email: ibne.amin@szabist-isb.edu.pk
+
+MS– Computer Sciences (PMAS Arid Agriculture University, Rawalpindi) – 2019Email: awais.mahmood@szabist-isb.edu.pk
+
+Street # 09, Plot # 67Sector H-8/4, Islamabad,Pakistan
+
+051-4863363-65info@szabist-isb.edu.pk
+
+For Admissions OfficeWhatsapp: 0309-1122208admissions@szabist-isb.edu.pk
+
+
+
+# faculty-of-management-sciences.md
+
+# Faculty-Of-Management-Sciences
+
+# Faculty of Management Sciences
+
+### Dr. Muhammad Asif Khan
+
+### Faculty
+
+### Dr. Shazia Akhtar
+
+### Dr. Mehboob Ahmad
+
+### Dr. M. Daniel Saeed Pirzada
+
+### Dr. Mobeen Ur Rehman
+
+### Dr. Shumaila Zeb
+
+### Dr. Iffat Rasool
+
+### Dr. Fuwad Bashir Awan
+
+### Dr. Hassan Raza
+
+### Dr. Khansa Zaman
+
+### Dr. Ayesha Noor
+
+### Dr. Muhammad Shafiq
+
+### Dr. Fatima Ashraf
+
+### Dr. Saqlain Raza
+
+### Dr. Arusa Khalid
+
+### Dr. Saqib Mahmood
+
+### Dr.  Zoya Wajid Satti
+
+### Dr. Ahmed Ali Qureshi
+
+### Dr. Sanaullah Ansari
+
+### Dr. Sundas Azeem
+
+### Dr. Hassan Zada
+
+### Dr. Syed Muhammad Usman Masood
+
+### Dr. Kashif Abrar
+
+### Dr. Muhammad Faisal
+
+### Dr. Nasir Munir
+
+### Dr. Raazia Gul
+
+### Mr. Amer Riaz Qureshi
+
+### Mr. Aziz Ahmed Chaudhry
+
+### Mr. Syed Shahwar Hussain
+
+### Malik Aizaz Ahmad
+
+### Mr. Ali Moin
+
+### Mr. Zeeshan Hamid
+
+### Ms. Samina Islam
+
+### Ms. Nayyab Javed
+
+### Mr. Khalid Abdul Ghafoor
+
+### Mr. Nabeel Farooq
+
+### Ms. Saima Saleem
+
+### Ms.Rubina Mazhar's
+
+### Mr. Muhammad Ali Khan
+
+### Mr. Raja Shahid Jahangir
+
+### Ms. Mozna Syed
+
+### Ms. Uzma Shahryar
+
+### Ms. Saba Butt
+
+### Our Campuses
+
+### Departments
+
+### Admissions
+
+PhD –Human Resource Development (National University of Modern Languages, Islamabad) – 2009Email: dr.asif@szabist-isb.edu.pk
+
+PhD– Human Resource Development (National University of Modern Languages, Islamabad) – 2010E-mail: dr.shazia@szabist-isb.edu.pk
+
+PhD– Economics (Bahauddin Zakariya University, Multan) – 2000E-mail: dr.mehboob@szabist-isb.edu.pk
+
+PhD– Mechanical Engineering (Washington State University, Pullman, USA) – 2006E-mail: dr.daniel@szabist-isb.edu.pk
+
+PhD– Finance (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Islamabad) – 2014E-mail: dr.shumaila@szabist-isb.edu.pk
+
+PhD– Management Science (Capital University of Science & Technology, Islamabad) – 2017E-mail: dr.iffat@szabist-isb.edu.pk
+
+PhD– Management Science (Capital University of Science & Technology, Islamabad) – 2018E-mail: dr.fuwad@szabist-isb.edu.pk
+
+PhD– Management Science (Capital University of Science and Technology, Islamabad) – 2019E-mail: dr.hassan@szabist-isb.edu.pk
+
+PhD– Marketing (Capital University of Science & Technology, Islamabad) – 2018E-mail: dr.khansa@szabist-isb.edu.pk
+
+PhD– Management Science (Capital University of Science & Technology, Islamabad) – 2015E-mail: dr.ayesha@szabist-isb.edu.pk
+
+PhD– Technology Management (Universiti Tun Hussein Onn Malaysia) – 2018E-mail: dr.shafiq@szabist-isb.edu.pk
+
+PhD– Management Science (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Islamabad) – 2018E-mail: dr.fatima@szabist-isb.edu.pk
+
+PhD– Entrepreneurship Management (Universiti Utara, Malaysia -AACSB & AMBA) – 2018Email: dr.saqlain@szabist-isb.edu.pk
+
+PhD –Business Administration – Marketing (Lyallpur Business School, Government College University, Faisalabad) – 2021E-mail: arusa.khalid@szabist-isb.edu.pk
+
+PhD– Universiti Teknologi, Malaysia, Johor, MalaysiaE-mail: dr.saqib@szabist-isb.edu.pk
+
+PhD– Marketing (Bahria University, Islamabad) – 2020
+
+E-mail: dr.zoya@szabist-isb.edu.pk
+
+PhD– Management Sciences (Capital University of Science and Technology, Islamabad) – 2022
+
+E-mail: ahmed@szabist-isb.edu.pk
+
+PhD– Finance (Universiti Sains Malaysia (USM), Malaysia) – 2022
+
+E-mail: sanaullah@szabist-isb.edu.pk
+
+PhD– Management Sciences (Capital University of Science and Technology, Islamabad) – 2022E-mail:sundas.azeem@szabist-isb.edu.pk
+
+PhD– Management Science (Capital University of Science and Technology, Islamabad)E-mail: hassan.zada@szabist-isb.edu.pk
+
+PhD– Economics (Ibn Haldun University, Istanbul, Turkey) – 2023E-mail: syed.usman@szabist-isb.edu.pk
+
+PhD– Management Sciences (Bahria University, Islamabad) – 2022E-mail: dr.kashif@szabist-isb.edu.pk
+
+PhD– Management Sciences (SZABIST, Islamabad) – 2020E-mail: dr.faisal@szabist-isb.edu.pk
+
+PhD– Economics (Federal Urdu University of Science and Technology, Islamabad) – 2023E-mail: nasir.munir@szabist-isb.edu.pk
+
+PhD– Management Sciences (Foundation University, Islamabad) – 2021E-mail:dr.gul@szabist-isb.edu.pk
+
+MS– Industrial Engineering (University of Southern California, USA) – 1995E-mail: amer.riaz@szabist-isb.edu.pk
+
+MBA– Management (Western International University, Arizona, USA (London campus) – 1991E-mail: aziz.ahmed@szabist-isb.edu.pk
+
+MBA– Marketing (University of Western Australia – UWA) – 2011E-mail: syed.shahwar@szabist-isb.edu.pk
+
+MS –Project Management (COMSATS University, Islamabad) – 2019
+
+Email : aizaz.ahmad@szabist-isb.edu.pk
+
+MS– Management Science (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Islamabad) – 2014E-mail: ali.moin@szabist-isb.edu.pk
+
+MS– Management Sciences (Air University, Islamabad) – 2015E-mail: zeeshan.hamid@szabist-isb.edu.pk
+
+MS– Management Science (COMSATS Institute of Information Technology, Attock) – 2014E-mail: samina.islam@szabist-isb.edu.pk
+
+MBA– Finance (COMSATS Institute of Information Technology, Abbottabad) – 2012E-mail: nayyab.javed@szabist-isb.edu.pk
+
+MS– Accounting & Finance (The University of Lahore) – 2016E-mail: khalid@szabist-isb.edu.pk
+
+MS– Marketing and Strategy (University of Warwick, UK) – 2011E-mail: nabeel.farooq@szabist-isb.pk
+
+MS– Marketing (Capital University of Science & Technology, Islamabad) – 2011E-mail: saima.saleem@szabist-isb.edu.pk
+
+MS– Masters of International Development and Practice, Monash University, Australia(2017)
+
+MS– Management Science (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Islamabad) – 2019E-mail: ali.khan@szabist-isb.edu.pk
+
+MS– Management (International Islamic University, Islamabad) – 2014E-mail: shahid.raja@szabist-isb.edu.pk
+
+MS– Management Sciences (Shaheed Zulfikar Ali Bhutto Institute of Science and Technology, Islamabad) – 2015
+
+Email : mozna.syed@szabist-isb.edu.pk
+
+M.Phil.– HRM (National University of Modern Languages, Islamabad) – 2019E-mail:  uzma.shahryar@szabist-isb.edu.pk
+
+MS –Management Sciences (National University of Computer & Emerging Sciences, Islamabad) – 2019
+
+Email : saba.butt@szabist-isb.edu.pk
+
+Street # 09, Plot # 67Sector H-8/4, Islamabad,Pakistan
+
+051-4863363-65info@szabist-isb.edu.pk
+
+For Admissions OfficeWhatsapp: 0309-1122208admissions@szabist-isb.edu.pk
+
+
+
+# AcademicCalendar.pdf.md
+
+# Academic Calendar Fall 2024
+## SZABIST Islamabad Campus
+### September 2024 - January 2025
+
+| Day/ Month | September | October | November | December | January/February | Day/ Month |
+|------------|-----------|---------|----------|----------|------------------|------------|
+| Mon | 16 23 30 | 7 14 21 28 | 4 11 18 25 | 2 9 16 23 30 | 6 13 20 27 3 | Mon |
+| Tue | 12 Rabi ul Awal 24 1 | 8 15 22 29 | 5 12 19 26 | 3 10 17 24 31 | 7 14 21 28 4 | Tue |
+| Wed | 18 25 2 | 9 16 23 30 | 6 13 20 27 | 4 11 18 25 | 1 8 15 22 29 5 | Wed |
+| Thu | 19 26 3 | 10 17 24 31 | 7 14 21 28 | 5 12 19 26 | 2 9 16 23 30 6 | Thu |
+| Fri | 20 27 4 | 11 18 25 1 | 8 15 22 29 | 6 13 20 27 | 3 10 17 24 31 7 | Fri |
+| Sat | 21 28 5 | 12 19 26 2 | 9 16 23 30 | 7 14 21 28 | 4 11 18 25 1 8 | Sat |
+| Sun | 22 29 6 | 13 20 27 3 | 10 17 24 1 | 8 15 22 29 | 5 12 19 26 2 9 | Sun |
+
+| Week | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 |
+|------|---|---|---|---|---|---|---|---|---|----|----|----|----|----|----|----|----|----|----|----|----|
+| Examination |   |   |   |   |   |   |   | Mid Exam | Sports Week |    |    |    |    |    |    | Final Exams |    |    |    |    |    |
+
+### Examinations
+- Midterm Exam: November 04 - 10, 2024
+- Final Exam: January 06 - 12, 2025
+
+### Holidays
+- 12 Rabi ul Awal*: September 17, 2024
+- Quaid Day: 25th December 2024
+- *Subject to sighting of Moon
+
+### Time Lines
+
+#### Dissertation, Thesis and IS Deadlines
+- Proposal Submission: 1st week
+- Midterm Review: 8th week
+- Plagiarism Checking: 12th week
+- Final Submission: 13th week
+- Final Defence (IRS, Thesis, RP etc.): 17th week
+- MS thesis Defence: 17th week
+- PhD Presentation: 17th week
+
+#### Course Offering / Registration
+- Open Zabdesk Interface (PM/HOD): 1st August 2024
+- Course Offering completed by PM/HOD: 26th August 2024
+- Timetable: 2nd September 2024
+- Course Registration (online): 5th - 22nd September 2024
+- Course Registration (Manual) with fine: 23-24th September 2024
+
+### Important Dates
+- Commencement of Classes: Monday, 16th September, 2024
+- Teaching Evaluation Week (5th & 6th Week): October 14 - 27, 2024
+- Course Withdrawal (11th Week): 08th December 2024
+- ZABDESK Closing: January 30th 2025
+- Probation and Dismissal List: 2nd February 2025
+- Commencement of Spring 2025: 10th February, 2025
+
+### All Public holidays to be compensated on following Sunday, classes fall on these holidays will be held as per following schedule
+
+| Day/Date | Public Holiday | Reschedule Day & Date |
+|----------|----------------|------------------------|
+| Tuesday September 17th, 2024 | * 12th Rabi ul Awal | Sunday September 29th, 2024 |
+| Wednesday December 25th, 2024 | Quaid Day | Sunday December 29th, 2024 |
+
+# head-of-campus.md
+
+# Head-Of-Campus
+
+
+Mr. Khusro Pervaiz Khan joined SZABIST-Islamabad Campus as the Head of Campus in October, 2015. He has been trained in Public Policy Formulation from Kennedy School of Government Harvard, USA and National Management College, Lahore.
+
+He has been a member of Pakistan Administrative Services and served in various Administrative and Secretariat positions for more than 32 years. He remained Secretary to the Government of Sindh and Government of the Punjab.
+
+He has extensive experience in managing natural and man-made disaster. He also worked with Federal Government on some key HR Development areas in his capacity as Joint Secretary, Economic Affairs Division, Director General, National Commission for Human Development (NCHD) and Additional Secretary, Cabinet Division.
+
+His core area of expertise is Public Policy Development, it’s administration and implementation. Moreover, he has been associated with Pakistan’s Agriculture Sector for the last 45 years and is actively engaged in best farming practices. .
+
+He also advises various Chambers of Agriculture on public policy issues in the domain of Agriculture, Forestry and ancillary areas. He is also providing consultancies to different Agro based firms.
+
+He remained member of National Commission of Government Reforms (NCGR). He was Chairman of Rawalpindi Gymkhana for two Tenures.
+
+Currently, he is also serving as member of Board of Governors at Pakistan Kidney and Liver Institute and Research Centre, Lahore.
+
+Being the Head of Campus, he is responsible for all Academic, Administrative and Financial matters of SZABIST-Islamabad Campus.
+
+
+
+# transfer-policy.md
+
+# Transfer-Policy
+
+# Transfer Policy
+
+### Transfer Policy
+
+### MPM COURSE TRANSFER
+
+### MS COURSE TRANSFER
+
+### BACHELOR COURSE TRANSFER
+
+### EMBA COURSE TRANSFER
+
+### MBA COURSE TRANSFER
+
+### PH. D. COURSE TRANSFER
+
+### SZABIST INTER-CAMPUS TRANSFER
+
+### CERTIFICATE COURSE TRANSFER
+
+### Our Campuses
+
+### Departments
+
+### Admissions
+
+Transfer into SZABIST can only be accepted for candidates who have studied or are currently studying at HEC recognized universities. Transferring credits must have a minimum letter grade of B or above (or 80% marks). The request for transfers must be made at the time of admission
+
+Candidates will be required to clear all SZABIST admission requirements.
+
+A maximum of up to 6 credits may be considered for transfer into the Master of Project Management.
+
+Up to 50% of total course work completed at an HEC recognized university can be allowed for transfer at SZABIST MS program.
+
+A maximum of up to 50% credits may be considered for transfer into BBA / BS/ BE programs.
+
+No transfer courses are allowed into the EMBA program at SZABIST.
+
+– A maximum of up to 6 credits may be considered for transfer into the MBA (36 credit-hours) program. Research Project/Thesis is not transferable.
+
+– A maximum of up to 36 credits may be considered for transfer into the MBA (72 credit-hours) program. Research Project/Thesis is not transferable.
+
+– Only relevant courses of the EMBA (SZABIST) program are transferable into the regular MBA program subject to the eligibility criteria of the MBA program at SZABIST.
+
+Transfer courses up to 6 credit hours from an HEC recognized university may be allowed in special cases by making a petition to the Doctoral Committee before formal acceptance into the PhD Program. The student may be required to take additional courses as recommended by the relevant program manager.
+
+For inter-campus transfer, the candidate must fulfill the admission requirements of the given program at the local campus, as per applicable transfer policy. All courses/grades are transferable. A transfer fee will be payable for students transferring from any other SZABIST campus.
+
+For transfer candidates from the SZABIST Certificate Programs, transferability of certificate courses is as follows:
+
+– Maximum 05 courses are transferable in the undergraduate program.
+
+– 2/3 courses are transferable in masters or MS programs.
+
+– Maximum 02 courses are transferable in the PhD program.
+
+The minimum letter grade of Certificate Courses from SZABIST which are transferable to regular degree programs within a time span of one year are: for PhD its B and above, for MS its B- and above, for all Master’s programs its C+ and above and for Bachelor’s programs it is C and above.
+
+Street # 09, Plot # 67Sector H-8/4, Islamabad,Pakistan
+
+051-4863363-65info@szabist-isb.edu.pk
+
+For Admissions OfficeWhatsapp: 0309-1122208admissions@szabist-isb.edu.pk
+
+
+
+# faculty-of-media-sciences.md
+
+# Faculty-Of-Media-Sciences
+
+# Faculty of Media Sciences
+
+### Dr. Wajid Zulqarnain
+
+### Faculty
+
+### Dr. Naveed Ullah Hashmi
+
+### Ms. Amna Zareef
+
+### Ms. Rabeeia Ahmed
+
+### Ms. Asma Javed
+
+### Mr. Bilal Ahmad
+
+### Ms. Abeerah Mehreen
+
+### Our Campuses
+
+### Departments
+
+### Admissions
+
+PhD– Mass Communication (Beaconhouse National University Lahore.) – 2018E-mail: dr.wajid@szabist-isb.edu.pk
+
+PhD– Creative Arts & Communication (Riphah International University, Islamabad) – 2023E-mail: naveed.hashmi@szabist-isb.edu.pk
+
+M.A– Graphic Design (Foundation University, Islamabad) – 2012E-mail: amna.zareef@szabist-isb.edu.pk
+
+MS– Cross Cultural Studies: Language and Communication (Communication University of China) – 2019E-mail: rabeeia.ahmed@szabist-isb.edu.pk
+
+MS– Social Sciences (SZABIST, Islamabad) – 2023E-mail: asma.javed@szabist-isb.edu.pk
+
+MSc– Project Management (University of Huddersfield, Huddersfield, UK) – 2013
+
+Email : bilal.ahmad@szabist-isb.edu.pk
+
+MS– Mass Communication (National University of Sciences and Technology, Islamabad) – 2023
+
+Street # 09, Plot # 67Sector H-8/4, Islamabad,Pakistan
+
+051-4863363-65info@szabist-isb.edu.pk
+
+For Admissions OfficeWhatsapp: 0309-1122208admissions@szabist-isb.edu.pk
+
+
+
