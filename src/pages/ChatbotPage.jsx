@@ -39,7 +39,7 @@ function ChatbotPage() {
   ];
 
   return (
-    <Box minH="90vh" bg={bgColor}>
+    <Box minH="90vh" bg={bgColor} pb={24}>
       <Container maxW="container.md" py={4}>
         {/* Header Section */}
         <VStack spacing={1} mb={6}>
@@ -55,13 +55,8 @@ function ChatbotPage() {
         </VStack>
 
         <Box
-          bg={cardBg}
-          borderRadius="xl"
-          boxShadow="xl"
-          overflow="hidden"
-          minH="80vh"
+          overflow="auto"
         >
-          <EnhancedChatbot />
           
           <Divider />
           
@@ -99,6 +94,7 @@ function ChatbotPage() {
               ))}
             </HStack>
           </Box>
+          <EnhancedChatbot />
         </Box>
       </Container>
     </Box>

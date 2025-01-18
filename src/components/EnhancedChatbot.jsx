@@ -17,6 +17,7 @@ function EnhancedChatbot() {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const chatContainerRef = useRef(null);
+  const inputRef = useRef(null);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -50,62 +51,41 @@ function EnhancedChatbot() {
 
     // Add user's message
     setMessages((prev) => [...prev, { text: inputMessage, sender: 'user' }]);
-    
+
     try {
       // Get response from chatService
       const response = await chatService.sendMessage(inputMessage);
-      
+
       // Add bot's response
       setMessages((prev) => [...prev, { text: response, sender: 'bot' }]);
     } catch (error) {
       console.error('Error:', error);
       // Show error message to user
-      setMessages((prev) => [...prev, { 
-        text: "Sorry, I'm having trouble connecting right now. Please try again later.", 
-        sender: 'bot' 
+      setMessages((prev) => [...prev, {
+        text: "Sorry, I'm having trouble connecting right now. Please try again later.",
+        sender: 'bot'
       }]);
     } finally {
       setIsLoading(false);
       setInputMessage('');
+      if (inputRef.current) inputRef.current.focus();
     }
   };
 
   return (
-    <Box
-      /* A smaller fixed-height container */
-      width="500px"
-      height="600px"
-      display="flex"
-      flexDirection="column"
-      bg="gray.50"
-      borderRadius="md"
-      boxShadow="lg"
-      overflow="hidden"
-      mx="auto"       /* center horizontally if you like */
-      mt="4"          /* some margin at the top */
-    >
-      {/* Scrollable messages area */}
+    <>
       <Box
+        display="flex"
+        flexDirection="column"
+        overflow="hidden"
+        mx="auto"       /* center horizontally if you like */
+        mb="4"
         ref={chatContainerRef}
         flex="1"
         overflowY="auto"
         p={4}
-        css={{
-          /* OPTIONAL: style the scrollbar (Chrome/Edge/Safari) */
-          '&::-webkit-scrollbar': { width: '8px' },
-          '&::-webkit-scrollbar-track': {
-            background: '#f1f1f1',
-            borderRadius: '8px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: '#888',
-            borderRadius: '8px',
-          },
-          '&::-webkit-scrollbar-thumb:hover': {
-            background: '#555',
-          },
-        }}
       >
+
         <VStack spacing={4} align="stretch">
           {messages.map((msg, index) => (
             <Flex
@@ -138,12 +118,22 @@ function EnhancedChatbot() {
       {/* Input bar at the bottom (not scrollable) */}
       <Box
         bg="white"
-        borderTop="1px"
+        border="1px"
         borderColor="gray.200"
+        borderRadius="md"
         p={4}
+        m={4}
+        w={800}
+        shadow="2xl"
+        position={'fixed'}
+        bottom={4}
+        left="48%"
+        transform="translateX(-50%)"
       >
-        <VStack spacing={3}>
+        <Flex>
+          {/* Input Field */}
           <Input
+            ref={inputRef}
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Ask ZABBOT anything about SZABIST..."
@@ -151,20 +141,24 @@ function EnhancedChatbot() {
             bg="white"
             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
             disabled={isLoading}
+            flex="1"
+            mr={2} /* Add spacing between input and button */
           />
+
+          {/* Send Button */}
           <Button
-            colorScheme="blue"
             onClick={sendMessage}
             isLoading={isLoading}
             loadingText="Sending..."
-            w="full"
             size="md"
+            px={4}
+            disabled={!inputMessage.trim() || isLoading}
           >
             Send
           </Button>
-        </VStack>
+        </Flex>
       </Box>
-    </Box>
+    </>
   );
 }
 
