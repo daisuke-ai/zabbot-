@@ -12,6 +12,7 @@
     "type": "module",
     "license": "ISC",
     "dependencies": {
+        "contentful": "^11.3.3",
         "openai": "^4.79.1",
         "@supabase/supabase-js": "^2.47.16",
         "node-mailjet": "^6.0.2",
