@@ -12,7 +12,7 @@ import {
 import { chatService } from '../services/chatService';
 import '../styles/blog.css';
 
-function EnhancedChatbot() {
+function EnhancedChatbot(promptText) {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +36,12 @@ function EnhancedChatbot() {
   }, [messages]);
 
   useEffect(() => {
+    if (promptText.inputText) {
+      setInputMessage(promptText.inputText);
+    }
+  }, [promptText]);
+
+  useEffect(() => {
     // initial welcome message
     setMessages([
       {
@@ -51,8 +57,8 @@ function EnhancedChatbot() {
     setIsLoading(true);
 
     // Add user's message
-    setMessages((prev) => [...prev, { 
-      text: inputMessage, 
+    setMessages((prev) => [...prev, {
+      text: inputMessage,
       sender: 'user',
       timestamp: new Date()
     }]);
@@ -62,8 +68,8 @@ function EnhancedChatbot() {
       const response = await chatService.sendMessage(inputMessage);
 
       // Add bot's response
-      setMessages((prev) => [...prev, { 
-        text: response, 
+      setMessages((prev) => [...prev, {
+        text: response,
         sender: 'bot',
         timestamp: new Date()
       }]);
@@ -92,10 +98,10 @@ function EnhancedChatbot() {
 
   return (
     <Box h="55vh" maxH="600px" w="full" maxW="2xl" mx="auto">
-      <Box 
-        display="flex" 
-        flexDirection="column" 
-        h="full" 
+      <Box
+        display="flex"
+        flexDirection="column"
+        h="full"
         overflow="hidden"
       >
         {/* Messages Container */}
@@ -124,16 +130,16 @@ function EnhancedChatbot() {
                 )}
                 <Box
                   maxW="80%"
-                  bg={msg.sender === 'user' 
-                    ? 'blue.500' 
-                    : msg.isError 
-                    ? 'red.50' 
-                    : 'gray.100'}
-                  color={msg.sender === 'user' 
-                    ? 'white' 
-                    : msg.isError 
-                    ? 'red.800' 
-                    : 'black'}
+                  bg={msg.sender === 'user'
+                    ? 'blue.500'
+                    : msg.isError
+                      ? 'red.50'
+                      : 'gray.100'}
+                  color={msg.sender === 'user'
+                    ? 'white'
+                    : msg.isError
+                      ? 'red.800'
+                      : 'black'}
                   p={3}
                   borderRadius="lg"
                   boxShadow="sm"
@@ -157,12 +163,12 @@ function EnhancedChatbot() {
             ))}
             {isLoading && (
               <Flex align="center" p={2}>
-                <Avatar 
-                  size="sm" 
-                  name="ZABBOT" 
-                  bg="blue.600" 
-                  color="white" 
-                  mr={2} 
+                <Avatar
+                  size="sm"
+                  name="ZABBOT"
+                  bg="blue.600"
+                  color="white"
+                  mr={2}
                 />
                 <Spinner size="sm" color="blue.600" />
               </Flex>
@@ -172,26 +178,29 @@ function EnhancedChatbot() {
 
         {/* Input Area */}
         <Box
-           bg="white"
-           border="1px"
-           borderColor="gray.200"
-           borderRadius="md"
-           p={4}
-           m={4}
-           w={800}
-           shadow="2xl"
-           position={'fixed'}
-           bottom={4}
-           left="48%"
-           transform="translateX(-50%)"
+          bg="white"
+          border="1px"
+          borderColor="gray.200"
+          borderRadius="md"
+          p={4}
+          m={4}
+          w={{ base: "90%", md: 800 }}
+          shadow="2xl"
+          position={'fixed'}
+          bottom={4}
+          left="48%"
+          transform="translateX(-50%)"
         >
-          <Flex gap={2}>
+          <Flex direction={{ base: "column", md: "row" }} // Stack vertically on mobile, horizontally on desktop
+            gap={2}
+            w="full">
             <Input
               ref={inputRef}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Ask ZABBOT anything about SZABIST..."
               size="md"
+              p={{base: 2, md: 4}}
               onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
               disabled={isLoading}
               bg="white"
