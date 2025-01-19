@@ -9,9 +9,6 @@ export default defineConfig({
   build: {
     commonjsOptions: {
       transformMixedEsModules: true
-    },
-    build: {
-      outDir: 'dist',
     }
   }
 });
