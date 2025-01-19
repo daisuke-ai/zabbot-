@@ -5,12 +5,12 @@ import {
   Input,
   Button,
   Text,
-  useToast,
   Flex,
   Avatar,
   Spinner,
 } from '@chakra-ui/react';
 import { chatService } from '../services/chatService';
+import '../styles/blog.css';
 
 function EnhancedChatbot() {
   const [messages, setMessages] = useState([]);
@@ -41,6 +41,7 @@ function EnhancedChatbot() {
       {
         text: "Hello! I'm ZABBOT, your SZABIST University AI assistant. How can I help you today?",
         sender: 'bot',
+        timestamp: new Date()
       },
     ]);
   }, []);
@@ -50,20 +51,30 @@ function EnhancedChatbot() {
     setIsLoading(true);
 
     // Add user's message
-    setMessages((prev) => [...prev, { text: inputMessage, sender: 'user' }]);
+    setMessages((prev) => [...prev, { 
+      text: inputMessage, 
+      sender: 'user',
+      timestamp: new Date()
+    }]);
 
     try {
       // Get response from chatService
       const response = await chatService.sendMessage(inputMessage);
 
       // Add bot's response
-      setMessages((prev) => [...prev, { text: response, sender: 'bot' }]);
+      setMessages((prev) => [...prev, { 
+        text: response, 
+        sender: 'bot',
+        timestamp: new Date()
+      }]);
     } catch (error) {
       console.error('Error:', error);
       // Show error message to user
       setMessages((prev) => [...prev, {
         text: "Sorry, I'm having trouble connecting right now. Please try again later.",
-        sender: 'bot'
+        sender: 'bot',
+        timestamp: new Date(),
+        isError: true
       }]);
     } finally {
       setIsLoading(false);
@@ -72,93 +83,135 @@ function EnhancedChatbot() {
     }
   };
 
+  const formatTimestamp = (date) => {
+    return new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  };
+
   return (
-    <>
-      <Box
-        display="flex"
-        flexDirection="column"
+    <Box h="60vh" maxH="600px" w="full" maxW="2xl" mx="auto">
+      <Box 
+        display="flex" 
+        flexDirection="column" 
+        h="full" 
         overflow="hidden"
-        mx="auto"       /* center horizontally if you like */
-        mb="4"
-        ref={chatContainerRef}
-        flex="1"
-        overflowY="auto"
-        p={4}
       >
-
-        <VStack spacing={4} align="stretch">
-          {messages.map((msg, index) => (
-            <Flex
-              key={index}
-              justify={msg.sender === 'user' ? 'flex-end' : 'flex-start'}
-            >
-              <Box
-                maxW="80%"
-                bg={msg.sender === 'user' ? 'blue.500' : 'gray.200'}
-                color={msg.sender === 'user' ? 'white' : 'black'}
-                p={4}
-                borderRadius="lg"
-                boxShadow="md"
+        {/* Messages Container */}
+        <Box
+          ref={chatContainerRef}
+          flex="1"
+          overflowY="auto"
+          p={4}
+          className='no-scrollbar no-scrollbar::-webkit-scrollbar'
+        >
+          <VStack spacing={4} align="stretch">
+            {messages.map((msg, index) => (
+              <Flex
+                key={index}
+                justify={msg.sender === 'user' ? 'flex-end' : 'flex-start'}
+                align="start"
+                gap={2}
               >
-                <Text fontSize="md" whiteSpace="pre-wrap">
-                  {msg.text}
-                </Text>
-              </Box>
-            </Flex>
-          ))}
-          {isLoading && (
-            <Flex align="center" p={4}>
-              <Avatar size="sm" name="ZABBOT" bg="blue.600" color="white" mr={2} />
-              <Spinner size="sm" color="blue.600" />
-            </Flex>
-          )}
-        </VStack>
-      </Box>
+                {msg.sender === 'bot' && (
+                  <Avatar
+                    size="sm"
+                    name="ZABBOT"
+                    bg="blue.600"
+                    color="white"
+                  />
+                )}
+                <Box
+                  maxW="80%"
+                  bg={msg.sender === 'user' 
+                    ? 'blue.500' 
+                    : msg.isError 
+                    ? 'red.50' 
+                    : 'gray.100'}
+                  color={msg.sender === 'user' 
+                    ? 'white' 
+                    : msg.isError 
+                    ? 'red.800' 
+                    : 'black'}
+                  p={3}
+                  borderRadius="lg"
+                  boxShadow="sm"
+                >
+                  <Text fontSize="sm" whiteSpace="pre-wrap">
+                    {msg.text}
+                  </Text>
+                  <Text fontSize="xs" opacity={0.7} mt={1}>
+                    {formatTimestamp(msg.timestamp)}
+                  </Text>
+                </Box>
+                {msg.sender === 'user' && (
+                  <Avatar
+                    size="sm"
+                    name="User"
+                    bg="green.500"
+                    color="white"
+                  />
+                )}
+              </Flex>
+            ))}
+            {isLoading && (
+              <Flex align="center" p={2}>
+                <Avatar 
+                  size="sm" 
+                  name="ZABBOT" 
+                  bg="blue.600" 
+                  color="white" 
+                  mr={2} 
+                />
+                <Spinner size="sm" color="blue.600" />
+              </Flex>
+            )}
+          </VStack>
+        </Box>
 
-      {/* Input bar at the bottom (not scrollable) */}
-      <Box
-        bg="white"
-        border="1px"
-        borderColor="gray.200"
-        borderRadius="md"
-        p={4}
-        m={4}
-        w={800}
-        shadow="2xl"
-        position={'fixed'}
-        bottom={4}
-        left="48%"
-        transform="translateX(-50%)"
-      >
-        <Flex>
-          {/* Input Field */}
-          <Input
-            ref={inputRef}
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Ask ZABBOT anything about SZABIST..."
-            size="md"
-            bg="white"
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            disabled={isLoading}
-            flex="1"
-            mr={2} /* Add spacing between input and button */
-          />
-
-          {/* Send Button */}
-          <Button
-            onClick={sendMessage}
-            isLoading={isLoading}
-            loadingText="Sending..."
-            size="md"
-            px={4}
-            disabled={!inputMessage.trim() || isLoading}
-          >
-            Send
-          </Button>
-        </Flex>
+        {/* Input Area */}
+        <Box
+           bg="white"
+           border="1px"
+           borderColor="gray.200"
+           borderRadius="md"
+           p={4}
+           m={4}
+           w={800}
+           shadow="2xl"
+           position={'fixed'}
+           bottom={4}
+           left="48%"
+           transform="translateX(-50%)"
+        >
+          <Flex gap={2}>
+            <Input
+              ref={inputRef}
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder="Ask ZABBOT anything about SZABIST..."
+              size="md"
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+              disabled={isLoading}
+              bg="white"
+              flex="1"
+            />
+            <Button
+              onClick={sendMessage}
+              isLoading={isLoading}
+              loadingText="Sending..."
+              size="md"
+              px={4}
+              disabled={!inputMessage.trim() || isLoading}
+              colorScheme="blue"
+            >
+              Send
+            </Button>
+          </Flex>
+        </Box>
       </Box>
-    </>
+    </Box>
   );
 }
 
