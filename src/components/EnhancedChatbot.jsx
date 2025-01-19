@@ -91,7 +91,7 @@ function EnhancedChatbot() {
   };
 
   return (
-    <Box h="60vh" maxH="600px" w="full" maxW="2xl" mx="auto">
+    <Box h="55vh" maxH="600px" w="full" maxW="2xl" mx="auto">
       <Box 
         display="flex" 
         flexDirection="column" 
