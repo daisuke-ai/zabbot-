@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -37,32 +37,44 @@ const theme = extendTheme({
   },
 });
 
+// Wrapper component to access the location
+function AppContent() {
+  const location = useLocation();
+
+  return (
+    <>
+      <Header />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/academics" element={<Academics />} />
+        <Route path="/admissions" element={<Admissions />} />
+        <Route path="/research" element={<Research />} />
+        <Route
+          path="/portal"
+          element={
+            <ProtectedRoute>
+              <Portal />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/chatbot" element={<ChatbotPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:id" element={<BlogPostPage />} />
+      </Routes>
+      {/* Conditionally render Footer */}
+      {location.pathname !== '/chatbot' && <Footer />}
+    </>
+  );
+}
+
 function App() {
   return (
     <ChakraProvider theme={theme}>
       <Router>
         <AuthProvider>
-          <Header />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/academics" element={<Academics />} />
-            <Route path="/admissions" element={<Admissions />} />
-            <Route path="/research" element={<Research />} />
-            <Route 
-              path="/portal" 
-              element={
-                <ProtectedRoute>
-                  <Portal />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="/login" element={<Login />} />
-            <Route path="/chatbot" element={<ChatbotPage />} />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/blog/:id" element={<BlogPostPage />} />
-          </Routes>
-          <Footer />
+          <AppContent />
         </AuthProvider>
       </Router>
     </ChakraProvider>
