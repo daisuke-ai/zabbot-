@@ -19,6 +19,7 @@ function ChatbotPage() {
   const bgColor = useColorModeValue('gray.50', 'gray.800');
   const cardBg = useColorModeValue('white', 'gray.700');
 
+  const [promptText, setPromptText] = useState('');
   const prompts = [
     {
       icon: FaGraduationCap,
@@ -81,21 +82,15 @@ function ChatbotPage() {
                     transform: 'translateY(-1px)',
                   }}
                   transition="all 0.2s"
-                  onClick={() => {
-                    const chatComponent = document.querySelector('input');
-                    if (chatComponent) {
-                      chatComponent.value = prompt.text;
-                      chatComponent.focus();
-                    }
-                  }}
+                  onClick={() =>  setPromptText(prompt.text) }
                 >
                   {prompt.text}
                 </Button>
               ))}
             </HStack>
           </Box>
-          <EnhancedChatbot />
-        </Box>
+          <EnhancedChatbot inputText={promptText || ''} />
+          </Box>
       </Container>
     </Box>
   );
