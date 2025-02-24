@@ -1,0 +1,46 @@
+{
+  "name": "szabist-website",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "nodemon src/backend/server.js"
+  },
+  "dependencies": {
+    "@chakra-ui/icons": "^2.0.19",
+    "@chakra-ui/react": "^2.6.1",
+    "@contentful/rich-text-react-renderer": "^16.0.1",
+    "@contentful/rich-text-types": "^17.0.0",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@supabase/supabase-js": "^2.48.1",
+    "contentful": "^11.3.3",
+    "cors": "^2.8.5",
+    "curl": "^0.1.4",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "emailjs-com": "^3.2.0",
+    "express": "^4.21.2",
+    "express-fileupload": "^1.5.1",
+    "framer-motion": "^10.12.16",
+    "gtts.js": "^1.0.1",
+    "langchain": "^0.3.11",
+    "mailjet": "^0.0.1",
+    "node-mailjet": "^6.0.2",
+    "openai": "^4.79.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.12.0",
+    "react-router-dom": "^6.11.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "@vitejs/plugin-react": "^4.0.0",
+    "nodemon": "^3.1.9",
+    "vite": "^4.3.2"
+  }
+}
