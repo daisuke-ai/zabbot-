@@ -16,8 +16,10 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { HamburgerIcon } from '@chakra-ui/icons';
 import szabistLogo from '../public/images/images.png';
+import { useAuth } from '../context/AuthContext';
 
 function Header() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const headerBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('szabist.500', 'szabist.400');
@@ -125,18 +127,8 @@ function Header() {
             
             <Button
               as={Link}
-              to="/portal"
-              colorScheme="szabist"
-              variant="solid"
-              size="lg"
-              fontWeight="700"
-              px={6}
-              fontFamily="'Poppins', sans-serif"
-              _hover={{ 
-                transform: 'translateY(-2px)',
-                shadow: 'lg'
-              }}
-              transition="all 0.2s"
+              to={user ? `/portal-redirect` : '/login'}
+              variant="ghost"
             >
               Portal
             </Button>

@@ -14,8 +14,10 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { FaFacebook, FaTwitter, FaYoutube, FaLinkedin } from 'react-icons/fa';
 import emailjs from 'emailjs-com';
+import { useAuth } from '../context/AuthContext';
 
 function Footer() {
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const toast = useToast();
 
@@ -99,7 +101,7 @@ function Footer() {
             <ChakraLink as={RouterLink} to="/blog">
               Blog
             </ChakraLink>
-            <ChakraLink as={RouterLink} to="/portal">
+            <ChakraLink as={RouterLink} to={user ? '/portal-redirect' : '/login'}>
               Portal
             </ChakraLink>
             <ChakraLink as={RouterLink} to="/chatbot">

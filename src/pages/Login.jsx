@@ -10,7 +10,8 @@ import {
   Button, 
   Text, 
   useToast,
-  useColorModeValue
+  useColorModeValue,
+  Select
 } from '@chakra-ui/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +20,7 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [role, setRole] = useState('student');
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
@@ -28,7 +30,13 @@ function Login() {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate('/portal');
+      const redirectPath = {
+        admin: '/admin',
+        student: '/student-dashboard',
+        teacher: '/teacher-dashboard',
+        program_manager: '/pm-dashboard'
+      }[user.role] || '/';
+      navigate(redirectPath, { replace: true });
     }
   }, [user, navigate]);
 
@@ -38,7 +46,15 @@ function Login() {
 
     try {
       await login(email, password);
-      const from = location.state?.from?.pathname || '/portal';
+      const redirectPath = {
+        admin: '/admin',
+        student: '/student-dashboard',
+        teacher: '/teacher-dashboard',
+        program_manager: '/pm-dashboard'
+      }[user.role] || '/';
+      
+      // Use from path if it exists, otherwise use role-based dashboard
+      const from = location.state?.from?.pathname || redirectPath;
       navigate(from, { replace: true });
     } catch (error) {
       toast({
@@ -83,6 +99,16 @@ function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </FormControl>
+                <Select 
+                  value={role} 
+                  onChange={(e) => setRole(e.target.value)}
+                  placeholder="Select role"
+                >
+                  <option value='student'>Student</option>
+                  <option value='teacher'>Teacher</option>
+                  <option value='program_manager'>Program Manager</option>
+                  <option value='admin'>Administrator</option>
+                </Select>
                 <Button
                   type="submit"
                   colorScheme="szabist"
