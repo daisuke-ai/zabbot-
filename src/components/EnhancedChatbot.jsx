@@ -13,13 +13,6 @@ import {
   ModalOverlay,
   ModalContent,
   ModalBody,
-<<<<<<< HEAD
-  Center
-} from '@chakra-ui/react';
-import { chatService } from '../services/chatService';
-import '../styles/blog.css';
-import { FaMicrophone, FaStop } from 'react-icons/fa';
-=======
   Center,
   HStack,
   useToast
@@ -27,16 +20,12 @@ import { FaMicrophone, FaStop } from 'react-icons/fa';
 import { chatService } from '../services/chatService';
 import '../styles/blog.css';
 import { FaMicrophone, FaStop, FaPaperPlane } from 'react-icons/fa';
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
 
 function EnhancedChatbot({ inputText }) {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-<<<<<<< HEAD
-=======
   const [isProcessingVoice, setIsProcessingVoice] = useState(false);
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
   const chatContainerRef = useRef(null);
   const inputRef = useRef(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -46,10 +35,7 @@ function EnhancedChatbot({ inputText }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const animationFrameRef = useRef();
   const audioContextRef = useRef();
-<<<<<<< HEAD
-=======
   const toast = useToast();
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -82,8 +68,6 @@ function EnhancedChatbot({ inputText }) {
         timestamp: new Date()
       },
     ]);
-<<<<<<< HEAD
-=======
     
     // Clean up function to ensure we stop any recording on unmount
     return () => {
@@ -97,35 +81,10 @@ function EnhancedChatbot({ inputText }) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
   }, []);
 
   const startRecording = async () => {
     try {
-<<<<<<< HEAD
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      
-      // Add audio visualization
-      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      const analyser = audioContextRef.current.createAnalyser();
-      const source = audioContextRef.current.createMediaStreamSource(stream);
-      source.connect(analyser);
-      analyser.fftSize = 32;
-
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-
-      const checkVolume = () => {
-        analyser.getByteFrequencyData(dataArray);
-        const volume = Math.max(...dataArray);
-        setIsSpeaking(volume > 20); // Adjust threshold as needed
-        animationFrameRef.current = requestAnimationFrame(checkVolume);
-      };
-      
-      animationFrameRef.current = requestAnimationFrame(checkVolume);
-
-=======
       // Reset state
       audioChunksRef.current = [];
       
@@ -159,15 +118,10 @@ function EnhancedChatbot({ inputText }) {
       }
 
       // Collect audio data
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
       mediaRecorderRef.current.ondataavailable = (e) => {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 
-<<<<<<< HEAD
-      mediaRecorderRef.current.onstop = async () => {
-        try {
-=======
       // Handle recording stop
       mediaRecorderRef.current.onstop = async () => {
         try {
@@ -178,22 +132,10 @@ function EnhancedChatbot({ inputText }) {
             throw new Error('No audio data recorded');
           }
           
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
           const audioBlob = new Blob(audioChunksRef.current, { 
             type: 'audio/webm; codecs=opus' 
           });
           
-<<<<<<< HEAD
-          const formData = new FormData();
-          formData.append('audio', audioBlob, 'recording.webm');
-
-          // Show loading state for voice processing
-          setIsLoading(true);
-          
-          const { transcription, response } = await chatService.transcribeAudio(formData);
-          
-          setMessages(prev => [...prev, 
-=======
           // Make sure we have valid audio data
           if (audioBlob.size < 100) { // Arbitrary small size check
             throw new Error('Audio recording too short');
@@ -214,22 +156,10 @@ function EnhancedChatbot({ inputText }) {
           // Replace temporary message and add bot response
           setMessages(prev => [
             ...prev.filter(msg => msg.id !== tempUserMessageId),
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
             { text: transcription, sender: 'user', timestamp: new Date() },
             { text: response, sender: 'bot', timestamp: new Date() }
           ]);
 
-<<<<<<< HEAD
-          const ttsAudio = await chatService.generateSpeech(response);
-          if (audioRef.current) {
-            audioRef.current.src = ttsAudio;
-            await audioRef.current.play();
-          }
-        } catch (error) {
-          console.error('Voice processing error:', error);
-          setMessages(prev => [...prev, {
-            text: "Voice processing failed. Please try again or type your question.",
-=======
           // Optional: Generate speech response
           try {
             const ttsAudio = await chatService.generateSpeech(response);
@@ -251,22 +181,10 @@ function EnhancedChatbot({ inputText }) {
           
           setMessages(prev => [...prev.filter(m => !m.isTemp), {
             text: errorMessage,
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
             sender: 'bot',
             timestamp: new Date(),
             isError: true
           }]);
-<<<<<<< HEAD
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Error starting recording:', error);
-=======
           
           toast({
             title: "Voice Processing Failed",
@@ -316,38 +234,12 @@ function EnhancedChatbot({ inputText }) {
           isClosable: true,
         });
       }
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
     }
   };
 
   const stopRecording = () => {
     if (mediaRecorderRef.current?.state === 'recording') {
       // Clean up audio analysis
-<<<<<<< HEAD
-      cancelAnimationFrame(animationFrameRef.current);
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-      setIsSpeaking(false);
-      
-      // Stop recording and clean up
-      mediaRecorderRef.current.stop();
-      audioChunksRef.current = []; // Reset audio chunks
-      setIsRecording(false); // Ensure state update
-    }
-  };
-
-  const startListening = () => {
-    startRecording();
-  };
-
-  const stopListening = () => {
-    stopRecording();
-  };
-
-  const sendMessage = async () => {
-    if (!inputMessage.trim()) return;
-=======
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -367,27 +259,18 @@ function EnhancedChatbot({ inputText }) {
     
     const userMsg = inputMessage.trim();
     setInputMessage('');
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
     setIsLoading(true);
     
     try {
       // Add user message immediately
       setMessages(prev => [...prev, {
-<<<<<<< HEAD
-        text: inputMessage,
-=======
         text: userMsg,
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
         sender: 'user',
         timestamp: new Date()
       }]);
 
       // Get bot response
-<<<<<<< HEAD
-      const response = await chatService.sendMessage(inputMessage);
-=======
       const response = await chatService.sendMessage(userMsg);
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
       
       // Add bot response
       setMessages(prev => [...prev, {
@@ -397,10 +280,6 @@ function EnhancedChatbot({ inputText }) {
       }]);
     } catch (error) {
       console.error('Error:', error);
-<<<<<<< HEAD
-      setMessages(prev => [...prev, {
-        text: "Sorry, I'm having trouble connecting. Please try again.",
-=======
       
       let errorMessage = "Sorry, I'm having trouble connecting. Please try again.";
       
@@ -410,16 +289,10 @@ function EnhancedChatbot({ inputText }) {
       
       setMessages(prev => [...prev, {
         text: errorMessage,
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
         sender: 'bot',
         timestamp: new Date(),
         isError: true
       }]);
-<<<<<<< HEAD
-    } finally {
-      setIsLoading(false);
-      setInputMessage('');
-=======
       
       toast({
         title: "Connection Error",
@@ -430,7 +303,6 @@ function EnhancedChatbot({ inputText }) {
       });
     } finally {
       setIsLoading(false);
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
       if (inputRef.current) inputRef.current.focus();
     }
   };
@@ -465,10 +337,7 @@ function EnhancedChatbot({ inputText }) {
                 justify={msg.sender === 'user' ? 'flex-end' : 'flex-start'}
                 align="start"
                 gap={2}
-<<<<<<< HEAD
-=======
                 opacity={msg.isTemp ? 0.7 : 1}
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
               >
                 {msg.sender === 'bot' && (
                   <Avatar
@@ -511,11 +380,7 @@ function EnhancedChatbot({ inputText }) {
                 )}
               </Flex>
             ))}
-<<<<<<< HEAD
-            {isLoading && (
-=======
             {(isLoading || isProcessingVoice) && (
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
               <Flex align="center" p={2}>
                 <Avatar
                   size="sm"
@@ -545,13 +410,7 @@ function EnhancedChatbot({ inputText }) {
           left="48%"
           transform="translateX(-50%)"
         >
-<<<<<<< HEAD
-          <Flex direction={{ base: "column", md: "row" }} // Stack vertically on mobile, horizontally on desktop
-            gap={2}
-            w="full">
-=======
           <Flex direction={{ base: "column", md: "row" }} gap={2} w="full">
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
             <Input
               ref={inputRef}
               value={inputMessage}
@@ -560,56 +419,6 @@ function EnhancedChatbot({ inputText }) {
               size="md"
               p={{base: 2, md: 4}}
               onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-<<<<<<< HEAD
-              disabled={isLoading}
-              bg="white"
-              flex="1"
-            />
-            <Button
-              onClick={sendMessage}
-              isLoading={isLoading}
-              loadingText="Sending..."
-              size="md"
-              px={4}
-              disabled={!inputMessage.trim() || isLoading}
-              colorScheme="blue"
-            >
-              Send
-            </Button>
-          </Flex>
-        </Box>
-
-        {/* Add audio element */}
-        <audio
-          ref={audioRef}
-          onEnded={() => setIsRecording(false)}
-          onError={(e) => console.error('Audio playback error:', e)}
-        />
-
-        {/* Add mic button */}
-        <IconButton
-           icon={isRecording ? <FaStop /> : <FaMicrophone />}
-           onClick={isRecording ? stopRecording : startRecording}
-           isRound
-           size="md"
-           colorScheme={isSpeaking ? "green" : isRecording ? "red" : "blue"}
-           aria-label={isRecording ? "Stop recording" : "Start recording"}
-           ml={2}
-           sx={{
-             ...(isSpeaking && {
-               animation: 'pulse 1s infinite',
-               '@keyframes pulse': {
-                 '0%': { transform: 'scale(1)' },
-                 '50%': { transform: 'scale(1.1)' },
-                 '100%': { transform: 'scale(1)' }
-               }
-             })
-           }}
-        />
-
-        {/* Add recording overlay */}
-        <Modal isOpen={isRecording} onClose={stopListening} isCentered>
-=======
               disabled={isLoading || isProcessingVoice || isRecording}
               bg="white"
               flex="1"
@@ -662,26 +471,16 @@ function EnhancedChatbot({ inputText }) {
 
         {/* Recording Modal */}
         <Modal isOpen={isRecording} onClose={stopRecording} isCentered>
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
           <ModalOverlay />
           <ModalContent bg="transparent" boxShadow="none">
             <ModalBody>
               <Center>
                 <Box
-<<<<<<< HEAD
-                  animation="pulse 1.5s infinite"
-=======
                   animation={isSpeaking ? "pulse 0.5s infinite" : "pulse 1.5s infinite"}
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
                   p={4}
                   borderRadius="full"
                   bg="rgba(255, 255, 255, 0.9)"
                 >
-<<<<<<< HEAD
-                  <FaMicrophone size="40px" color="red" />
-                </Box>
-              </Center>
-=======
                   <FaMicrophone 
                     size="40px" 
                     color={isSpeaking ? "green" : "red"} 
@@ -697,7 +496,6 @@ function EnhancedChatbot({ inputText }) {
               >
                 {isSpeaking ? "Listening..." : "Waiting for speech..."}
               </Text>
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
               <Button 
                 mt={4} 
                 colorScheme="red" 
@@ -705,11 +503,7 @@ function EnhancedChatbot({ inputText }) {
                 mx="auto"
                 display="block"
               >
-<<<<<<< HEAD
-                Cancel Recording
-=======
                 Done
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
               </Button>
             </ModalBody>
           </ModalContent>
@@ -719,8 +513,4 @@ function EnhancedChatbot({ inputText }) {
   );
 }
 
-<<<<<<< HEAD
 export default EnhancedChatbot;
-=======
-export default EnhancedChatbot;
->>>>>>> a0c6d6910b9670c166794f0fafe252adc697da53
