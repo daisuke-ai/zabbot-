@@ -47,6 +47,9 @@ export const chatService = {
     try {
       const response = await fetch(`${API_URL}/transcribe`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: formData // Send as FormData instead of JSON
       });
 
