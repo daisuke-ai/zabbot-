@@ -50,6 +50,7 @@ export const chatService = {
         headers: {
           'Content-Type': 'application/json',
         },
+        mode: 'no-cors',
         body: formData // Send as FormData instead of JSON
       });
 
