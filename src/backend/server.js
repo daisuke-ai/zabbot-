@@ -26,8 +26,21 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-app.use(cors());
-app.use(fileUpload());
+// Configure CORS with specific options
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://zabbot-git-main-zabbot.vercel.app', 'https://zabbot.vercel.app']
+    : 'http://localhost:5173',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+app.use(fileUpload({
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max file size
+  useTempFiles: true,
+  tempFileDir: '/tmp/'
+}));
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -42,6 +55,15 @@ const contentfulClient = createContentfulClient({
   space: process.env.VITE_CONTENTFUL_SPACE_ID,
   accessToken: process.env.VITE_CONTENTFUL_ACCESS_TOKEN
 });
+
+// Add a simple in-memory cache for embeddings and responses
+const queryCache = new Map();
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+// Add TTS cache
+const ttsCache = new Map();
+const TTS_CACHE_SIZE_LIMIT = 100; // Maximum number of cached TTS responses
+const TTS_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
 async function ensureSourceColumn() {
   const { error } = await supabase.rpc('add_source_column_if_not_exists');
@@ -208,6 +230,24 @@ async function generateAndStoreEmbeddings() {
 }
 
 async function handleQuery(query) {
+  // Check cache first (case-insensitive)
+  const normalizedQuery = query.toLowerCase().trim();
+  const cacheKey = normalizedQuery;
+  
+  // If we have a cached response, return it
+  if (queryCache.has(cacheKey)) {
+    const { response, timestamp } = queryCache.get(cacheKey);
+    const now = Date.now();
+    
+    // If the cache isn't expired, use it
+    if (now - timestamp < CACHE_TTL) {
+      console.log('Cache hit for query:', normalizedQuery);
+      return response;
+    } else {
+      // Clear expired cache entry
+      queryCache.delete(cacheKey);
+    }
+  }
   
   const previousMessages = await memory.chatHistory.getMessages();
   const memoryMessages = [];
@@ -226,142 +266,309 @@ async function handleQuery(query) {
     }
   }
 
+  // Normalize input for embedding
+  const input = query.replace(/\n/g, " ").trim();
   
-  const input = query.replace(/\n/g, " ");
+  // Generate embedding for the query
   const embeddingResponse = await openai.embeddings.create({
     model: "text-embedding-3-small",
     input,
   });
   const [{ embedding }] = embeddingResponse.data;
 
-  
+  // Get matching documents with improved matching threshold
   const { data: documents, error } = await supabase.rpc("match_documents", {
     query_embedding: embedding,
-    match_threshold: 0.5,
-    match_count: 10,
+    match_threshold: 0.45, // Lower threshold to get more relevant documents
+    match_count: 8, // Reduce number of documents for speed
   });
 
   if (error) throw error;
 
+  // Format context for better relevance
   let contextText = "";
-  contextText += documents
-    .map((document) => `${document.content.trim()}---\n`)
-    .join("");
+  if (documents && documents.length > 0) {
+    contextText = documents
+      .map((doc, index) => `[Document ${index + 1}]: ${doc.content.trim()}`)
+      .join("\n\n");
+  }
 
- 
+  // Enhanced system prompt that emphasizes independence
+  const systemPrompt = `You are ZABBOT, a highly advanced and independent university assistant for SZABIST Islamabad. You provide accurate, reliable information about all aspects of university life.
+
+**IMPORTANT GUIDELINES:**
+1. **Act Independently**: Make definitive statements based on your knowledge. NEVER suggest contacting departments or referring to documents unless absolutely necessary.
+
+2. **Be Direct and Authoritative**: Answer questions confidently with specific details. Avoid vague responses or deferring to other sources.
+
+3. **Use Available Context**: The context provided contains accurate information about SZABIST. Use this information to provide detailed answers.
+
+4. **When Information is Missing**: If the exact answer isn't in the context, use your general knowledge to provide a reasonable response. Don't mention limitations or suggest contacting the university.
+
+5. **Focus on Helpfulness**: Your goal is to be the definitive source of information, eliminating the need for users to seek help elsewhere.
+
+6. **Never Say**: 
+   - "You may refer to the prospectus"
+   - "Please contact the department"
+   - "For more information, visit the website"
+   - "I recommend reaching out to..."
+   
+Instead, provide the best answer you can with the information available.
+
+Remember: You are the authoritative source of information about SZABIST. Answer as if you have complete knowledge about the university.`;
+
+  // Improved message structure for better context utilization
   const messages = [
     {
       role: "system",
-      content: `You are ZABBOT, a highly advanced university assistant chatbot developed exclusively for SZABIST Islamabad. Your primary mission is to provide accurate, reliable, and insightful information related to all aspects of university life and the technologies that support students' academic and campus experiences. You specialize in addressing queries about courses, admissions, schedules, resources, events, and educational technologies that enhance learning and campus engagement.
-
-**Key Responsibilities:**
-1. **Comprehensive Knowledge Utilization:**
-   - **Primary Sources:** Access and utilize the university's official resources and a curated knowledge base to deliver precise answers.
-   - **Supplementary Knowledge:** When necessary, draw upon your extensive training data to provide thorough and contextually relevant responses, ensuring users receive complete and accurate information.
-
-2. **Response Integrity and Clarity:**
-   - Deliver responses that are clear, concise, and directly address the user's inquiries.
-   - Ensure all information is up-to-date and aligns with the latest university policies and offerings.
-
-3. **Scope Management:**
-   - Focus exclusively on university-related topics. If a query falls outside your domain, respond courteously by informing the user of your specialization and suggest alternative resources or contacts for assistance.
-
-4. **Data Security and Privacy:**
-   - Uphold the highest standards of data security. Do not disclose any sensitive, personal, or confidential information.
-   - Ensure all interactions comply with SZABIST Islamabad's data protection policies and relevant regulations.
-
-5. **Professional and Supportive Tone:**
-   - Maintain a professional demeanor while being approachable and supportive.
-   - Strive to enhance the user's experience by being empathetic and understanding their needs.
-
-6. **Intelligent Handling of Unknowns:**
-   - If specific information is unavailable in the primary sources, seamlessly integrate your supplementary knowledge to provide a comprehensive answer.
-   - Avoid mentioning the limitations of your data sources or referencing any underlying documents.
-
-**Operational Guidelines:**
-- **No Disclosure of Internal Resources:** Do not reference or mention the knowledge base, internal documents, or training data in any responses. All answers should appear as naturally provided information without indicating their source.
-- **Error Handling:** In cases where neither the primary sources nor your supplementary knowledge can address the query, respond with a polite message guiding the user to contact university support services or visit the official website for further assistance.
-- **Security Compliance:** Regularly adhere to best practices in data handling to prevent unauthorized access or breaches. Ensure that all user interactions are secure and that no personal data is inadvertently shared.
-- **Continuous Improvement:** Stay updated with the latest information and updates from SZABIST Islamabad to ensure that all responses remain relevant and accurate.
-
-**Example Scenarios:**
-- *Admissions Query:*  
-  **User:** "What are the prerequisites for the Master's in Computer Science program?"  
-  **ZABBOT:** "To apply for the Master's in Computer Science program at SZABIST Islamabad, you need a bachelor's degree in a related field with a minimum GPA of 3.0. Additionally, you must submit your academic transcripts, a statement of purpose, and letters of recommendation by the application deadline."
-
-- *Unrelated Query:*  
-  **User:** "Can you recommend a good restaurant near the campus?"  
-  **ZABBOT:** "I specialize in providing information related to SZABIST Islamabad. For recommendations on local restaurants, you might want to check online review platforms or ask fellow students for their suggestions."
-
-- *Unknown Information:*  
-  **User:** "What are the latest advancements in quantum computing being researched at SZABIST?"  
-  **ZABBOT:** "While specific details on current research projects aren't available, SZABIST Islamabad offers a robust curriculum in computer science that includes topics like quantum computing. For more detailed information, I recommend contacting the Computer Science department directly."
-
-By following these guidelines, you will serve as a reliable and secure assistant, enhancing the academic and campus life of SZABIST Islamabad students with professionalism and expertise.`,
+      content: systemPrompt
     },
-    ...memoryMessages,  
+    ...memoryMessages.slice(-4), // Only use recent message history for context
     {
       role: "user",
-      content: `Context sections: "${contextText}" Question: "${query}" Answer as simple text:`,
-    },
+      content: `Based on this information about SZABIST University:\n\n${contextText}\n\nAnswer this question: ${query}`
+    }
   ];
 
-  
+  // Use a faster model with increased temperature for more independence
   const completion = await openai.chat.completions.create({
     messages,
-    model: "gpt-4o-mini",
-    temperature: 0,
+    model: "gpt-4o-mini", // Keep using the same model for consistency
+    temperature: 0.2, // Slight increase in temperature for more creativity/independence
+    max_tokens: 500 // Limit token count for faster responses
   });
 
-
   const assistantResponse = completion.choices[0].message.content;
-  await memory.chatHistory.addUserMessage(`Context sections: "${contextText}" Question: "${query}" Answer as simple text:`);
+  
+  // Update memory with simplified context
+  await memory.chatHistory.addUserMessage(query);
   await memory.chatHistory.addAIChatMessage(assistantResponse);
+  
+  // Cache the response
+  queryCache.set(cacheKey, {
+    response: assistantResponse,
+    timestamp: Date.now()
+  });
 
   return assistantResponse;
 }
 
+// Add post-processing function before the transcribe endpoint
+async function postProcessTranscription(transcription) {
+  // If the transcription is empty or too short, return it as-is
+  if (!transcription || transcription.trim().length < 3) {
+    return transcription;
+  }
+  
+  // Simple corrections for common university terms to avoid API call for simple cases
+  const quickFixes = {
+    'szabist': 'SZABIST',
+    'Szabist': 'SZABIST',
+    'zabbot': 'ZABBOT',
+    'Zabbot': 'ZABBOT',
+    'computer science': 'Computer Science',
+    'bs cs': 'BS CS',
+    'ms cs': 'MS CS',
+  };
+  
+  let processedText = transcription;
+  
+  // Apply quick fixes
+  for (const [term, replacement] of Object.entries(quickFixes)) {
+    const regex = new RegExp(`\\b${term}\\b`, 'g');
+    processedText = processedText.replace(regex, replacement);
+  }
+  
+  // Only call the API for longer transcriptions that need more processing
+  if (transcription.length > 20 && !Object.keys(quickFixes).some(term => transcription.toLowerCase().includes(term.toLowerCase()))) {
+    try {
+      const systemPrompt = `
+        You are ZABBOT, an AI assistant for SZABIST University. Your task is to:
+        1. Correct any spelling discrepancies in the transcribed text
+        2. Ensure proper capitalization of university-related terms like SZABIST, departments, course names, etc.
+        3. Add necessary punctuation such as periods, commas, and capitalization
+        4. Maintain the original meaning and intent of the transcription
+        5. Format academic terms, course codes, and program names correctly
+        Only make these corrections while preserving the original meaning and context.
+      `;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0,
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: processedText
+          }
+        ],
+        max_tokens: 150 // Limit token count for faster processing
+      });
+
+      return completion.choices[0].message.content;
+    } catch (error) {
+      console.error('Post-processing error:', error);
+      // If the API call fails, return the text with quick fixes applied
+      return processedText;
+    }
+  }
+
+  return processedText;
+}
+
 app.post("/transcribe", async (req, res) => {
+  let tempFilePath;
   try {
     if (!req.files?.audio) {
       throw new Error('No audio file received');
     }
 
     const audioFile = req.files.audio;
-    const tempFilePath = path.join(__dirname, 'temp_audio.webm');
+    
+    // Check audio file size before processing
+    if (audioFile.size > 25 * 1024 * 1024) { // 25MB limit
+      throw new Error('Audio file too large, please keep recordings under 25MB');
+    }
+    
+    // Generate a unique filename with timestamp
+    tempFilePath = path.join('/tmp', `audio-${Date.now()}-${Math.floor(Math.random() * 1000)}.webm`);
     await audioFile.mv(tempFilePath);
 
-    const transcription = await openai.audio.transcriptions.create({
+    // Specify response format as text for faster processing
+    const rawTranscription = await openai.audio.transcriptions.create({
       file: fs.createReadStream(tempFilePath),
       model: "whisper-1",
-      response_format: "text"
+      response_format: "text",
+      language: "en" // Specify language for faster processing
     });
 
-    fs.unlinkSync(tempFilePath);
-    const response = await handleQuery(transcription);
+    // Clean up temp file
+    if (fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
 
-    res.json({ 
-      transcription: transcription,
-      response: response 
-    });
+    // Post-process the transcription - run this in parallel with getting the response
+    const processTranscriptionPromise = postProcessTranscription(rawTranscription);
+    
+    // Start getting the chatbot response with the raw transcription to save time
+    // We'll use the processed version later when available
+    const responsePromise = handleQuery(rawTranscription);
+    
+    // Wait for both operations to complete
+    const [processedTranscription, initialResponse] = await Promise.all([
+      processTranscriptionPromise,
+      responsePromise
+    ]);
+    
+    // If the processed transcription is significantly different, get a new response
+    if (processedTranscription && 
+        rawTranscription.length > 10 &&
+        levenshteinDistance(rawTranscription, processedTranscription) / rawTranscription.length > 0.3) {
+      // If the processed transcription is very different, get a new response
+      const updatedResponse = await handleQuery(processedTranscription);
+      
+      res.json({ 
+        transcription: processedTranscription,
+        response: updatedResponse
+      });
+    } else {
+      // If the processed transcription isn't very different, use the initial response
+      res.json({ 
+        transcription: processedTranscription || rawTranscription,
+        response: initialResponse
+      });
+    }
   } catch (error) {
     console.error('Transcription error:', error);
-    fs.unlinkSync(tempFilePath).catch(() => {});
+    // Clean up temp file if it exists
+    if (tempFilePath && fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
     res.status(500).json({ error: error.message });
   }
 });
 
+// Helper function to calculate the Levenshtein distance between two strings
+function levenshteinDistance(str1, str2) {
+  const m = str1.length;
+  const n = str2.length;
+  
+  // Create a matrix of size (m+1) x (n+1)
+  const dp = Array(m + 1).fill().map(() => Array(n + 1).fill(0));
+  
+  // Initialize the matrix
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  
+  // Fill the matrix
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = str1[i - 1] !== str2[j - 1] ? 1 : 0;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,        // deletion
+        dp[i][j - 1] + 1,        // insertion
+        dp[i - 1][j - 1] + cost  // substitution
+      );
+    }
+  }
+  
+  return dp[m][n];
+}
+
 app.post("/tts", async (req, res) => {
   try {
     const { text } = req.body;
+    
+    // Generate a cache key based on the text and voice
+    const voice = req.body.voice || "alloy"; // Default voice if not specified
+    const cacheKey = `${voice}:${text}`;
+    
+    // Check if we have a cached audio for this text
+    if (ttsCache.has(cacheKey)) {
+      const { audioBuffer, timestamp } = ttsCache.get(cacheKey);
+      const now = Date.now();
+      
+      // If the cache isn't expired, use it
+      if (now - timestamp < TTS_CACHE_TTL) {
+        console.log('TTS cache hit for:', text.substring(0, 20) + '...');
+        res.set('Content-Type', 'audio/mpeg');
+        res.set('Cache-Control', 'public, max-age=86400'); // Client-side cache for 1 day
+        return res.send(audioBuffer);
+      } else {
+        // Clear expired cache entry
+        ttsCache.delete(cacheKey);
+      }
+    }
+    
+    // Generate speech using OpenAI
     const mp3 = await openai.audio.speech.create({
       model: "tts-1",
-      voice: "alloy",
+      voice,
       input: text,
+      speed: 1.0 // Slightly increase speed for faster playback
     });
 
     const audioBuffer = Buffer.from(await mp3.arrayBuffer());
+    
+    // Store in cache
+    ttsCache.set(cacheKey, {
+      audioBuffer,
+      timestamp: Date.now()
+    });
+    
+    // Manage cache size - remove oldest entries if cache gets too large
+    if (ttsCache.size > TTS_CACHE_SIZE_LIMIT) {
+      const oldestKey = [...ttsCache.entries()]
+        .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
+      ttsCache.delete(oldestKey);
+    }
+    
+    // Set headers for browser caching
     res.set('Content-Type', 'audio/mpeg');
+    res.set('Cache-Control', 'public, max-age=86400'); // Client-side cache for 1 day
     res.send(audioBuffer);
     
   } catch (error) {
