@@ -422,32 +422,106 @@ async function postProcessTranscription(transcription) {
 app.post("/transcribe", async (req, res) => {
   let tempFilePath;
   try {
-    if (!req.files?.audio) {
-      throw new Error('No audio file received');
+    console.log('Transcribe request received');
+    
+    // Check if req.files exists
+    if (!req.files) {
+      console.error('No files object in request');
+      return res.status(400).json({ error: 'No files were uploaded. Make sure you have access to your microphone.' });
+    }
+    
+    // Check for audio file
+    if (!req.files.audio) {
+      console.error('No audio file in request.files');
+      return res.status(400).json({ error: 'No audio file received. Please check your microphone permissions.' });
     }
 
     const audioFile = req.files.audio;
+    console.log(`Received audio file: ${audioFile.name}, size: ${audioFile.size} bytes, mimetype: ${audioFile.mimetype}`);
     
     // Check audio file size before processing
     if (audioFile.size > 25 * 1024 * 1024) { // 25MB limit
-      throw new Error('Audio file too large, please keep recordings under 25MB');
+      console.error('File too large:', audioFile.size);
+      return res.status(400).json({ error: 'Audio file too large, please keep recordings under 25MB' });
+    }
+    
+    // Check for tiny files which might indicate recording issues
+    if (audioFile.size < 1000) { // Less than 1KB
+      console.error('File too small:', audioFile.size);
+      return res.status(400).json({ error: 'Audio file too small or empty. Please try recording again.' });
     }
     
     // Generate a unique filename with timestamp
     tempFilePath = path.join('/tmp', `audio-${Date.now()}-${Math.floor(Math.random() * 1000)}.webm`);
-    await audioFile.mv(tempFilePath);
+    console.log(`Saving to temp file: ${tempFilePath}`);
+    
+    try {
+      await audioFile.mv(tempFilePath);
+    } catch (moveError) {
+      console.error('Error moving audio file:', moveError);
+      return res.status(500).json({ error: `Failed to process audio file: ${moveError.message}` });
+    }
+    
+    console.log('File moved successfully, sending to Whisper API');
+    
+    // Verify the file exists and is readable
+    if (!fs.existsSync(tempFilePath)) {
+      console.error('Temp file does not exist after move');
+      return res.status(500).json({ error: 'Failed to save audio file' });
+    }
+    
+    // Get file stats
+    const stats = fs.statSync(tempFilePath);
+    console.log(`Temp file size: ${stats.size} bytes`);
+    
+    if (stats.size === 0) {
+      console.error('Temp file is empty');
+      fs.unlinkSync(tempFilePath);
+      return res.status(400).json({ error: 'Audio file is empty' });
+    }
+
+    // Create readable stream
+    const fileStream = fs.createReadStream(tempFilePath);
+    fileStream.on('error', (streamErr) => {
+      console.error('Stream error:', streamErr);
+    });
 
     // Specify response format as text for faster processing
-    const rawTranscription = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(tempFilePath),
-      model: "whisper-1",
-      response_format: "text",
-      language: "en" // Specify language for faster processing
-    });
+    let rawTranscription;
+    try {
+      rawTranscription = await openai.audio.transcriptions.create({
+        file: fileStream,
+        model: "whisper-1",
+        response_format: "text",
+        language: "en" // Specify language for faster processing
+      });
+      console.log('Transcription successful:', rawTranscription);
+    } catch (whisperError) {
+      console.error('Whisper API error:', whisperError);
+      
+      // Clean up temp file
+      if (fs.existsSync(tempFilePath)) {
+        fs.unlinkSync(tempFilePath);
+      }
+      
+      return res.status(500).json({ 
+        error: `Transcription failed: ${whisperError.message}`,
+        details: whisperError.toString()
+      });
+    }
 
     // Clean up temp file
     if (fs.existsSync(tempFilePath)) {
       fs.unlinkSync(tempFilePath);
+      console.log('Temp file deleted');
+    }
+
+    // If transcription is empty or too short
+    if (!rawTranscription || rawTranscription.trim().length < 2) {
+      console.log('Transcription empty or too short');
+      return res.status(400).json({ 
+        error: 'Could not transcribe audio. Please speak clearly or try typing your question.'
+      });
     }
 
     // Post-process the transcription - run this in parallel with getting the response
@@ -462,21 +536,24 @@ app.post("/transcribe", async (req, res) => {
       processTranscriptionPromise,
       responsePromise
     ]);
+    console.log('Both processing steps completed');
     
     // If the processed transcription is significantly different, get a new response
     if (processedTranscription && 
         rawTranscription.length > 10 &&
         levenshteinDistance(rawTranscription, processedTranscription) / rawTranscription.length > 0.3) {
       // If the processed transcription is very different, get a new response
+      console.log('Significant difference in transcription, getting updated response');
       const updatedResponse = await handleQuery(processedTranscription);
       
-      res.json({ 
+      return res.json({ 
         transcription: processedTranscription,
         response: updatedResponse
       });
     } else {
       // If the processed transcription isn't very different, use the initial response
-      res.json({ 
+      console.log('Using initial response with processed transcription');
+      return res.json({ 
         transcription: processedTranscription || rawTranscription,
         response: initialResponse
       });
@@ -485,9 +562,17 @@ app.post("/transcribe", async (req, res) => {
     console.error('Transcription error:', error);
     // Clean up temp file if it exists
     if (tempFilePath && fs.existsSync(tempFilePath)) {
-      fs.unlinkSync(tempFilePath);
+      try {
+        fs.unlinkSync(tempFilePath);
+        console.log('Temp file deleted after error');
+      } catch (cleanupError) {
+        console.error('Failed to delete temp file:', cleanupError);
+      }
     }
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ 
+      error: `Voice processing failed: ${error.message}`,
+      details: error.stack
+    });
   }
 });
 

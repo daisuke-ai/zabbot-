@@ -88,9 +88,47 @@ function EnhancedChatbot({ inputText }) {
       // Reset state
       audioChunksRef.current = [];
       
-      // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      // Request microphone access with specific constraints for better compatibility
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 44100
+        }
+      });
+      
+      // Check browser support for different audio formats
+      let mimeType = 'audio/webm';
+      
+      // Create a MediaRecorder with supported format and good bitrate
+      try {
+        // Try to detect what formats are supported
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          mimeType = 'audio/webm;codecs=opus';
+        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+          mimeType = 'audio/webm';
+        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          mimeType = 'audio/mp4';
+        } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
+          mimeType = 'audio/ogg;codecs=opus';
+        } else {
+          // Fall back to default
+          console.warn('No preferred MIME type supported, using default');
+        }
+        
+        mediaRecorderRef.current = new MediaRecorder(stream, {
+          mimeType,
+          audioBitsPerSecond: 128000
+        });
+        
+        console.log(`Using MIME type: ${mimeType}`);
+      } catch (recorderError) {
+        console.warn('Error creating MediaRecorder with specific MIME type:', recorderError);
+        // Fallback to default options
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        console.log('Using default MediaRecorder');
+      }
       
       // Set up audio visualization if browser supports it
       try {
@@ -117,7 +155,7 @@ function EnhancedChatbot({ inputText }) {
         setIsSpeaking(true);
       }
 
-      // Collect audio data
+      // Collect audio data more frequently for better quality
       mediaRecorderRef.current.ondataavailable = (e) => {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
@@ -132,8 +170,13 @@ function EnhancedChatbot({ inputText }) {
             throw new Error('No audio data recorded');
           }
           
+          // Get the MIME type that was actually used
+          const actualMimeType = mediaRecorderRef.current.mimeType || 'audio/webm';
+          console.log(`Creating blob with MIME type: ${actualMimeType}`);
+          
+          // Create blob with the correct MIME type
           const audioBlob = new Blob(audioChunksRef.current, { 
-            type: 'audio/webm; codecs=opus' 
+            type: actualMimeType
           });
           
           // Make sure we have valid audio data
@@ -141,8 +184,11 @@ function EnhancedChatbot({ inputText }) {
             throw new Error('Audio recording too short');
           }
           
+          console.log(`Audio blob created, size: ${audioBlob.size} bytes, type: ${audioBlob.type}`);
+          
           const formData = new FormData();
-          formData.append('audio', audioBlob, 'recording.webm');
+          const filename = `recording.${actualMimeType.includes('webm') ? 'webm' : actualMimeType.includes('mp4') ? 'm4a' : 'ogg'}`;
+          formData.append('audio', audioBlob, filename);
           
           // Show user message even before API call completes
           const tempUserMessageId = Date.now();
@@ -150,26 +196,54 @@ function EnhancedChatbot({ inputText }) {
             { id: tempUserMessageId, text: "Processing your voice message...", sender: 'user', timestamp: new Date(), isTemp: true }
           ]);
 
-          // Call the API
-          const { transcription, response } = await chatService.transcribeAudio(formData);
-          
-          // Replace temporary message and add bot response
-          setMessages(prev => [
-            ...prev.filter(msg => msg.id !== tempUserMessageId),
-            { text: transcription, sender: 'user', timestamp: new Date() },
-            { text: response, sender: 'bot', timestamp: new Date() }
-          ]);
-
-          // Optional: Generate speech response
+          // Call the API with better error handling
           try {
-            const ttsAudio = await chatService.generateSpeech(response);
-            if (ttsAudio && audioRef.current) {
-              audioRef.current.src = ttsAudio;
-              await audioRef.current.play();
+            const { transcription, response } = await chatService.transcribeAudio(formData);
+            
+            // Check if we got valid responses
+            if (!transcription) {
+              throw new Error('No transcription returned from server');
             }
-          } catch (ttsError) {
-            console.warn('TTS playback failed:', ttsError);
-            // Non-critical error, don't show to user
+            
+            // Replace temporary message and add bot response
+            setMessages(prev => [
+              ...prev.filter(msg => msg.id !== tempUserMessageId),
+              { text: transcription, sender: 'user', timestamp: new Date() },
+              { text: response, sender: 'bot', timestamp: new Date() }
+            ]);
+
+            // Optional: Generate speech response
+            try {
+              const ttsAudio = await chatService.generateSpeech(response);
+              if (ttsAudio && audioRef.current) {
+                audioRef.current.src = ttsAudio;
+                await audioRef.current.play();
+              }
+            } catch (ttsError) {
+              console.warn('TTS playback failed:', ttsError);
+              // Non-critical error, don't show to user
+            }
+          } catch (apiError) {
+            console.error('API error during voice processing:', apiError);
+            
+            // Show error message and remove temporary message
+            setMessages(prev => [
+              ...prev.filter(msg => msg.id !== tempUserMessageId),
+              { 
+                text: "Sorry, I couldn't process your voice message. Please try again or type your question.", 
+                sender: 'bot', 
+                timestamp: new Date(),
+                isError: true
+              }
+            ]);
+            
+            toast({
+              title: "Voice Processing Failed",
+              description: apiError.message || "Please try again or type your question",
+              status: "error",
+              duration: 5000,
+              isClosable: true,
+            });
           }
         } catch (error) {
           console.error('Voice processing error:', error);
