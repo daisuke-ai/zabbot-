@@ -11,7 +11,8 @@ import {
   Menu,
   MenuButton,
   MenuList,
-  MenuItem
+  MenuItem,
+  Divider
 } from '@chakra-ui/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HamburgerIcon } from '@chakra-ui/icons';
@@ -19,7 +20,7 @@ import szabistLogo from '../public/images/images.png';
 import { useAuth } from '../context/AuthContext';
 
 function Header() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const headerBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('szabist.500', 'szabist.400');
@@ -27,6 +28,15 @@ function Header() {
   const handleNavigation = (path) => {
     window.scrollTo(0, 0);
     navigate(path);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const NavButton = ({ to, children, ...props }) => (
@@ -127,11 +137,39 @@ function Header() {
             
             <Button
               as={Link}
-              to={user ? `/portal-redirect` : '/login'}
+              to="/portal"
+              colorScheme="szabist"
               variant="ghost"
+              size="lg"
+              fontWeight="700"
+              px={4}
+              fontFamily="'Poppins', sans-serif"
+              fontSize="md"
+              _hover={{ 
+                bg: 'szabist.50',
+                transform: 'translateY(-2px)',
+                transition: 'all 0.2s'
+              }}
             >
               Portal
             </Button>
+            
+            {user && (
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                colorScheme="red"
+                size="md"
+                leftIcon={<Box as="span" fontSize="1.2em" role="img" aria-label="Logout">🚪</Box>}
+                _hover={{ 
+                  bg: 'red.50',
+                  transform: 'translateY(-2px)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Logout
+              </Button>
+            )}
           </HStack>
 
           {/* Mobile Navigation */}
@@ -155,6 +193,16 @@ function Header() {
                 <MenuItem as={Link} to="/blog">University Blog</MenuItem>
                 <MenuItem as={Link} to="/chatbot">AI Assistant</MenuItem>
                 <MenuItem as={Link} to="/portal">Portal</MenuItem>
+                
+                {user && (
+                  <MenuItem 
+                    onClick={handleLogout}
+                    icon={<Box as="span" fontSize="1.2em" role="img" aria-label="Logout">🚪</Box>}
+                    color="red.500"
+                  >
+                    Logout
+                  </MenuItem>
+                )}
               </MenuList>
             </Menu>
           </Box>

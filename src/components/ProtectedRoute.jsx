@@ -6,8 +6,12 @@ function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (!loading && !user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/portal-login" state={{ from: location }} replace />;
   }
 
   return children;

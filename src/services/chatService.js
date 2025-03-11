@@ -23,6 +23,49 @@ export const chatService = {
     }
   },
 
+  async sendMessageStreaming(message, onChunk) {
+    try {
+      const response = await fetch(`${API_URL}/query-stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: message }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      // Check if the response is a stream
+      if (!response.body) {
+        throw new Error('ReadableStream not supported in this browser.');
+      }
+
+      // Create a reader to read the stream
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      
+      // Process the stream
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          break;
+        }
+        
+        // Decode the chunk and call the callback
+        const chunk = decoder.decode(value, { stream: true });
+        onChunk(chunk);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Streaming Error:', error);
+      throw error;
+    }
+  },
+
   async generateSpeech(text) {
     try {
       const response = await fetch(`${API_URL}/tts`, {

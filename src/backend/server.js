@@ -103,14 +103,108 @@ app.post("/embed", async (req, res) => {
   }
 });
 
+// Regular query endpoint (non-streaming)
 app.post("/query", async (req, res) => {
   try {
     const { query } = req.body;
-    const result = await handleQuery(query);
-    res.status(200).json(result);
+    const response = await handleQuery(query);
+    res.json(response);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error occurred" });
+    console.error('Query error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Streaming query endpoint
+app.post("/query-stream", async (req, res) => {
+  try {
+    const { query } = req.body;
+    
+    // Set appropriate headers for streaming
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    
+    // Get embedding for the query
+    const input = query.replace(/\n/g, " ").trim();
+    const embeddingResponse = await openai.embeddings.create({
+      model: "text-embedding-3-small",
+      input,
+    });
+    const [{ embedding }] = embeddingResponse.data;
+
+    // Get matching documents
+    const { data: documents, error } = await supabase.rpc("match_documents", {
+      query_embedding: embedding,
+      match_threshold: 0.45,
+      match_count: 8,
+    });
+
+    if (error) throw error;
+
+    // Format context
+    let contextText = "";
+    if (documents && documents.length > 0) {
+      contextText = documents
+        .map((doc, index) => `[Document ${index + 1}]: ${doc.content.trim()}`)
+        .join("\n\n");
+    }
+
+    // Enhanced system prompt that emphasizes independence
+    const systemPrompt = `You are ZABBOT, a highly advanced and independent university assistant for SZABIST Islamabad. You provide accurate, reliable information about all aspects of university life.
+
+**IMPORTANT GUIDELINES:**
+1. **Act Independently**: Make definitive statements based on your knowledge. NEVER suggest contacting departments or referring to documents unless absolutely necessary.
+
+2. **Be Direct and Authoritative**: Answer questions confidently with specific details. Avoid vague responses or deferring to other sources.
+
+3. **Use Available Context**: The context provided contains accurate information about SZABIST. Use this information to provide detailed answers.
+
+4. **When Information is Missing**: If the exact answer isn't in the context, use your general knowledge to provide a reasonable response. Don't mention limitations or suggest contacting the university.
+
+5. **Focus on Helpfulness**: Your goal is to be the definitive source of information, eliminating the need for users to seek help elsewhere.
+
+6. **Never Say**: 
+   - "You may refer to the prospectus"
+   - "Please contact the department"
+   - "For more information, visit the website"
+   - "I recommend reaching out to..."
+   
+Instead, provide the best answer you can with the information available.
+
+Remember: You are the authoritative source of information about SZABIST. Answer as if you have complete knowledge about the university.`;
+
+    // Create streaming completion
+    const stream = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Based on this information about SZABIST University:\n\n${contextText}\n\nAnswer this question: ${query}` }
+      ],
+      temperature: 0.2,
+      stream: true,
+    });
+
+    // Stream the response to the client
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || "";
+      if (content) {
+        res.write(content);
+      }
+    }
+    
+    // End the response
+    res.end();
+  } catch (error) {
+    console.error('Streaming query error:', error);
+    // If headers haven't been sent yet, send error as JSON
+    if (!res.headersSent) {
+      return res.status(500).json({ error: error.message });
+    }
+    // If headers already sent, end the stream with error message
+    res.write(`\n\nError: ${error.message}`);
+    res.end();
   }
 });
 

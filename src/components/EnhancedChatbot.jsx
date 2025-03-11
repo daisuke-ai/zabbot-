@@ -15,11 +15,14 @@ import {
   ModalBody,
   Center,
   HStack,
-  useToast
+  useToast,
+  CircularProgress,
+  CircularProgressLabel,
+  Badge
 } from '@chakra-ui/react';
 import { chatService } from '../services/chatService';
 import '../styles/blog.css';
-import { FaMicrophone, FaStop, FaPaperPlane } from 'react-icons/fa';
+import { FaMicrophone, FaStop, FaPaperPlane, FaVolumeMute } from 'react-icons/fa';
 
 function EnhancedChatbot({ inputText }) {
   const [messages, setMessages] = useState([]);
@@ -36,6 +39,12 @@ function EnhancedChatbot({ inputText }) {
   const animationFrameRef = useRef();
   const audioContextRef = useRef();
   const toast = useToast();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [recordingProgress, setRecordingProgress] = useState(0);
+  const recordingTimerRef = useRef(null);
+  const MAX_RECORDING_TIME = 10; // in seconds
+  const [streamingResponse, setStreamingResponse] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -51,7 +60,7 @@ function EnhancedChatbot({ inputText }) {
     if (messages.length > 0) {
       scrollToBottom();
     }
-  }, [messages]);
+  }, [messages, streamingResponse]); // Also scroll when streaming response updates
 
   useEffect(() => {
     if (inputText) {
@@ -80,13 +89,85 @@ function EnhancedChatbot({ inputText }) {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    const audioElement = audioRef.current;
+    if (audioElement) {
+      const handlePlay = () => setIsPlaying(true);
+      const handleEnded = () => setIsPlaying(false);
+      const handlePause = () => setIsPlaying(false);
+      
+      audioElement.addEventListener('play', handlePlay);
+      audioElement.addEventListener('ended', handleEnded);
+      audioElement.addEventListener('pause', handlePause);
+      
+      return () => {
+        audioElement.removeEventListener('play', handlePlay);
+        audioElement.removeEventListener('ended', handleEnded);
+        audioElement.removeEventListener('pause', handlePause);
+      };
+    }
+  }, [audioRef.current]);
+
+  const sendMessage = async () => {
+    if (!inputMessage.trim()) return;
+    setIsLoading(true);
+    
+    try {
+      // Add user message immediately
+      const userMessage = {
+        text: inputMessage,
+        sender: 'user',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, userMessage]);
+      setInputMessage('');
+      
+      // Use regular non-streaming functionality since streaming isn't working properly
+      const response = await chatService.sendMessage(userMessage.text);
+      
+      // Add bot response
+      setMessages(prev => [...prev, {
+        text: response,
+        sender: 'bot',
+        timestamp: new Date()
+      }]);
+      
+      // Optional: Generate speech response
+      try {
+        const ttsAudio = await chatService.generateSpeech(response);
+        if (ttsAudio && audioRef.current) {
+          audioRef.current.src = ttsAudio;
+          await audioRef.current.play();
+        }
+      } catch (error) {
+        console.error('TTS error:', error);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const startRecording = async () => {
     try {
       // Reset state
       audioChunksRef.current = [];
+      setRecordingProgress(0);
       
       // Request microphone access with specific constraints for better compatibility
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -190,7 +271,7 @@ function EnhancedChatbot({ inputText }) {
           const filename = `recording.${actualMimeType.includes('webm') ? 'webm' : actualMimeType.includes('mp4') ? 'm4a' : 'ogg'}`;
           formData.append('audio', audioBlob, filename);
           
-          // Show user message even before API call completes
+          // Show a loading indicator for voice processing
           const tempUserMessageId = Date.now();
           setMessages(prev => [...prev, 
             { id: tempUserMessageId, text: "Processing your voice message...", sender: 'user', timestamp: new Date(), isTemp: true }
@@ -205,24 +286,38 @@ function EnhancedChatbot({ inputText }) {
               throw new Error('No transcription returned from server');
             }
             
-            // Replace temporary message and add bot response
-            setMessages(prev => [
-              ...prev.filter(msg => msg.id !== tempUserMessageId),
-              { text: transcription, sender: 'user', timestamp: new Date() },
-              { text: response, sender: 'bot', timestamp: new Date() }
-            ]);
-
-            // Optional: Generate speech response
-            try {
-              const ttsAudio = await chatService.generateSpeech(response);
-              if (ttsAudio && audioRef.current) {
-                audioRef.current.src = ttsAudio;
-                await audioRef.current.play();
+            console.log("Received transcription:", transcription);
+            console.log("Received response:", response);
+            
+            // First, replace the temporary user message with the actual transcription
+            setMessages(prev => prev.map(msg => 
+              msg.id === tempUserMessageId
+                ? { ...msg, id: undefined, text: transcription, isTemp: false }
+                : msg
+            ));
+            
+            // Then, after a small delay (to ensure UI updates in sequence), add the bot response
+            setTimeout(() => {
+              setMessages(prev => [...prev, 
+                { text: response, sender: 'bot', timestamp: new Date() }
+              ]);
+              
+              // Optional: Generate speech response
+              try {
+                const ttsAudio = chatService.generateSpeech(response)
+                  .then(audioSrc => {
+                    if (audioSrc && audioRef.current) {
+                      audioRef.current.src = audioSrc;
+                      audioRef.current.play().catch(err => console.warn('Audio playback failed:', err));
+                    }
+                  })
+                  .catch(err => console.warn('TTS generation failed:', err));
+              } catch (ttsError) {
+                console.warn('TTS playback failed:', ttsError);
+                // Non-critical error, don't show to user
               }
-            } catch (ttsError) {
-              console.warn('TTS playback failed:', ttsError);
-              // Non-critical error, don't show to user
-            }
+            }, 100);
+            
           } catch (apiError) {
             console.error('API error during voice processing:', apiError);
             
@@ -253,13 +348,6 @@ function EnhancedChatbot({ inputText }) {
             ? "The request timed out. Please check your internet connection and try again."
             : "Voice processing failed. Please try again or type your question.";
           
-          setMessages(prev => [...prev.filter(m => !m.isTemp), {
-            text: errorMessage,
-            sender: 'bot',
-            timestamp: new Date(),
-            isError: true
-          }]);
-          
           toast({
             title: "Voice Processing Failed",
             description: errorMessage,
@@ -277,16 +365,28 @@ function EnhancedChatbot({ inputText }) {
         }
       };
 
+      // Add the progress timer
+      let secondsElapsed = 0;
+      recordingTimerRef.current = setInterval(() => {
+        secondsElapsed++;
+        const progress = (secondsElapsed / MAX_RECORDING_TIME) * 100;
+        setRecordingProgress(progress);
+        
+        if (secondsElapsed >= MAX_RECORDING_TIME) {
+          stopRecording();
+        }
+      }, 1000);
+
       // Start recording
       mediaRecorderRef.current.start();
       setIsRecording(true);
       
-      // Auto-stop after 10 seconds
+      // Auto-stop after MAX_RECORDING_TIME seconds
       setTimeout(() => {
         if (mediaRecorderRef.current?.state === 'recording') {
           stopRecording();
         }
-      }, 10000); // 10 second maximum
+      }, MAX_RECORDING_TIME * 1000);
     } catch (error) {
       console.error('Error starting recording:', error);
       
@@ -320,7 +420,11 @@ function EnhancedChatbot({ inputText }) {
       if (audioContextRef.current) {
         audioContextRef.current.close().catch(err => console.error('Error closing audio context:', err));
       }
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
       setIsSpeaking(false);
+      setRecordingProgress(0);
       
       // Stop recording
       mediaRecorderRef.current.stop();
@@ -328,56 +432,10 @@ function EnhancedChatbot({ inputText }) {
     }
   };
 
-  const sendMessage = async () => {
-    if (!inputMessage.trim()) return;
-    
-    const userMsg = inputMessage.trim();
-    setInputMessage('');
-    setIsLoading(true);
-    
-    try {
-      // Add user message immediately
-      setMessages(prev => [...prev, {
-        text: userMsg,
-        sender: 'user',
-        timestamp: new Date()
-      }]);
-
-      // Get bot response
-      const response = await chatService.sendMessage(userMsg);
-      
-      // Add bot response
-      setMessages(prev => [...prev, {
-        text: response,
-        sender: 'bot',
-        timestamp: new Date()
-      }]);
-    } catch (error) {
-      console.error('Error:', error);
-      
-      let errorMessage = "Sorry, I'm having trouble connecting. Please try again.";
-      
-      if (error.message && error.message.includes('Network')) {
-        errorMessage = "Network error. Please check your internet connection.";
-      }
-      
-      setMessages(prev => [...prev, {
-        text: errorMessage,
-        sender: 'bot',
-        timestamp: new Date(),
-        isError: true
-      }]);
-      
-      toast({
-        title: "Connection Error",
-        description: errorMessage,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setIsLoading(false);
-      if (inputRef.current) inputRef.current.focus();
+  const stopAudioPlayback = () => {
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
   };
 
@@ -389,149 +447,214 @@ function EnhancedChatbot({ inputText }) {
   };
 
   return (
-    <Box h="55vh" maxH="600px" w="full" maxW="2xl" mx="auto">
+    <Box h="65vh" maxH="700px" w="full" maxW="3xl" mx="auto" borderRadius="lg" boxShadow="lg" overflow="hidden">
       <Box
         display="flex"
         flexDirection="column"
         h="full"
         overflow="hidden"
+        bgColor="white"
       >
+        {/* Header */}
+        <Box bg="gray.700" p={3} color="white">
+          <Flex alignItems="center">
+            <Avatar
+              size="sm"
+              name="ZABBOT"
+              bg="blue.500"
+              color="white"
+              mr={2}
+            />
+            <Text fontWeight="bold">ZABBOT Assistant</Text>
+            <Flex ml="auto">
+              <Badge colorScheme="green" variant="subtle" px={2} py={1} borderRadius="full">Online</Badge>
+            </Flex>
+          </Flex>
+        </Box>
+        
         {/* Messages Container */}
         <Box
-          ref={chatContainerRef}
           flex="1"
           overflowY="auto"
           p={4}
-          className='no-scrollbar no-scrollbar::-webkit-scrollbar'
+          ref={chatContainerRef}
+          css={{
+            '&::-webkit-scrollbar': {
+              width: '6px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: '#f1f1f1',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#c5c5c5',
+              borderRadius: '24px',
+            },
+          }}
+          bg="gray.50"
         >
           <VStack spacing={4} align="stretch">
-            {messages.map((msg, index) => (
+            {messages.map((message, index) => (
               <Flex
-                key={index}
-                justify={msg.sender === 'user' ? 'flex-end' : 'flex-start'}
-                align="start"
-                gap={2}
-                opacity={msg.isTemp ? 0.7 : 1}
+                key={message.id || index}
+                justify={message.sender === 'user' ? 'flex-end' : 'flex-start'}
+                mb={2}
               >
-                {msg.sender === 'bot' && (
+                {message.sender === 'bot' && (
                   <Avatar
                     size="sm"
                     name="ZABBOT"
-                    bg="blue.600"
+                    bg="gray.700"
                     color="white"
+                    mr={2}
+                    alignSelf="flex-end"
+                    mb={1}
                   />
                 )}
                 <Box
-                  maxW="80%"
-                  bg={msg.sender === 'user'
-                    ? 'blue.500'
-                    : msg.isError
-                      ? 'red.50'
-                      : 'gray.100'}
-                  color={msg.sender === 'user'
-                    ? 'white'
-                    : msg.isError
-                      ? 'red.800'
-                      : 'black'}
-                  p={3}
+                  bg={message.sender === 'user' ? 'blue.600' : 'white'}
+                  color={message.sender === 'user' ? 'white' : 'gray.800'}
                   borderRadius="lg"
+                  p={3}
+                  maxW="75%"
                   boxShadow="sm"
+                  borderWidth={message.sender === 'bot' ? '1px' : '0'}
+                  borderColor="gray.200"
                 >
-                  <Text fontSize="sm" whiteSpace="pre-wrap">
-                    {msg.text}
+                  <Text fontWeight="medium" fontSize="sm">
+                    {message.isTemp ? (
+                      <Spinner size="sm" mr={2} color="gray.400" />
+                    ) : message.isError ? (
+                      <Text color="red.500">{message.text}</Text>
+                    ) : message.text}
                   </Text>
-                  <Text fontSize="xs" opacity={0.7} mt={1}>
-                    {formatTimestamp(msg.timestamp)}
+                  <Text
+                    fontSize="xs"
+                    opacity={0.7}
+                    textAlign="right"
+                    mt={1}
+                  >
+                    {formatTimestamp(message.timestamp)}
                   </Text>
                 </Box>
-                {msg.sender === 'user' && (
+                {message.sender === 'user' && (
                   <Avatar
                     size="sm"
                     name="User"
-                    bg="green.500"
+                    bg="gray.500"
                     color="white"
+                    ml={2}
+                    alignSelf="flex-end"
+                    mb={1}
                   />
                 )}
               </Flex>
             ))}
-            {(isLoading || isProcessingVoice) && (
-              <Flex align="center" p={2}>
-                <Avatar
-                  size="sm"
-                  name="ZABBOT"
-                  bg="blue.600"
-                  color="white"
-                  mr={2}
-                />
-                <Spinner size="sm" color="blue.600" />
-              </Flex>
-            )}
           </VStack>
         </Box>
 
         {/* Input Area */}
         <Box
           bg="white"
-          border="1px"
+          p={3}
+          borderTop="1px"
           borderColor="gray.200"
-          borderRadius="md"
-          p={4}
-          m={4}
-          w={{ base: "90%", md: 800 }}
-          shadow="2xl"
-          position={'fixed'}
-          bottom={4}
-          left="48%"
-          transform="translateX(-50%)"
         >
-          <Flex direction={{ base: "column", md: "row" }} gap={2} w="full">
+          <Flex gap={2} w="full">
             <Input
               ref={inputRef}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Ask ZABBOT anything about SZABIST..."
               size="md"
-              p={{base: 2, md: 4}}
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+              borderRadius="full"
+              borderColor="gray.300"
+              _hover={{ borderColor: "gray.400" }}
+              _focus={{ borderColor: "blue.500", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
               disabled={isLoading || isProcessingVoice || isRecording}
               bg="white"
               flex="1"
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
             />
             <HStack spacing={2}>
-              {/* Voice Recording Button */}
-              <IconButton
-                icon={isRecording ? <FaStop /> : <FaMicrophone />}
-                onClick={isRecording ? stopRecording : startRecording}
-                isRound
-                size="md"
-                colorScheme={isSpeaking ? "green" : isRecording ? "red" : "blue"}
-                aria-label={isRecording ? "Stop recording" : "Start recording"}
-                isDisabled={isLoading || isProcessingVoice}
-                sx={{
-                  ...(isSpeaking && {
-                    animation: 'pulse 1s infinite',
-                    '@keyframes pulse': {
-                      '0%': { transform: 'scale(1)' },
-                      '50%': { transform: 'scale(1.1)' },
-                      '100%': { transform: 'scale(1)' }
-                    }
-                  })
-                }}
-              />
+              {/* Voice Recording Button with CircularProgress */}
+              <Box position="relative">
+                <CircularProgress
+                  value={recordingProgress}
+                  color="blue.400"
+                  size="40px"
+                  thickness="4px"
+                  trackColor={isSpeaking ? "green.100" : "red.100"}
+                  capIsRound
+                  display={isRecording ? "block" : "none"}
+                >
+                  <CircularProgressLabel fontSize="xs" fontWeight="bold">
+                    {Math.ceil((recordingProgress * MAX_RECORDING_TIME) / 100)}s
+                  </CircularProgressLabel>
+                </CircularProgress>
+                
+                <IconButton
+                  icon={isRecording ? <FaStop /> : <FaMicrophone />}
+                  onClick={isRecording ? stopRecording : startRecording}
+                  isRound
+                  size="md"
+                  position={isRecording ? "absolute" : "static"}
+                  top={isRecording ? "50%" : "auto"}
+                  left={isRecording ? "50%" : "auto"}
+                  transform={isRecording ? "translate(-50%, -50%)" : "none"}
+                  colorScheme={isSpeaking ? "green" : isRecording ? "red" : "gray"}
+                  aria-label={isRecording ? "Stop recording" : "Start recording"}
+                  isDisabled={isLoading || isProcessingVoice}
+                  sx={{
+                    ...(isSpeaking && {
+                      animation: 'pulse 1s infinite',
+                      '@keyframes pulse': {
+                        '0%': { transform: isRecording ? 'translate(-50%, -50%) scale(1)' : 'scale(1)' },
+                        '50%': { transform: isRecording ? 'translate(-50%, -50%) scale(1.1)' : 'scale(1.1)' },
+                        '100%': { transform: isRecording ? 'translate(-50%, -50%) scale(1)' : 'scale(1)' }
+                      }
+                    })
+                  }}
+                />
+                
+                {/* Processing indicator */}
+                {isProcessingVoice && (
+                  <Badge 
+                    position="absolute" 
+                    top="-10px" 
+                    right="-10px" 
+                    colorScheme="orange" 
+                    borderRadius="full" 
+                    px={2}
+                    fontSize="xs"
+                  >
+                    Processing...
+                  </Badge>
+                )}
+              </Box>
+
+              {/* Stop Audio Playback Button */}
+              {isPlaying && (
+                <IconButton
+                  icon={<FaVolumeMute />}
+                  onClick={stopAudioPlayback}
+                  isRound
+                  size="md"
+                  colorScheme="teal"
+                  aria-label="Stop audio playback"
+                />
+              )}
               
               {/* Send Button */}
-              <Button
-                leftIcon={<FaPaperPlane />}
+              <IconButton
+                icon={<FaPaperPlane />}
                 onClick={sendMessage}
                 isLoading={isLoading}
-                loadingText="Sending..."
+                isRound
                 size="md"
-                px={4}
                 isDisabled={!inputMessage.trim() || isLoading || isProcessingVoice || isRecording}
                 colorScheme="blue"
-              >
-                Send
-              </Button>
+                aria-label="Send message"
+              />
             </HStack>
           </Flex>
         </Box>
@@ -542,46 +665,6 @@ function EnhancedChatbot({ inputText }) {
           onEnded={() => console.log('Audio playback completed')}
           onError={(e) => console.error('Audio playback error:', e)}
         />
-
-        {/* Recording Modal */}
-        <Modal isOpen={isRecording} onClose={stopRecording} isCentered>
-          <ModalOverlay />
-          <ModalContent bg="transparent" boxShadow="none">
-            <ModalBody>
-              <Center>
-                <Box
-                  animation={isSpeaking ? "pulse 0.5s infinite" : "pulse 1.5s infinite"}
-                  p={4}
-                  borderRadius="full"
-                  bg="rgba(255, 255, 255, 0.9)"
-                >
-                  <FaMicrophone 
-                    size="40px" 
-                    color={isSpeaking ? "green" : "red"} 
-                  />
-                </Box>
-              </Center>
-              <Text
-                textAlign="center"
-                color="white"
-                fontWeight="bold"
-                mt={2}
-                textShadow="0px 0px 3px rgba(0,0,0,0.8)"
-              >
-                {isSpeaking ? "Listening..." : "Waiting for speech..."}
-              </Text>
-              <Button 
-                mt={4} 
-                colorScheme="red" 
-                onClick={stopRecording}
-                mx="auto"
-                display="block"
-              >
-                Done
-              </Button>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
       </Box>
     </Box>
   );

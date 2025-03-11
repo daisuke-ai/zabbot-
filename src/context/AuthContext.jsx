@@ -8,62 +8,86 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (session) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-          
-        setUser({ ...session.user, ...userData });
+    // Check for existing session
+    const checkSession = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session error:', error);
+          setUser(null);
+        } else if (data.session) {
+          setUser(data.session.user);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        console.error('Session check error:', err);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    getSession();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-          
-        setUser({ ...session.user, ...userData });
+    checkSession();
+    
+    // Set up auth state change listener
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && session.user) {
+        setUser(session.user);
       } else {
         setUser(null);
       }
+      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Clean up subscription
+    return () => {
+      data.subscription.unsubscribe();
+    };
   }, []);
 
+  // Auth context value
   const value = {
     user,
     loading,
     login: async (email, password) => {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password.trim()
+        });
+        
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
     },
     logout: async () => {
-      await supabase.auth.signOut();
-      setUser(null);
-      sessionStorage.clear();
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+      } catch (error) {
+        console.error('Logout error:', error);
+        throw error;
+      }
     },
     signup: async (email, password, metadata) => {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: metadata }
-      });
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password: password.trim(),
+          options: { data: metadata }
+        });
+        
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.error('Signup error:', error);
+        throw error;
+      }
     }
   };
 

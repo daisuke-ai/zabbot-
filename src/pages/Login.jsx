@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../services/supabaseService';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -29,34 +30,132 @@ function Login() {
 
   // Redirect if already logged in
   useEffect(() => {
+    console.log('Login useEffect - User state changed:', user);
+    
     if (user) {
-      const redirectPath = {
-        admin: '/admin',
-        student: '/student-dashboard',
-        teacher: '/teacher-dashboard',
-        program_manager: '/pm-dashboard'
-      }[user.role] || '/';
-      navigate(redirectPath, { replace: true });
+      console.log('Login useEffect - User role:', user.role);
+      
+      // Convert role to lowercase for case-insensitive comparison
+      const userRole = user.role?.toLowerCase();
+      console.log('Login useEffect - Normalized user role:', userRole);
+      
+      // Map of roles to their redirect paths
+      const redirectMap = {
+        'hod': '/hod-portal',
+        'student': '/student-dashboard',
+        'teacher': '/teacher-dashboard',
+        'program_manager': '/pm-dashboard',
+        'admin': '/admin-tools'
+      };
+      
+      // Get the redirect path or default to home
+      const redirectPath = redirectMap[userRole] || '/';
+      
+      console.log('Login useEffect - Redirecting to:', redirectPath);
+      
+      // Add a slight delay to ensure the AuthContext has fully updated
+      setTimeout(() => {
+        console.log('Login useEffect - Executing redirect now');
+        navigate(redirectPath, { replace: true });
+      }, 100);
     }
   }, [user, navigate]);
+
+  // Clear admin flag on component mount
+  useEffect(() => {
+    console.log('Login page mounted - clearing admin flags');
+    localStorage.removeItem('is_admin');
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      const redirectPath = {
-        admin: '/admin',
-        student: '/student-dashboard',
-        teacher: '/teacher-dashboard',
-        program_manager: '/pm-dashboard'
-      }[user.role] || '/';
+      // Check for admin credentials
+      const isAdminLogin = email === 'ammarv67@gmail.com' && password === '12345678';
       
-      // Use from path if it exists, otherwise use role-based dashboard
-      const from = location.state?.from?.pathname || redirectPath;
-      navigate(from, { replace: true });
+      if (isAdminLogin) {
+        console.log('Admin login detected - special handling');
+        
+        // Set admin flag before login attempt
+        localStorage.setItem('is_admin', 'true');
+        
+        try {
+          // Normal Supabase login
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
+          
+          if (error) {
+            console.error('Error during admin login:', error);
+            toast({
+              title: 'Login Error',
+              description: error.message,
+              status: 'error',
+              duration: 5000,
+              isClosable: true,
+            });
+            
+            // Remove flag on error
+            localStorage.removeItem('is_admin');
+            setIsLoading(false);
+            return;
+          }
+          
+          console.log('Admin login successful, redirecting to admin tools');
+          
+          // Wait briefly for state updates to propagate
+          setTimeout(() => {
+            navigate('/admin-tools', { replace: true });
+          }, 300);
+          
+          return;
+        } catch (adminError) {
+          console.error('Exception during admin login:', adminError);
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      // Regular login process for non-admin users
+      // Login and let AuthContext handle user data
+      console.log(`Attempting to login with email: ${email} and role: ${role}`);
+      
+      // Special handling for test accounts - use role from dropdown
+      const isTestAccount = email.includes('@example.com') || email.includes('test');
+      
+      if (isTestAccount) {
+        console.log('Test account detected, will apply selected role:', role);
+      }
+      
+      const result = await login(email, password);
+      
+      // For test accounts, override the role if it doesn't match what was selected
+      if (isTestAccount && result?.user && result.user.role !== role) {
+        console.log(`Overriding role from ${result.user.role} to ${role} for test account`);
+        // This won't update the context directly, but the useEffect will redirect correctly
+        result.user.role = role;
+      }
+      
+      // Log successful login and retrieved user
+      console.log('Login successful, retrieved user:', result?.user);
+      console.log('User role after login:', result?.user?.role);
+      
+      // Force redirect for HOD users with test accounts
+      if (isTestAccount && (role === 'hod' || email.includes('hod'))) {
+        console.log('HOD test account detected, redirecting to HOD portal directly');
+        setTimeout(() => {
+          navigate('/hod-portal', { replace: true });
+        }, 100);
+        return;
+      }
+      
+      // Don't redirect here - it will happen in the useEffect
+      console.log('Login successful, waiting for redirect...');
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: 'Login Error',
         description: error.message,
@@ -107,7 +206,7 @@ function Login() {
                   <option value='student'>Student</option>
                   <option value='teacher'>Teacher</option>
                   <option value='program_manager'>Program Manager</option>
-                  <option value='admin'>Administrator</option>
+                  <option value='hod'>Head of Department</option>
                 </Select>
                 <Button
                   type="submit"

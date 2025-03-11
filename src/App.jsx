@@ -15,11 +15,16 @@ import ProtectedRoute from './components/ProtectedRoute';
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
 import Signup from './pages/Signup';
-import AdminPortal from './pages/AdminPortal';
+import HodPortal from './pages/HodPortal';
 import ProgramManagerDashboard from './pages/ProgramManagerDashboard';
 import ProtectedRoleRoute from './components/ProtectedRoleRoute';
 import StudentDashboard from './pages/StudentDashboard';
 import TeacherDashboard from './pages/TeacherDashboard';
+import CompleteRegistration from './pages/CompleteRegistration';
+import CustomLogin from './pages/CustomLogin';
+import Portal from './pages/Portal';
+import TestSupabase from './pages/TestSupabase';
+import DatabaseReset from './pages/DatabaseReset';
 
 const theme = extendTheme({
   colors: {
@@ -56,17 +61,19 @@ function AppContent() {
         <Route path="/admissions" element={<Admissions />} />
         <Route path="/research" element={<Research />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/custom-login" element={<CustomLogin />} />
         <Route path="/chatbot" element={<ChatbotPage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:id" element={<BlogPostPage />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/admin" element={
-          <ProtectedRoleRoute allowedRoles={['admin']}>
-            <AdminPortal />
+        <Route path="/complete-registration" element={<CompleteRegistration />} />
+        <Route path="/hod-portal" element={
+          <ProtectedRoleRoute allowedRoles={['hod', 'HOD', 'Hod']}>
+            <HodPortal />
           </ProtectedRoleRoute>
         }/>
         <Route path="/pm-dashboard" element={
-          <ProtectedRoleRoute allowedRoles={['program_manager']}>
+          <ProtectedRoleRoute allowedRoles={['program_manager', 'Program_Manager', 'program manager']}>
             <ProgramManagerDashboard />
           </ProtectedRoleRoute>
         }/>
@@ -80,27 +87,13 @@ function AppContent() {
             <TeacherDashboard />
           </ProtectedRoleRoute>
         }/>
-        <Route path="/portal-redirect" element={
-          <ProtectedRoute>
-            <PortalRedirectHandler />
-          </ProtectedRoute>
-        }/>
+        <Route path="/portal" element={<Portal />} />
+        <Route path="/test-supabase" element={<TestSupabase />} />
+        <Route path="/db-reset" element={<DatabaseReset />} />
       </Routes>
       {/* Conditionally render Footer */}
       {location.pathname !== '/chatbot' && <Footer />}
     </>
-  );
-}
-
-function PortalRedirectHandler() {
-  const { user } = useAuth();
-  return (
-    <Navigate to={
-      user?.role === 'admin' ? '/admin' :
-      user?.role === 'student' ? '/student-dashboard' :
-      user?.role === 'teacher' ? '/teacher-dashboard' : 
-      '/pm-dashboard'
-    } replace />
   );
 }
 
