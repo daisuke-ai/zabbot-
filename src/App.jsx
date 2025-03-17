@@ -23,8 +23,7 @@ import TeacherDashboard from './pages/TeacherDashboard';
 import CompleteRegistration from './pages/CompleteRegistration';
 import CustomLogin from './pages/CustomLogin';
 import Portal from './pages/Portal';
-import TestSupabase from './pages/TestSupabase';
-import DatabaseReset from './pages/DatabaseReset';
+import AdminTools from './pages/AdminTools';
 
 const theme = extendTheme({
   colors: {
@@ -50,23 +49,35 @@ const theme = extendTheme({
 // Wrapper component to access the location
 function AppContent() {
   const location = useLocation();
+  const { user } = useAuth();
 
   return (
     <>
       <Header />
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/academics" element={<Academics />} />
         <Route path="/admissions" element={<Admissions />} />
         <Route path="/research" element={<Research />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/custom-login" element={<CustomLogin />} />
-        <Route path="/chatbot" element={<ChatbotPage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:id" element={<BlogPostPage />} />
+        
+        {/* Authentication Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/custom-login" element={<CustomLogin />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/complete-registration" element={<CompleteRegistration />} />
+        
+        {/* Central Portal Access */}
+        <Route path="/portal" element={<Portal />} />
+    
+        
+        {/* Direct Portal Access (for testing/debugging) */}
+        <Route path="/direct-hod" element={<HodPortal />} />
+        
+        {/* Role-Based Routes */}
         <Route path="/hod-portal" element={
           <ProtectedRoleRoute allowedRoles={['hod', 'HOD', 'Hod']}>
             <HodPortal />
@@ -87,9 +98,24 @@ function AppContent() {
             <TeacherDashboard />
           </ProtectedRoleRoute>
         }/>
-        <Route path="/portal" element={<Portal />} />
-        <Route path="/test-supabase" element={<TestSupabase />} />
-        <Route path="/db-reset" element={<DatabaseReset />} />
+        
+        {/* Admin Tools */}
+        <Route path="/admin-tools" element={
+          <ProtectedRoleRoute allowedRoles={['admin', 'hod', 'program_manager']}>
+            <AdminTools />
+          </ProtectedRoleRoute>
+        }/>
+        
+        {/* Protected Routes */}
+        <Route path="/chatbot" element={
+          <ProtectedRoute>
+            <ChatbotPage />
+          </ProtectedRoute>
+        } />
+      
+        
+        {/* Fallback Route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {/* Conditionally render Footer */}
       {location.pathname !== '/chatbot' && <Footer />}

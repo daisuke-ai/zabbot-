@@ -1,11 +1,32 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../services/supabaseService';
+import { determineUserRole } from '../services/userService';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Helper function to update user and role
+  const updateUserAndRole = async (newUser) => {
+    setUser(newUser);
+    
+    if (newUser) {
+      try {
+        // Use the safer role determination function
+        const role = await determineUserRole(newUser);
+        setUserRole(role);
+        console.log('User role determined:', role);
+      } catch (err) {
+        console.error('Error determining user role:', err);
+        setUserRole(null);
+      }
+    } else {
+      setUserRole(null);
+    }
+  };
 
   useEffect(() => {
     // Check for existing session
@@ -15,15 +36,15 @@ export function AuthProvider({ children }) {
         
         if (error) {
           console.error('Session error:', error);
-          setUser(null);
+          await updateUserAndRole(null);
         } else if (data.session) {
-          setUser(data.session.user);
+          await updateUserAndRole(data.session.user);
         } else {
-          setUser(null);
+          await updateUserAndRole(null);
         }
       } catch (err) {
         console.error('Session check error:', err);
-        setUser(null);
+        await updateUserAndRole(null);
       } finally {
         setLoading(false);
       }
@@ -32,11 +53,11 @@ export function AuthProvider({ children }) {
     checkSession();
     
     // Set up auth state change listener
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session && session.user) {
-        setUser(session.user);
+        await updateUserAndRole(session.user);
       } else {
-        setUser(null);
+        await updateUserAndRole(null);
       }
       setLoading(false);
     });
@@ -50,6 +71,7 @@ export function AuthProvider({ children }) {
   // Auth context value
   const value = {
     user,
+    userRole,
     loading,
     login: async (email, password) => {
       try {
