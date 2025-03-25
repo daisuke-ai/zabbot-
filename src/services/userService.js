@@ -114,33 +114,54 @@ export async function getUserByAny({ userId, authUserId, email }) {
  * Determine user role from various sources
  */
 export async function determineUserRole(user) {
-  // For emergency mode, just determine from email pattern
-  if (user?.email) {
-    const email = user.email.toLowerCase();
-    
-    if (email.includes('admin')) {
-      return 'admin';
-    } else if (email.includes('hod') || email.includes('head')) {
-      return 'hod';
-    } else if (email.includes('pm') || email.includes('program_manager')) {
-      return 'program_manager';
-    } else if (email.includes('teacher') || email.includes('faculty')) {
-      return 'teacher';
-    } else if (email.includes('student')) {
-      return 'student';
+  if (!user) return 'student';
+
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single(); 
+
+    if (error) {
+      console.error('Error fetching role from DB:', error);
     }
+
+    if (data?.role) {
+      return data.role;
+    }
+  } catch (err) {
+    console.error('Unexpected error fetching role:', err);
   }
-  
-  // Try from user object if available
-  if (user?.role) {
-    return user.role;
-  }
-  
-  // Try from metadata if available
-  if (user?.user_metadata?.role) {
-    return user.user_metadata.role;
-  }
-  
-  // Default role
   return 'student';
-} 
+}
+
+export async function signUpPM(email, password, role, first_name, last_name) {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        role: role,
+        first_name: first_name,
+        last_name: last_name,
+      },
+    },
+  });
+ 
+  if (error) {
+    console.error('Error signing up PM:', error);
+    return null;
+  }
+  const {error : userError } = await supabase
+  .from('users')
+  .update({ role: role, first_name: first_name, last_name: last_name })
+  .eq('id', data.user.id)
+  .single(); 
+
+if (userError) {
+  console.error('Error updating role in DB:', userError);
+}
+  return "PM created successfully";
+}
+

@@ -106,9 +106,9 @@ function HodPortal() {
       
       // Fetch department info
       const { data: deptData, error: deptError } = await supabase
-        .from('departments')
-        .select('*')
-        .eq('hod_id', user.id)
+        .from('users')
+        .select('department_name')
+        .eq('user_id', user.id)
         .single();
       
       if (deptError) {
@@ -122,9 +122,9 @@ function HodPortal() {
         throw deptError;
       }
       
-      setDepartmentInfo(deptData);
+      setDepartmentInfo(deptData.department_name);
       
-      if (!deptData?.id) {
+      if (!deptData?.department_name) {
         const errorMsg = 'No department found for this HOD';
         toast({
           title: 'Department not found',
@@ -328,7 +328,7 @@ function HodPortal() {
           first_name: newPM.first_name,
           last_name: newPM.last_name,
           role: 'pm',
-          department_id: departmentInfo.id
+          department_name: departmentInfo.department_name
         });
       
       if (userError) {
