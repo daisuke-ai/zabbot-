@@ -108,98 +108,43 @@ function ProgramManagerDashboard() {
     try {
       setIsLoading(true);
       
-      // Fetch program info
-      const { data: programData, error: programError } = await supabase
-        .from('programs')
-        .select(`
-          id,
-          name,
-          departments:department_id (id, name)
-        `)
-        .eq('pm_id', user.id)
+      // Fetch department info
+      const { data: deptData, error: deptError } = await supabase
+        .from('users')
+        .select('department_id')
+        .eq('id', user.id)
         .single();
       
-      if (programError) throw programError;
-      setProgramInfo(programData);
-      
-      if (!programData?.id) {
-        console.error('No program found for this Program Manager');
-        return;
-      }
-      
-      // Fetch classes in this program
-      const { data: classesData, error: classesError } = await supabase
-        .from('classes')
-        .select(`
-          id,
-          name,
-          teacher_id,
-          teacher:users!classes_teacher_id_fkey (
-            id,
-            first_name,
-            last_name,
-            email
-          ),
-          enrollments (
-            id,
-            student:student_id (
-              id,
-              first_name,
-              last_name,
-              email
-            )
-          )
-        `)
-        .eq('program_id', programData.id);
-      
-      if (classesError) throw classesError;
-      
-      // Process classes to count students per class
-      const processedClasses = classesData?.map(cls => ({
-        ...cls,
-        studentCount: cls.enrollments.length
-      })) || [];
-      
-      setClasses(processedClasses);
-      
-      // Fetch teachers assigned to this program's department
+      if (deptError) throw deptError;
+
+      // Fetch teachers in department
       const { data: teachersData, error: teachersError } = await supabase
         .from('users')
         .select('*')
         .eq('role', 'teacher')
-        .eq('department_id', programData.departments.id);
+        .eq('department_id', deptData.department_id);
       
-      if (teachersError) throw teachersError;
       setTeachers(teachersData || []);
+
+      // Fetch students in department
+      const { data: studentsData, error: studentsError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('role', 'student')
+        .eq('department_id', deptData.department_id);
       
-      // Collect students from all enrollments
-      const allStudents = new Set();
-      let totalEnrollments = 0;
+      setStudents(studentsData || []);
+
+      // Fetch classes in department
+      const { data: classesData, error: classesError } = await supabase
+        .from('classes')
+        .select('*')
+        .eq('department_id', deptData.department_id);
       
-      processedClasses.forEach(cls => {
-        cls.enrollments.forEach(enrollment => {
-          allStudents.add(enrollment.student.id);
-          totalEnrollments++;
-        });
-      });
-      
-      // Set statistics
-      setStats({
-        totalClasses: processedClasses.length,
-        totalTeachers: teachersData?.length || 0,
-        totalStudents: allStudents.size,
-        activeEnrollments: totalEnrollments
-      });
-      
+      setClasses(classesData || []);
+
     } catch (error) {
       console.error('Error fetching PM data:', error);
-      toast({
-        title: 'Error fetching data',
-        description: error.message,
-        status: 'error',
-        duration: 5000,
-        isClosable: true
-      });
     } finally {
       setIsLoading(false);
     }
@@ -266,6 +211,23 @@ function ProgramManagerDashboard() {
         duration: 5000,
         isClosable: true
       });
+    }
+  };
+  
+  const handleCreateTeacher = async (teacherData) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .insert([{
+          ...teacherData,
+          role: 'teacher',
+          department_id: user.department_id
+        }]);
+      
+      if (error) throw error;
+      fetchPMData(); // Refresh data
+    } catch (error) {
+      console.error('Error creating teacher:', error);
     }
   };
   

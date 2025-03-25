@@ -45,6 +45,8 @@ import { supabase } from '../services/supabaseService';
 function StudentDashboard() {
   const { user } = useAuth();
   const [enrollments, setEnrollments] = useState([]);
+  const [grades, setGrades] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [stats, setStats] = useState({
     totalClasses: 0,
     completedAssignments: 0,
@@ -68,29 +70,16 @@ function StudentDashboard() {
     try {
       setIsLoading(true);
       
-      // Fetch student enrollments
+      // Fetch enrolled classes and grades
       const { data: enrollmentsData, error: enrollmentsError } = await supabase
         .from('enrollments')
-        .select(`
-          id,
-          classes (
-            id,
-            name,
-            teacher_id,
-            users:teacher_id (first_name, last_name),
-            programs:program_id (
-              id,
-              name,
-              departments:department_id (name)
-            )
-          )
-        `)
+        .select('class:classes (*), grade')
         .eq('student_id', user.id);
       
       if (enrollmentsError) throw enrollmentsError;
-      
-      setEnrollments(enrollmentsData || []);
-      
+
+      setGrades(enrollmentsData || []);
+
       // Set some demo stats (in a real app, these would come from the database)
       setStats({
         totalClasses: enrollmentsData?.length || 0,

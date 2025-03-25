@@ -17,4 +17,24 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true
   }
-}); 
+});
+
+export const getDepartmentUsers = async (departmentId, role) => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('department_id', departmentId)
+    .eq('role', role);
+  
+  return { data, error };
+};
+
+export const updateStudentGrade = async (studentId, classId, grade) => {
+  const { data, error } = await supabase
+    .from('enrollments')
+    .update({ grade })
+    .eq('student_id', studentId)
+    .eq('class_id', classId);
+  
+  return { data, error };
+}; 

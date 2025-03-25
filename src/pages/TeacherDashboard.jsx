@@ -69,6 +69,7 @@ function TeacherDashboard() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [students, setStudents] = useState([]);
   
   // Colors
   const cardBg = useColorModeValue('white', 'gray.700');
@@ -85,44 +86,27 @@ function TeacherDashboard() {
     try {
       setIsLoading(true);
       
-      // Fetch teacher's classes
+      // Fetch classes taught by this teacher
       const { data: classesData, error: classesError } = await supabase
         .from('classes')
-        .select(`
-          id,
-          name,
-          programs:program_id (
-            id,
-            name,
-            departments:department_id (name)
-          ),
-          enrollments (
-            id,
-            student:student_id (
-              id,
-              first_name,
-              last_name,
-              email
-            )
-          )
-        `)
+        .select('*')
         .eq('teacher_id', user.id);
       
-      if (classesError) throw classesError;
+      setClasses(classesData || []);
+
+      // Fetch students in these classes
+      const { data: studentsData, error: studentsError } = await supabase
+        .from('enrollments')
+        .select('student:student_id (*)')
+        .in('class_id', classesData.map(c => c.id));
       
-      // Process classes to count students
-      const processedClasses = classesData?.map(cls => ({
-        ...cls,
-        studentCount: cls.enrollments.length
-      })) || [];
-      
-      setClasses(processedClasses);
+      setStudents(studentsData?.map(s => s.student) || []);
       
       // Calculate statistics
-      const totalStudents = processedClasses.reduce((sum, cls) => sum + cls.studentCount, 0);
+      const totalStudents = studentsData?.length || 0;
       
       setStats({
-        totalClasses: processedClasses.length,
+        totalClasses: classesData.length,
         totalStudents,
         assignmentsCreated: Math.floor(Math.random() * 30), // Demo data
         avgAttendance: Math.floor(75 + Math.random() * 25) // Demo data
@@ -138,6 +122,20 @@ function TeacherDashboard() {
   const handleViewClass = (classData) => {
     setSelectedClass(classData);
     onOpen();
+  };
+  
+  const handleUpdateGrades = async (studentId, classId, grade) => {
+    try {
+      const { error } = await supabase
+        .from('enrollments')
+        .update({ grade })
+        .eq('student_id', studentId)
+        .eq('class_id', classId);
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating grade:', error);
+    }
   };
   
   // Menu items for the sidebar
