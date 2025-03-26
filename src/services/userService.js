@@ -1,4 +1,4 @@
-import { supabase } from './supabaseService';
+import { supabase } from "./supabaseService";
 
 /**
  * Emergency fallback service that doesn't use RPC functions
@@ -11,21 +11,18 @@ import { supabase } from './supabaseService';
 export async function getUserByAuthId(authUserId) {
   try {
     // Try to find by id first
-    const { data, error } = await supabase
-      .from('users')
-      .select('*');
-      
+    const { data, error } = await supabase.from("users").select("*");
+
     if (error) {
-      console.error('Error querying users:', error);
+      console.error("Error querying users:", error);
       return null;
     }
-    
+
     // If we have results, try to find a user with matching auth ID
     // This will work regardless of what the column is named
     return data && data.length > 0 ? data[0] : null;
-    
   } catch (err) {
-    console.error('Exception getting user:', err);
+    console.error("Exception getting user:", err);
     return null;
   }
 }
@@ -37,20 +34,19 @@ export async function getUserByEmail(email) {
   try {
     // Get all users and try to find by email
     const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
+      .from("users")
+      .select("*")
+      .eq("email", email)
       .maybeSingle();
-      
+
     if (error) {
-      console.error('Error querying users by email:', error);
+      console.error("Error querying users by email:", error);
       return null;
     }
-    
+
     return data;
-    
   } catch (err) {
-    console.error('Exception getting user by email:', err);
+    console.error("Exception getting user by email:", err);
     return null;
   }
 }
@@ -62,20 +58,19 @@ export async function getUserById(userId) {
   try {
     // Simple direct query
     const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
+      .from("users")
+      .select("*")
+      .eq("user_id", userId)
       .maybeSingle();
-      
+
     if (error) {
-      console.error('Error querying user by ID:', error);
+      console.error("Error querying user by ID:", error);
       return null;
     }
-    
+
     return data;
-    
   } catch (err) {
-    console.error('Exception getting user by ID:', err);
+    console.error("Exception getting user by ID:", err);
     return null;
   }
 }
@@ -90,22 +85,22 @@ export async function getUserByAny({ userId, authUserId, email }) {
       const user = await getUserByEmail(email);
       if (user) return user;
     }
-    
+
     // Then try ID
     if (userId) {
       const user = await getUserById(userId);
       if (user) return user;
     }
-    
+
     // Finally try auth ID (least reliable without knowing the column name)
     if (authUserId) {
       const user = await getUserByAuthId(authUserId);
       return user;
     }
-    
+
     return null;
   } catch (err) {
-    console.error('Exception getting user:', err);
+    console.error("Exception getting user:", err);
     return null;
   }
 }
@@ -114,26 +109,26 @@ export async function getUserByAny({ userId, authUserId, email }) {
  * Determine user role from various sources
  */
 export async function determineUserRole(user) {
-  if (!user) return 'student';
+  if (!user) return "student";
 
   try {
     const { data, error } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single(); 
+      .from("users")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
 
     if (error) {
-      console.error('Error fetching role from DB:', error);
+      console.error("Error fetching role from DB:", error);
     }
 
     if (data?.role) {
       return data.role;
     }
   } catch (err) {
-    console.error('Unexpected error fetching role:', err);
+    console.error("Unexpected error fetching role:", err);
   }
-  return 'student';
+  return "student";
 }
 
 export async function signUpPM(email, password, role, first_name, last_name) {
@@ -148,20 +143,19 @@ export async function signUpPM(email, password, role, first_name, last_name) {
       },
     },
   });
- 
+
   if (error) {
-    console.error('Error signing up PM:', error);
+    console.error("Error signing up PM:", error);
     return null;
   }
-  const {error : userError } = await supabase
-  .from('users')
-  .update({ role: role, first_name: first_name, last_name: last_name })
-  .eq('id', data.user.id)
-  .single(); 
+  const { error: userError } = await supabase
+    .from("users")
+    .update({ role: role, first_name: first_name, last_name: last_name })
+    .eq("user_id", data.user.id)
+    .single();
 
-if (userError) {
-  console.error('Error updating role in DB:', userError);
-}
+  if (userError) {
+    console.error("Error updating role in DB:", userError);
+  }
   return "PM created successfully";
 }
-

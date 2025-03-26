@@ -38,7 +38,7 @@ function Signup() {
       const { error: dbError } = await supabase
         .from('users')
         .insert([{
-          id: data.user.id,
+          user_id: data.user.id,
           email,
           full_name: fullName,
           roll_number: rollNumber,
