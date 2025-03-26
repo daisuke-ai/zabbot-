@@ -112,7 +112,7 @@ function ProgramManagerDashboard() {
       const { data: deptData, error: deptError } = await supabase
         .from('users')
         .select('department_id')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single();
       
       if (deptError) throw deptError;
@@ -221,7 +221,7 @@ function ProgramManagerDashboard() {
         .insert([{
           ...teacherData,
           role: 'teacher',
-          department_id: user.department_id
+          department_name: user.department_name
         }]);
       
       if (error) throw error;

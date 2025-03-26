@@ -1,13 +1,13 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Check if environment variables are defined
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Supabase environment variables are not defined!', {
-    url: supabaseUrl ? 'defined' : 'undefined',
-    key: supabaseKey ? 'defined' : 'undefined'
+  console.error("Supabase environment variables are not defined!", {
+    url: supabaseUrl ? "defined" : "undefined",
+    key: supabaseKey ? "defined" : "undefined",
   });
 }
 
@@ -15,26 +15,26 @@ if (!supabaseUrl || !supabaseKey) {
 // Simplifying to avoid schema query errors
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    persistSession: true
-  }
+    persistSession: true,
+  },
 });
 
-export const getDepartmentUsers = async (departmentId, role) => {
+export const getDepartmentUsers = async (department_name, role) => {
   const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('department_id', departmentId)
-    .eq('role', role);
-  
+    .from("users")
+    .select("*")
+    .eq("department_name", department_name)
+    .eq("role", role);
+
   return { data, error };
 };
 
 export const updateStudentGrade = async (studentId, classId, grade) => {
   const { data, error } = await supabase
-    .from('enrollments')
+    .from("enrollments")
     .update({ grade })
-    .eq('student_id', studentId)
-    .eq('class_id', classId);
-  
+    .eq("student_id", studentId)
+    .eq("class_id", classId);
+
   return { data, error };
-}; 
+};
