@@ -103,58 +103,38 @@ function HodPortal() {
   const fetchHodData = async () => {
     try {
       setIsLoading(true);
-
-      // Fetch department info
-      const { data: deptData, error: deptError } = await supabase
-        .from("users")
-        .select("department_name")
-        .eq("user_id", user.id)
+      
+      // Fetch HOD's department info
+      const { data: hodData, error: hodError } = await supabase
+        .from('users')
+        .select('department_name')
+        .eq('id', user.id)  // Changed from user_id to id
         .single();
 
-      if (deptError) {
-        toast({
-          title: "Error fetching department",
-          description: deptError.message,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-        throw deptError;
+      if (hodError || !hodData) {
+        throw new Error(hodError?.message || 'HOD data not found');
       }
 
-      setDepartmentInfo(deptData.department_name);
+      // Fetch department details
+      const { data: deptData, error: deptError } = await supabase
+        .from('departments')
+        .select('*')
+        .eq('name', hodData.department_name)
+        .single();
 
-      if (!deptData?.department_name) {
-        const errorMsg = "No department found for this HOD";
-        toast({
-          title: "Department not found",
-          description: errorMsg,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-        console.error(errorMsg);
-        return;
+      if (deptError || !deptData) {
+        throw new Error(deptError?.message || 'Department not found');
       }
+      setDepartmentInfo(deptData);
 
       // Fetch PMs in this department
       const { data: pmsData, error: pmsError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("role", "pm")
-        .eq("department_name", deptData.department_name);
+        .from('users')
+        .select('*')
+        .eq('role', 'pm')
+        .eq('department_name', hodData.department_name);
 
-      if (pmsError) {
-        toast({
-          title: "Error fetching program managers",
-          description: pmsError.message,
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-        throw pmsError;
-      }
-
+      if (pmsError) throw pmsError;
       setPMs(pmsData || []);
 
       // Fetch teachers in this department
@@ -162,7 +142,7 @@ function HodPortal() {
         .from("users")
         .select("*")
         .eq("role", "teacher")
-        .eq("department_name", deptData.department_name);
+        .eq("department_name", hodData.department_name);
 
       if (teachersError) {
         toast({
@@ -182,7 +162,7 @@ function HodPortal() {
         .from("users")
         .select("*")
         .eq("role", "student")
-        .eq("department_name", deptData.department_name);
+        .eq("department_name", hodData.department_name);
 
       if (studentsError) {
         toast({
@@ -201,7 +181,7 @@ function HodPortal() {
       const { count: classesCount, error: classesError } = await supabase
         .from("classes")
         .select("id", { count: "exact", head: true })
-        .eq("department_name", deptData.department_name);
+        .eq("department_name", hodData.department_name);
 
       if (classesError) {
         toast({
@@ -222,11 +202,11 @@ function HodPortal() {
         totalClasses: classesCount || 0,
       });
     } catch (error) {
-      console.error("Error fetching HOD data:", error);
+      console.error('Error fetching HOD data:', error);
       toast({
-        title: "Error fetching data",
-        description: error.message || "An unexpected error occurred",
-        status: "error",
+        title: 'Error',
+        description: error.message,
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });

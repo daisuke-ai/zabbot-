@@ -18,6 +18,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { HamburgerIcon } from '@chakra-ui/icons';
 import szabistLogo from '../public/images/images.png';
 import { useAuth } from '../context/AuthContext';
+import { FaTools } from 'react-icons/fa';
 
 function Header() {
   const { user, logout } = useAuth();
@@ -140,18 +141,18 @@ function Header() {
               to="/portal"
               colorScheme="szabist"
               variant="ghost"
-              size="lg"
-              fontWeight="700"
-              px={4}
-              fontFamily="'Poppins', sans-serif"
-              fontSize="md"
-              _hover={{ 
-                bg: 'szabist.50',
-                transform: 'translateY(-2px)',
-                transition: 'all 0.2s'
-              }}
             >
               Portal
+            </Button>
+            
+            <Button
+              as={Link}
+              to="/admin-login"
+              colorScheme="blue"
+              variant="outline"
+              leftIcon={<FaTools />}
+            >
+              Admin Tools
             </Button>
             
             {user && (
@@ -159,13 +160,7 @@ function Header() {
                 onClick={handleLogout}
                 variant="outline"
                 colorScheme="red"
-                size="md"
                 leftIcon={<Box as="span" fontSize="1.2em" role="img" aria-label="Logout">🚪</Box>}
-                _hover={{ 
-                  bg: 'red.50',
-                  transform: 'translateY(-2px)',
-                  transition: 'all 0.2s'
-                }}
               >
                 Logout
               </Button>
@@ -193,6 +188,7 @@ function Header() {
                 <MenuItem as={Link} to="/blog">University Blog</MenuItem>
                 <MenuItem as={Link} to="/chatbot">AI Assistant</MenuItem>
                 <MenuItem as={Link} to="/portal">Portal</MenuItem>
+                <MenuItem as={Link} to="/admin-login">Admin Tools</MenuItem>
                 
                 {user && (
                   <MenuItem 

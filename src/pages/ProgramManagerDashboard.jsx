@@ -43,7 +43,9 @@ import {
   HStack,
   VStack,
   useToast,
-  Progress
+  Progress,
+  Container,
+  Spinner
 } from '@chakra-ui/react';
 import { 
   FaUserTie, 
@@ -78,6 +80,7 @@ function ProgramManagerDashboard() {
     activeEnrollments: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [departmentInfo, setDepartmentInfo] = useState(null);
   
   const { 
     isOpen: isViewOpen, 
@@ -99,56 +102,71 @@ function ProgramManagerDashboard() {
   const borderColor = useColorModeValue('blue.500', 'blue.400');
   
   useEffect(() => {
+    const fetchPmData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch PM's department info
+        const { data: pmData, error: pmError } = await supabase
+          .from('users')
+          .select('department_name')
+          .eq('id', user.id)  // Changed from user_id to id
+          .single();
+
+        if (pmError || !pmData) {
+          throw new Error(pmError?.message || 'PM data not found');
+        }
+
+        // Fetch department details
+        const { data: deptData, error: deptError } = await supabase
+          .from('departments')
+          .select('*')
+          .eq('name', pmData.department_name)
+          .single();
+
+        if (deptError || !deptData) {
+          throw new Error(deptError?.message || 'Department not found');
+        }
+        setDepartmentInfo(deptData);
+
+        // Fetch teachers in department
+        const { data: teachersData, error: teachersError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('role', 'teacher')
+          .eq('department_name', pmData.department_name);
+
+        if (teachersError) throw teachersError;
+        setTeachers(teachersData || []);
+
+        // Fetch students in department
+        const { data: studentsData, error: studentsError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('role', 'student')
+          .eq('department_name', pmData.department_name);
+
+        if (studentsError) throw studentsError;
+        setStudents(studentsData || []);
+
+      } catch (error) {
+        console.error('Error fetching PM data:', error);
+        toast({
+          title: 'Error',
+          description: error.message,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (user) {
-      fetchPMData();
+      fetchPmData();
     }
-  }, [user]);
-  
-  const fetchPMData = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Fetch department info
-      const { data: deptData, error: deptError } = await supabase
-        .from('users')
-        .select('department_id')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (deptError) throw deptError;
-
-      // Fetch teachers in department
-      const { data: teachersData, error: teachersError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('role', 'teacher')
-        .eq('department_id', deptData.department_id);
-      
-      setTeachers(teachersData || []);
-
-      // Fetch students in department
-      const { data: studentsData, error: studentsError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('role', 'student')
-        .eq('department_id', deptData.department_id);
-      
-      setStudents(studentsData || []);
-
-      // Fetch classes in department
-      const { data: classesData, error: classesError } = await supabase
-        .from('classes')
-        .select('*')
-        .eq('department_id', deptData.department_id);
-      
-      setClasses(classesData || []);
-
-    } catch (error) {
-      console.error('Error fetching PM data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [user, toast]);
   
   const handleViewClass = (cls) => {
     setSelectedClass(cls);
@@ -200,7 +218,7 @@ function ProgramManagerDashboard() {
       });
       
       onAddClose();
-      fetchPMData();
+      fetchPmData();
       
     } catch (error) {
       console.error('Error creating class:', error);
@@ -225,7 +243,7 @@ function ProgramManagerDashboard() {
         }]);
       
       if (error) throw error;
-      fetchPMData(); // Refresh data
+      fetchPmData(); // Refresh data
     } catch (error) {
       console.error('Error creating teacher:', error);
     }
@@ -242,17 +260,9 @@ function ProgramManagerDashboard() {
   
   if (isLoading) {
     return (
-      <DashboardLayout 
-        title={`PM Dashboard ${programInfo ? '- ' + programInfo.name : ''}`}
-        menuItems={menuItems}
-        userRole="Program Manager"
-        roleColor="blue"
-      >
-        <Flex justify="center" align="center" height="50vh" direction="column">
-          <Text mb={4}>Loading program data...</Text>
-          <Progress size="xs" isIndeterminate width="50%" colorScheme="blue" />
-        </Flex>
-      </DashboardLayout>
+      <Box textAlign="center" mt={10}>
+        <Spinner size="xl" />
+      </Box>
     );
   }
   

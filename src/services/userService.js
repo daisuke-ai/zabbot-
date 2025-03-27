@@ -112,6 +112,12 @@ export async function determineUserRole(user) {
   if (!user) return "student";
 
   try {
+    // First check if role is in auth metadata
+    if (user.user_metadata?.role) {
+      return user.user_metadata.role;
+    }
+
+    // Fallback to database lookup
     const { data, error } = await supabase
       .from("users")
       .select("role")
@@ -120,42 +126,45 @@ export async function determineUserRole(user) {
 
     if (error) {
       console.error("Error fetching role from DB:", error);
+      return "student"; // Default role if lookup fails
     }
 
-    if (data?.role) {
-      return data.role;
-    }
-  } catch (err) {
-    console.error("Unexpected error fetching role:", err);
+    return data?.role || "student";
+  } catch (error) {
+    console.error("Error determining user role:", error);
+    return "student"; // Default role on error
   }
-  return "student";
 }
 
-export async function signUpPM(email, password, role, first_name, last_name) {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        role: role,
-        first_name: first_name,
-        last_name: last_name,
-      },
-    },
-  });
+export const signUpStudent = async (studentData) => {
+  try {
+    // Create auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: studentData.email,
+      password: studentData.password,
+    });
 
-  if (error) {
-    console.error("Error signing up PM:", error);
-    return null;
-  }
-  const { error: userError } = await supabase
-    .from("users")
-    .update({ role: role, first_name: first_name, last_name: last_name })
-    .eq("user_id", data.user.id)
-    .single();
+    if (authError) throw authError;
 
-  if (userError) {
-    console.error("Error updating role in DB:", userError);
+    // Create user profile
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .insert({
+        email: studentData.email,
+        first_name: studentData.firstName,
+        last_name: studentData.lastName,
+        role: 'student',
+        department_name: studentData.departmentName,
+        user_id: authData.user.id
+      })
+      .select()
+      .single();
+
+    if (userError) throw userError;
+
+    return { user: userData };
+  } catch (error) {
+    console.error('Error signing up student:', error);
+    throw error;
   }
-  return "PM created successfully";
-}
+};

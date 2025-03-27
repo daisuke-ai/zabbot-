@@ -24,6 +24,7 @@ import CompleteRegistration from './pages/CompleteRegistration';
 import CustomLogin from './pages/CustomLogin';
 import Portal from './pages/Portal';
 import AdminTools from './pages/AdminTools';
+import AdminLogin from './pages/AdminLogin';
 
 const theme = extendTheme({
   colors: {
@@ -79,12 +80,12 @@ function AppContent() {
         
         {/* Role-Based Routes */}
         <Route path="/hod-portal" element={
-          <ProtectedRoleRoute allowedRoles={['hod', 'HOD', 'Hod']}>
+          <ProtectedRoleRoute allowedRoles={['hod']}>
             <HodPortal />
           </ProtectedRoleRoute>
         }/>
         <Route path="/pm-dashboard" element={
-          <ProtectedRoleRoute allowedRoles={['program_manager', 'Program_Manager', 'program manager']}>
+          <ProtectedRoleRoute allowedRoles={['pm', 'program_manager']}>
             <ProgramManagerDashboard />
           </ProtectedRoleRoute>
         }/>
@@ -100,8 +101,9 @@ function AppContent() {
         }/>
         
         {/* Admin Tools */}
+        <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin-tools" element={
-          <ProtectedRoleRoute allowedRoles={['admin', 'hod', 'program_manager']}>
+          <ProtectedRoleRoute allowedRoles={['admin']}>
             <AdminTools />
           </ProtectedRoleRoute>
         }/>

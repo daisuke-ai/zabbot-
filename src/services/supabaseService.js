@@ -38,3 +38,13 @@ export const updateStudentGrade = async (studentId, classId, grade) => {
 
   return { data, error };
 };
+
+export const getDepartments = async () => {
+  const { data, error } = await supabase
+    .from('departments')
+    .select('name')
+    .order('name', { ascending: true });
+
+  if (error) throw error;
+  return data;
+};
