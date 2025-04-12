@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Box, 
   Heading, 
@@ -45,7 +45,13 @@ import {
   useToast,
   Progress,
   Container,
-  Spinner
+  Spinner,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay
 } from '@chakra-ui/react';
 import { 
   FaUserTie, 
@@ -55,14 +61,22 @@ import {
   FaClipboardList,
   FaPlus,
   FaEdit,
-  FaEye
+  FaEye,
+  FaSignOutAlt,
+  FaCheck,
+  FaTimes,
+  FaBell,
+  FaListAlt,
+  FaUserCheck
 } from 'react-icons/fa';
 import DashboardLayout from '../components/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseService';
+import { useNavigate } from 'react-router-dom';
 
 function ProgramManagerDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [programInfo, setProgramInfo] = useState(null);
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -81,17 +95,16 @@ function ProgramManagerDashboard() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [departmentInfo, setDepartmentInfo] = useState(null);
+  const [pendingUsers, setPendingUsers] = useState([]);
+  const [activityLog, setActivityLog] = useState([]);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [actionType, setActionType] = useState(null);
   
   const { 
-    isOpen: isViewOpen, 
-    onOpen: onViewOpen, 
-    onClose: onViewClose 
-  } = useDisclosure();
-  
-  const { 
-    isOpen: isAddOpen, 
-    onOpen: onAddOpen, 
-    onClose: onAddClose 
+    isOpen, 
+    onOpen, 
+    onClose 
   } = useDisclosure();
   
   const toast = useToast();
@@ -100,6 +113,8 @@ function ProgramManagerDashboard() {
   const cardBg = useColorModeValue('white', 'gray.700');
   const headerBg = useColorModeValue('red.50', 'gray.800');
   const borderColor = useColorModeValue('blue.500', 'blue.400');
+  
+  const cancelRef = useRef();
   
   useEffect(() => {
     const fetchPmData = async () => {
@@ -168,9 +183,98 @@ function ProgramManagerDashboard() {
     }
   }, [user, toast]);
   
+  useEffect(() => {
+    const fetchPendingUsers = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch ONLY pending STUDENT users
+        const { data: users, error: usersError } = await supabase
+          .from('users')
+            .select('*')
+          .eq('active', false)
+          .eq('role', 'student');
+          
+        if (usersError) throw usersError;
+        setPendingUsers(users || []);
+        
+        // Fetch activity log notifications
+        const { data: logs, error: logError } = await supabase
+          .from('notifications')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(50);
+          
+        if (logError) throw logError;
+        setActivityLog(logs || []);
+        
+      } catch (error) {
+        console.error('Error fetching pending users:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load pending user approvals',
+          status: 'error',
+          duration: 5000,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchPendingUsers();
+    
+    // Real-time subscription for new PENDING STUDENT users
+    const usersSubscription = supabase
+      .channel('public:users:pending_students')
+      .on(
+        'postgres_changes',
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'users', 
+          filter: 'active=eq.false&role=eq.student'
+        },
+        (payload) => {
+          console.log('New pending STUDENT user received!', payload.new);
+          setPendingUsers(prev => [payload.new, ...prev]);
+          toast({
+            title: 'New Student Signup Request',
+            description: `${payload.new.first_name} ${payload.new.last_name} requires approval.`,
+            status: 'info',
+            duration: 7000,
+            isClosable: true,
+          });
+        }
+      )
+      .subscribe((status, err) => {
+         if (err) console.error("Student User Subscription Error:", err);
+         else console.log("Student User Subscription Status:", status);
+      });
+      
+    // Real-time subscription for activity log (notifications table)
+    const activityLogSubscription = supabase
+      .channel('public:notifications')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications' },
+        (payload) => {
+          console.log('New activity log entry received!', payload.new);
+          setActivityLog(prev => [payload.new, ...prev]);
+        }
+      )
+       .subscribe((status, err) => {
+         if (err) console.error("Notification Subscription Error:", err);
+         else console.log("Notification Subscription Status:", status);
+      });
+    
+    return () => {
+      supabase.removeChannel(usersSubscription);
+      supabase.removeChannel(activityLogSubscription);
+    };
+  }, [toast]);
+  
   const handleViewClass = (cls) => {
     setSelectedClass(cls);
-    onViewOpen();
+    onOpen();
   };
   
   const handleAddClass = () => {
@@ -179,7 +283,7 @@ function ProgramManagerDashboard() {
       teacher_id: '',
       description: ''
     });
-    onAddOpen();
+    onOpen();
   };
   
   const handleCreateClass = async (e) => {
@@ -217,7 +321,7 @@ function ProgramManagerDashboard() {
         isClosable: true
       });
       
-      onAddClose();
+      onClose();
       fetchPmData();
       
     } catch (error) {
@@ -249,6 +353,103 @@ function ProgramManagerDashboard() {
     }
   };
   
+  const openActionDialog = (user, action) => {
+    setSelectedUser(user);
+    setActionType(action);
+    onOpen();
+  };
+
+  const handleUserAction = async () => {
+    if (!selectedUser || !actionType) return;
+    
+    setIsActionLoading(true);
+    let notificationMessage = '';
+    let toastStatus = 'info';
+    let toastTitle = 'Action Completed';
+
+    try {
+      if (actionType === 'approve') {
+        // Update user to active
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ active: true })
+          .eq('id', selectedUser.id);
+        if (updateError) throw updateError;
+
+        notificationMessage = `Approved signup for ${selectedUser.first_name} ${selectedUser.last_name} (${selectedUser.email}).`;
+        toastStatus = 'success';
+        toastTitle = 'User Approved';
+        
+      } else if (actionType === 'reject') {
+        // Delete the user record entirely upon rejection
+        // Note: This assumes rejection means deleting the request.
+        // If you need to keep rejected users marked differently, adjust the logic.
+        const { error: deleteError } = await supabase
+          .from('users')
+          .delete()
+          .eq('id', selectedUser.id);
+        if (deleteError) throw deleteError;
+
+        notificationMessage = `Rejected signup for ${selectedUser.first_name} ${selectedUser.last_name} (${selectedUser.email}).`;
+        toastStatus = 'warning';
+        toastTitle = 'User Rejected';
+      }
+
+       // Add entry to activity log (notifications table) regardless of action
+       const { error: logError } = await supabase
+          .from('notifications')
+          .insert({
+            notification: notificationMessage,
+            // Consider adding PM's user_id here if needed for audit
+            // pm_id: user.id 
+          });
+        // Log error but don't throw, as main action succeeded
+        if (logError) console.error("Error logging action:", logError);
+
+      toast({
+        title: toastTitle,
+        description: notificationMessage,
+        status: toastStatus,
+        duration: 5000,
+        isClosable: true,
+      });
+        
+      // Update the local state: Remove user from pending list
+      setPendingUsers(currentPendingUsers => 
+        currentPendingUsers.filter(u => u.id !== selectedUser.id)
+      );
+
+    } catch (error) {
+      console.error('Error processing user action:', error);
+      toast({
+        title: 'Action Error',
+        description: error.message || 'Failed to process the request.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsActionLoading(false);
+      onClose(); // Close the dialog
+      setSelectedUser(null); // Reset selected user
+      setActionType(null); // Reset action type
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: 'Logged out successfully',
+        status: 'success',
+        duration: 3000,
+      });
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+  
   // Menu items for the sidebar
   const menuItems = [
     { label: 'Program Overview', icon: FaUserTie, path: '/pm-dashboard' },
@@ -265,7 +466,7 @@ function ProgramManagerDashboard() {
       </Box>
     );
   }
-  
+
   return (
     <DashboardLayout 
       title={`PM Dashboard ${programInfo ? '- ' + programInfo.name : ''}`}
@@ -281,8 +482,8 @@ function ProgramManagerDashboard() {
               <Stat>
                 <StatLabel>Classes</StatLabel>
                 <StatNumber>{stats.totalClasses}</StatNumber>
-                <StatHelpText>In your program</StatHelpText>
-              </Stat>
+            <StatHelpText>In your program</StatHelpText>
+          </Stat>
             </CardBody>
           </Card>
           
@@ -302,7 +503,7 @@ function ProgramManagerDashboard() {
                 <StatLabel>Students</StatLabel>
                 <StatNumber>{stats.totalStudents}</StatNumber>
                 <StatHelpText>Enrolled in program</StatHelpText>
-              </Stat>
+          </Stat>
             </CardBody>
           </Card>
           
@@ -330,7 +531,7 @@ function ProgramManagerDashboard() {
               <Button 
                 size="sm" 
                 colorScheme="blue" 
-                leftIcon={<FaPlus />}
+                leftIcon={<FaPlus />} 
                 onClick={handleAddClass}
               >
                 Add Class
@@ -348,15 +549,15 @@ function ProgramManagerDashboard() {
                 <TabPanel>
                   {classes.length > 0 ? (
                     <Table variant="simple" size="sm">
-                      <Thead>
-                        <Tr>
+              <Thead>
+                <Tr>
                           <Th>Class Name</Th>
                           <Th>Teacher</Th>
                           <Th>Students</Th>
-                          <Th>Actions</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
+                  <Th>Actions</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                         {classes.map((cls) => (
                           <Tr key={cls.id}>
                             <Td>{cls.name}</Td>
@@ -386,27 +587,27 @@ function ProgramManagerDashboard() {
                                   Edit
                                 </Button>
                               </HStack>
-                            </Td>
-                          </Tr>
-                        ))}
-                      </Tbody>
-                    </Table>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
                   ) : (
                     <Text>No classes found in your program.</Text>
                   )}
-                </TabPanel>
-                
-                <TabPanel>
+          </TabPanel>
+          
+          <TabPanel>
                   {classes.filter(cls => !cls.teacher).length > 0 ? (
                     <Table variant="simple" size="sm">
-                      <Thead>
-                        <Tr>
+              <Thead>
+                <Tr>
                           <Th>Class Name</Th>
                           <Th>Students</Th>
-                          <Th>Actions</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
+                  <Th>Actions</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
                         {classes.filter(cls => !cls.teacher).map((cls) => (
                           <Tr key={cls.id}>
                             <Td>{cls.name}</Td>
@@ -420,15 +621,15 @@ function ProgramManagerDashboard() {
                               >
                                 Assign Teacher
                               </Button>
-                            </Td>
-                          </Tr>
-                        ))}
-                      </Tbody>
-                    </Table>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
                   ) : (
                     <Text>All classes have teachers assigned.</Text>
                   )}
-                </TabPanel>
+          </TabPanel>
               </TabPanels>
             </Tabs>
           </CardBody>
@@ -447,15 +648,15 @@ function ProgramManagerDashboard() {
           <CardBody>
             {teachers.length > 0 ? (
               <Table variant="simple" size="sm">
-                <Thead>
-                  <Tr>
+              <Thead>
+                <Tr>
                     <Th>Name</Th>
                     <Th>Email</Th>
                     <Th>Classes</Th>
                     <Th>Actions</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
+                </Tr>
+              </Thead>
+              <Tbody>
                   {teachers.map((teacher) => (
                     <Tr key={teacher.id}>
                       <Td>{`${teacher.first_name} ${teacher.last_name}`}</Td>
@@ -475,8 +676,8 @@ function ProgramManagerDashboard() {
                       </Td>
                     </Tr>
                   ))}
-                </Tbody>
-              </Table>
+              </Tbody>
+            </Table>
             ) : (
               <Text>No teachers available in your department.</Text>
             )}
@@ -485,7 +686,7 @@ function ProgramManagerDashboard() {
       </Stack>
       
       {/* Class Details Modal */}
-      <Modal isOpen={isViewOpen} onClose={onViewClose} size="xl">
+      <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
@@ -537,7 +738,7 @@ function ProgramManagerDashboard() {
             </Stack>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onViewClose}>
+            <Button colorScheme="blue" mr={3} onClick={onClose}>
               Close
             </Button>
           </ModalFooter>
@@ -545,7 +746,7 @@ function ProgramManagerDashboard() {
       </Modal>
       
       {/* Add Class Modal */}
-      <Modal isOpen={isAddOpen} onClose={onAddClose}>
+      <Modal isOpen={isOpen} onClose={()=>setIsOpen(false)}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Add New Class</ModalHeader>
@@ -555,7 +756,7 @@ function ProgramManagerDashboard() {
               <VStack spacing={4}>
                 <FormControl isRequired>
                   <FormLabel>Class Name</FormLabel>
-                  <Input 
+              <Input 
                     value={newClass.name}
                     onChange={(e) => setNewClass({...newClass, name: e.target.value})}
                     placeholder="Enter class name"
@@ -584,12 +785,12 @@ function ProgramManagerDashboard() {
                     onChange={(e) => setNewClass({...newClass, description: e.target.value})}
                     placeholder="Enter class description (optional)"
                   />
-                </FormControl>
+              </FormControl>
               </VStack>
             </form>
           </ModalBody>
           <ModalFooter>
-            <Button mr={3} onClick={onAddClose}>
+            <Button mr={3} onClick={()=>setIsOpen(false)}>
               Cancel
             </Button>
             <Button 
@@ -598,10 +799,180 @@ function ProgramManagerDashboard() {
               form="add-class-form"
             >
               Create Class
-            </Button>
+              </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Updated Tabs */}
+      <Tabs colorScheme="blue" variant="enclosed">
+        <TabList>
+          {/* Tab 1: Student Approvals */}
+          <Tab fontWeight="semibold">
+            <Flex align="center">
+              <FaUserGraduate style={{ marginRight: '8px' }} />
+              Student Approvals
+              {pendingUsers.length > 0 && (
+                <Badge ml={2} colorScheme="red" borderRadius="full" px={2}>
+                  {pendingUsers.length}
+                </Badge>
+              )}
+            </Flex>
+          </Tab>
+          {/* Tab 2: Activity Log */}
+          <Tab fontWeight="semibold">
+             <Flex align="center">
+               <FaListAlt style={{ marginRight: '8px' }} />
+               Activity Log
+             </Flex>
+          </Tab>
+          {/* Add other PM-specific tabs here if needed */}
+        </TabList>
+        
+        <TabPanels>
+          {/* Panel 1: Student Approvals Content */}
+          <TabPanel>
+            <Card>
+              <CardHeader>
+                <Heading size="md">Pending Student Signup Requests</Heading>
+              </CardHeader>
+              <CardBody>
+                {isLoading ? (
+                  <Flex justify="center" py={10}>
+                    <Spinner size="xl" />
+                  </Flex>
+                ) : pendingUsers.length === 0 ? (
+                  <Text>No pending student signups require approval.</Text>
+                ) : (
+                  <Box overflowX="auto">
+                    <Table variant="simple" size="sm">
+                      <Thead>
+                        <Tr>
+                          <Th>Name</Th>
+                          <Th>Email</Th>
+                          <Th>Role</Th>
+                          <Th>Department</Th>
+                          <Th>Signup Date</Th>
+                          <Th>Actions</Th>
+                        </Tr>
+                      </Thead>
+                      <Tbody>
+                        {pendingUsers.map(studentUser => (
+                          <Tr key={studentUser.id}>
+                            <Td>{studentUser.first_name} {studentUser.last_name}</Td>
+                            <Td>{studentUser.email}</Td>
+                            <Td>
+                              <Badge colorScheme='green'>
+                                {studentUser.role}
+                              </Badge>
+                            </Td>
+                            <Td>{studentUser.department_name || 'N/A'}</Td>
+                            <Td>{new Date(studentUser.created_at).toLocaleDateString()}</Td>
+                            <Td>
+                              <Flex gap={2}>
+                                <Button
+                                  size="xs" 
+                                  colorScheme="green"
+                                  leftIcon={<FaCheck />}
+                                  onClick={() => openActionDialog(studentUser, 'approve')}
+                                  isLoading={isActionLoading && selectedUser?.id === studentUser.id && actionType === 'approve'}
+                                >
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="xs" 
+                                  colorScheme="red"
+                                  leftIcon={<FaTimes />}
+                                  onClick={() => openActionDialog(studentUser, 'reject')}
+                                  isLoading={isActionLoading && selectedUser?.id === studentUser.id && actionType === 'reject'}
+                                >
+                                  Reject
+                                </Button>
+                              </Flex>
+                            </Td>
+                          </Tr>
+                        ))}
+                      </Tbody>
+                    </Table>
+    </Box>
+                )}
+              </CardBody>
+            </Card>
+          </TabPanel>
+          
+          {/* Panel 2: Activity Log Content */}
+          <TabPanel>
+            <Card>
+              <CardHeader>
+                <Heading size="md">Recent Activity Log</Heading>
+              </CardHeader>
+              <CardBody>
+                {isLoading ? (
+                  <Flex justify="center" py={10}>
+                    <Spinner size="xl" />
+                  </Flex>
+                ) : activityLog.length === 0 ? (
+                  <Text>No recent activity recorded.</Text>
+                ) : (
+                  <VStack spacing={3} align="stretch">
+                    {activityLog.map(logEntry => (
+                      <Card key={logEntry.id} size="sm" variant="outline" bg={useColorModeValue('gray.50', 'gray.700')}>
+                        <CardBody>
+                          <Flex justify="space-between" align="center" wrap="wrap">
+                            <Text fontSize="sm">{logEntry.notification}</Text>
+                            <Text fontSize="xs" color="gray.500" whiteSpace="nowrap" ml={2}>
+                              {new Date(logEntry.created_at).toLocaleString()}
+                            </Text>
+                          </Flex>
+                        </CardBody>
+                      </Card>
+                    ))}
+                  </VStack>
+                )}
+              </CardBody>
+            </Card>
+          </TabPanel>
+
+           {/* Add other TabPanels corresponding to other tabs */}
+
+        </TabPanels>
+      </Tabs>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              {actionType === 'approve' ? 'Confirm Approval' : 'Confirm Rejection'}
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              {actionType === 'approve' 
+                ? `Are you sure you want to approve the signup request for ${selectedUser?.first_name} ${selectedUser?.last_name}?`
+                : `Are you sure you want to reject the signup request for ${selectedUser?.first_name} ${selectedUser?.last_name}? This will delete their request.`
+              }
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onClose} isDisabled={isActionLoading}>
+                Cancel
+              </Button>
+              <Button 
+                colorScheme={actionType === 'approve' ? 'green' : 'red'} 
+                onClick={handleUserAction} 
+                ml={3}
+                isLoading={isActionLoading}
+              >
+                {actionType === 'approve' ? 'Approve' : 'Reject'}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

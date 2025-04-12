@@ -75,7 +75,7 @@ function TeacherDashboard() {
   const cardBg = useColorModeValue('white', 'gray.700');
   const headerBg = useColorModeValue('red.50', 'gray.800');
   const borderColor = useColorModeValue('green.500', 'green.400');
-  
+
   useEffect(() => {
     if (user) {
       fetchTeacherData();
@@ -146,7 +146,7 @@ function TeacherDashboard() {
     { label: 'Students', icon: FaUsers, path: '/teacher-dashboard/students' },
     { label: 'Reports', icon: FaChartLine, path: '/teacher-dashboard/reports' }
   ];
-  
+
   return (
     <DashboardLayout 
       title="Teacher Dashboard" 
@@ -368,7 +368,7 @@ function TeacherDashboard() {
                     ))}
                   </Tbody>
                 </Table>
-              </Box>
+    </Box>
             </Stack>
           </ModalBody>
           <ModalFooter>

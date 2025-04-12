@@ -77,29 +77,45 @@ function Signup() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            role: 'student'  // Default role for signups
+          }
+        }
       });
 
       if (authError) throw authError;
 
-      // Create user profile in users table
+      // Create user profile with active = false
       const { data: userData, error: userError } = await supabase
         .from('users')
         .insert({
           email: formData.email,
           first_name: formData.firstName,
           last_name: formData.lastName,
-          role: 'student',
+          role: 'student',  // Default role for signups
           department_name: formData.departmentName,
-          user_id: authData.user.id
+          user_id: authData.user.id,
+          active: false  // Set as inactive by default
         })
         .select()
         .single();
 
       if (userError) throw userError;
 
+      // Create notification for PM
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert({
+          notification: `New user signup: ${formData.firstName} ${formData.lastName} (${formData.email})`,
+          student_id: userData.id
+        });
+
+      if (notifError) throw notifError;
+
       toast({
         title: 'Signup successful!',
-        description: 'Please check your email to verify your account.',
+        description: 'Your account is pending approval. You will be notified when your account is activated.',
         status: 'success',
         duration: 5000,
         isClosable: true,
