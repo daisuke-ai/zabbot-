@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Box, 
   Heading, 
@@ -27,7 +27,15 @@ import {
   Tab,
   TabPanel,
   Button,
-  Flex
+  Flex,
+  Spinner,
+  Alert,
+  AlertIcon,
+  useToast,
+  Checkbox,
+  Progress,
+  Tag,
+  HStack
 } from '@chakra-ui/react';
 import { 
   FaBook, 
@@ -36,73 +44,278 @@ import {
   FaUserGraduate, 
   FaChartLine, 
   FaDownload,
-  FaInfoCircle 
+  FaInfoCircle,
+  FaPlusSquare,
+  FaCalculator,
+  FaPercentage
 } from 'react-icons/fa';
 import DashboardLayout from '../components/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseService';
 
+// --- Helper Function for Grade Point Calculation ---
+const getGradePoint = (obtained, total) => {
+  if (total === null || total === 0 || obtained === null) return 0; // Handle invalid data
+  const percentage = (obtained / total) * 100;
+  if (percentage >= 90) return 4.0;
+  if (percentage >= 85) return 3.7;
+  if (percentage >= 80) return 3.3;
+  if (percentage >= 75) return 3.0;
+  if (percentage >= 70) return 2.7;
+  if (percentage >= 65) return 2.3;
+  if (percentage >= 60) return 2.0;
+  if (percentage >= 55) return 1.7;
+  if (percentage >= 50) return 1.0;
+  return 0.0; // Failing grade
+};
+
+const getLetterGrade = (obtained, total) => {
+    if (total === null || total === 0 || obtained === null) return 'N/A';
+    const percentage = (obtained / total) * 100;
+    if (percentage >= 90) return 'A';
+    if (percentage >= 85) return 'A-';
+    if (percentage >= 80) return 'B+';
+    if (percentage >= 75) return 'B';
+    if (percentage >= 70) return 'B-';
+    if (percentage >= 65) return 'C+';
+    if (percentage >= 60) return 'C';
+    if (percentage >= 55) return 'C-';
+    if (percentage >= 50) return 'D';
+    return 'F';
+};
+// --- End Helper Functions ---
+
+// --- New Helper to Extract Specific Mark ---
+const findMark = (marks, courseId, type) => {
+    return marks.find(mark => mark.course_id === courseId && mark.type === type);
+};
+// --- End Helper ---
+
 function StudentDashboard() {
   const { user } = useAuth();
-  const [enrollments, setEnrollments] = useState([]);
-  const [grades, setGrades] = useState([]);
-  const [classes, setClasses] = useState([]);
-  const [stats, setStats] = useState({
-    totalClasses: 0,
-    completedAssignments: 0,
-    upcomingAssignments: 0,
-    attendanceRate: 0
-  });
+  const toast = useToast();
+
+  const [allCourses, setAllCourses] = useState([]);
+  const [studentEnrollments, setStudentEnrollments] = useState([]);
+  const [studentMarks, setStudentMarks] = useState([]);
+  const [selectedCoursesToEnroll, setSelectedCoursesToEnroll] = useState(new Set());
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Colors
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
+  const [gpaInfo, setGpaInfo] = useState({ gpa: 0, totalCredits: 0, averagePercentage: 0 });
+
   const cardBg = useColorModeValue('white', 'gray.700');
-  const headerBg = useColorModeValue('red.50', 'gray.800');
-  const borderColor = useColorModeValue('red.500', 'red.400');
+  const headerBg = useColorModeValue('gray.50', 'gray.800');
+  const borderColor = useColorModeValue('purple.500', 'purple.300');
   
   useEffect(() => {
-    if (user) {
-      fetchStudentData();
+    if (user && user.id) {
+      fetchDashboardData(user.id);
+    } else {
+      setIsLoading(false);
     }
   }, [user]);
   
-  const fetchStudentData = async () => {
+  useEffect(() => {
+    if (studentEnrollments.length > 0 && studentMarks.length > 0) {
+      calculateGPAAndStats();
+    } else {
+      setGpaInfo({ gpa: 0, totalCredits: 0, averagePercentage: 0 });
+    }
+  }, [studentEnrollments, studentMarks]);
+  
+  const fetchDashboardData = async (studentId) => {
+    setIsLoading(true);
+    setFetchError(null);
     try {
-      setIsLoading(true);
-      
-      // Fetch enrolled classes and grades
-      const { data: enrollmentsData, error: enrollmentsError } = await supabase
-        .from('enrollments')
-        .select('class:classes (*), grade')
-        .eq('student_id', user.id);
-      
-      if (enrollmentsError) throw enrollmentsError;
+      const { data: coursesData, error: coursesError } = await supabase
+        .from('courses')
+        .select('id, code, name, description, credit_hours')
+        .order('code', { ascending: true });
 
-      setGrades(enrollmentsData || []);
+      if (coursesError) throw coursesError;
+      setAllCourses(coursesData || []);
+      console.log("Fetched all courses:", coursesData);
 
-      // Set some demo stats (in a real app, these would come from the database)
-      setStats({
-        totalClasses: enrollmentsData?.length || 0,
-        completedAssignments: Math.floor(Math.random() * 20),
-        upcomingAssignments: Math.floor(Math.random() * 10),
-        attendanceRate: Math.floor(75 + Math.random() * 25)
-      });
-      
+      const { data: enrollmentData, error: enrollmentError } = await supabase
+        .from('student_courses')
+        .select(`
+          id,
+          enrolled_at,
+          course: courses ( id, code, name, credit_hours ) {/* Fetch course details including credits */}
+        `)
+        .eq('student_id', studentId);
+
+      if (enrollmentError) throw enrollmentError;
+      setStudentEnrollments(enrollmentData || []);
+      console.log("Fetched enrolled course IDs:", enrollmentData);
+
+      const { data: marksData, error: marksError } = await supabase
+        .from('marks')
+        .select('*')
+        .eq('student_id', studentId);
+
+      if (marksError) throw marksError;
+      setStudentMarks(marksData || []);
+      console.log("Fetched student marks:", marksData);
+
     } catch (error) {
-      console.error('Error fetching student data:', error);
+      console.error('Error fetching dashboard data:', error);
+      setFetchError(error.message || 'Failed to load dashboard data.');
+      setAllCourses([]);
+      setStudentEnrollments([]);
+      setStudentMarks([]);
     } finally {
       setIsLoading(false);
     }
   };
   
-  // Menu items for the sidebar
+  const calculateGPAAndStats = () => {
+    let totalQualityPoints = 0;
+    let totalCreditsAttempted = 0;
+    let totalPercentageSum = 0;
+    let coursesWithFinalMark = 0;
+
+    studentEnrollments.forEach(enrollment => {
+      if (!enrollment.course) return;
+
+      const courseId = enrollment.course.id;
+      const creditHours = enrollment.course.credit_hours || 0;
+
+      const finalMark = findMark(studentMarks, courseId, 'Final');
+
+      if (finalMark && creditHours > 0 && finalMark.obtained_number !== null) {
+        const gradePoint = getGradePoint(finalMark.obtained_number, finalMark.total_number);
+        totalQualityPoints += gradePoint * creditHours;
+        totalCreditsAttempted += creditHours;
+        totalPercentageSum += (finalMark.obtained_number / (finalMark.total_number || 100)) * 100;
+        coursesWithFinalMark++;
+      }
+    });
+
+    const calculatedGpa = totalCreditsAttempted > 0 ? (totalQualityPoints / totalCreditsAttempted) : 0;
+    const averagePercentage = coursesWithFinalMark > 0 ? (totalPercentageSum / coursesWithFinalMark) : 0;
+
+    setGpaInfo({
+        gpa: calculatedGpa,
+        totalCredits: totalCreditsAttempted,
+        averagePercentage: averagePercentage
+    });
+  };
+  
+  const handleCourseSelectionChange = (courseId, isChecked) => {
+    setSelectedCoursesToEnroll(prevSelected => {
+      const newSelected = new Set(prevSelected);
+      if (isChecked) {
+        newSelected.add(courseId);
+      } else {
+        newSelected.delete(courseId);
+      }
+      return newSelected;
+    });
+  };
+  
+  const handleEnrollment = async () => {
+    if (selectedCoursesToEnroll.size === 0) {
+      toast({
+        title: 'No Courses Selected',
+        description: 'Please select at least one course to enroll.',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (!user || !user.id) {
+       toast({ title: 'Error', description: 'User not found.', status: 'error'});
+       return;
+    }
+
+    setIsEnrolling(true);
+    setFetchError(null);
+
+    const enrollmentsToInsert = Array.from(selectedCoursesToEnroll).map(courseId => ({
+      student_id: user.id,
+      course_id: courseId
+    }));
+
+    console.log("Attempting to insert enrollments:", enrollmentsToInsert);
+
+    try {
+      const { error: insertError } = await supabase
+        .from('student_courses')
+        .insert(enrollmentsToInsert);
+
+      if (insertError) {
+        if (insertError.code === '23505') {
+             toast({ title: 'Already Enrolled', description: "You might already be enrolled in one of the selected courses.", status: 'warning', duration: 5000, isClosable: true });
+        } else {
+            throw insertError;
+        }
+      } else {
+        toast({
+          title: 'Enrollment Successful!',
+          description: `Successfully enrolled in ${enrollmentsToInsert.length} course(s).`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+        fetchDashboardData(user.id);
+        setSelectedCoursesToEnroll(new Set());
+      }
+    } catch (error) {
+      console.error('Enrollment error:', error);
+      toast({
+        title: 'Enrollment Failed',
+        description: error.message || 'Could not enroll in selected courses.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
+  
   const menuItems = [
-    { label: 'My Courses', icon: FaBook, path: '/student-dashboard' },
-    { label: 'Schedule', icon: FaCalendarAlt, path: '/student-dashboard/schedule' },
-    { label: 'Assignments', icon: FaClipboardList, path: '/student-dashboard/assignments' },
-    { label: 'Progress', icon: FaChartLine, path: '/student-dashboard/progress' }
+    { label: 'My Dashboard', icon: FaUserGraduate, path: '/student-dashboard' },
+    { label: 'Register Courses', icon: FaPlusSquare, path: '/student-dashboard' },
   ];
   
+  if (isLoading) {
+    return (
+      <DashboardLayout 
+        title="Student Dashboard" 
+        menuItems={menuItems}
+        userRole="student"
+        roleColor="purple"
+      >
+        <Flex justify="center" align="center" height="50vh">
+          <Spinner size="xl" />
+        </Flex>
+      </DashboardLayout>
+    );
+  }
+  
+  if (fetchError) {
+    return (
+      <DashboardLayout 
+        title="Student Dashboard" 
+        menuItems={menuItems}
+        userRole="student"
+        roleColor="purple"
+      >
+        <Alert status='error'>
+          <AlertIcon />
+          Error loading dashboard data: {fetchError}
+        </Alert>
+      </DashboardLayout>
+    );
+  }
+  
+  const enrolledIdsSet = new Set(studentEnrollments.map(e => e.course?.id).filter(id => id));
+
   return (
     <DashboardLayout 
       title="Student Dashboard" 
@@ -111,14 +324,24 @@ function StudentDashboard() {
       roleColor="purple"
     >
       <Stack spacing={6}>
-        {/* Stats Cards */}
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4}>
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
           <Card bg={cardBg} boxShadow="md">
             <CardBody>
               <Stat>
-                <StatLabel>Enrolled Courses</StatLabel>
-                <StatNumber>{stats.totalClasses}</StatNumber>
-                <StatHelpText>Active this semester</StatHelpText>
+                <StatLabel><Icon as={FaCalculator} mr={2}/>Current GPA</StatLabel>
+                <StatNumber>{gpaInfo.gpa.toFixed(2)}</StatNumber>
+                <StatHelpText>Based on {gpaInfo.totalCredits} credits w/ Final Marks</StatHelpText>
+              </Stat>
+              <Progress value={gpaInfo.gpa * 25} size='sm' colorScheme='purple' mt={2} borderRadius="md"/>
+            </CardBody>
+          </Card>
+          
+          <Card bg={cardBg} boxShadow="md">
+            <CardBody>
+              <Stat>
+                <StatLabel><Icon as={FaBook} mr={2}/>Enrolled Courses</StatLabel>
+                <StatNumber>{studentEnrollments.length}</StatNumber>
+                <StatHelpText>Current Term</StatHelpText>
               </Stat>
             </CardBody>
           </Card>
@@ -126,143 +349,159 @@ function StudentDashboard() {
           <Card bg={cardBg} boxShadow="md">
             <CardBody>
               <Stat>
-                <StatLabel>Completed Assignments</StatLabel>
-                <StatNumber>{stats.completedAssignments}</StatNumber>
-                <StatHelpText>This semester</StatHelpText>
-              </Stat>
-            </CardBody>
-          </Card>
-          
-          <Card bg={cardBg} boxShadow="md">
-            <CardBody>
-              <Stat>
-                <StatLabel>Pending Assignments</StatLabel>
-                <StatNumber>{stats.upcomingAssignments}</StatNumber>
-                <StatHelpText>Due this week</StatHelpText>
-              </Stat>
-            </CardBody>
-          </Card>
-          
-          <Card bg={cardBg} boxShadow="md">
-            <CardBody>
-              <Stat>
-                <StatLabel>Attendance Rate</StatLabel>
-                <StatNumber>{stats.attendanceRate}%</StatNumber>
-                <StatHelpText>Overall attendance</StatHelpText>
+                <StatLabel><Icon as={FaPercentage} mr={2}/>Average %</StatLabel>
+                <StatNumber>{gpaInfo.averagePercentage.toFixed(1)}%</StatNumber>
+                <StatHelpText>Courses w/ Final Mark</StatHelpText>
               </Stat>
             </CardBody>
           </Card>
         </SimpleGrid>
         
-        {/* Course List */}
-        <Card bg={cardBg} boxShadow="md" borderTop="4px solid" borderColor={borderColor}>
-          <CardHeader bg={headerBg} py={3}>
-            <Heading size="md">
-              <Flex align="center">
-                <Icon as={FaBook} mr={2} />
-                My Courses
-              </Flex>
-            </Heading>
-          </CardHeader>
-          <CardBody>
-            <Tabs colorScheme="red" isLazy>
-              <TabList>
-                <Tab>Current Semester</Tab>
-                <Tab>All Courses</Tab>
-              </TabList>
-              
-              <TabPanels>
-                <TabPanel>
-                  {enrollments.length > 0 ? (
-                    <Table variant="simple" size="sm">
-                      <Thead>
-                        <Tr>
-                          <Th>Course Name</Th>
-                          <Th>Department</Th>
-                          <Th>Teacher</Th>
-                          <Th>Actions</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
-                        {enrollments.map((enrollment) => (
-                          <Tr key={enrollment.id}>
-                            <Td>{enrollment.classes.name}</Td>
-                            <Td>{enrollment.classes.programs.departments.name}</Td>
-                            <Td>
-                              {enrollment.classes.users ? 
-                                `${enrollment.classes.users.first_name} ${enrollment.classes.users.last_name}` : 
-                                'Not assigned'}
-                            </Td>
-                            <Td>
-                              <Button 
-                                size="xs" 
-                                colorScheme="blue" 
-                                variant="ghost"
-                                leftIcon={<FaInfoCircle />}
-                              >
-                                Details
-                              </Button>
-                            </Td>
+        <Tabs colorScheme="purple" variant='soft-rounded'>
+          <TabList>
+            <Tab><Icon as={FaBook} mr={2} />My Courses & Marks</Tab>
+            <Tab><Icon as={FaPlusSquare} mr={2} />Register for Courses</Tab>
+          </TabList>
+
+          <TabPanels>
+            <TabPanel px={0}>
+              <Card bg={cardBg} boxShadow="md">
+                <CardHeader bg={headerBg} py={3}>
+                  <Heading size="md">My Enrolled Courses & Marks Breakdown</Heading>
+                </CardHeader>
+                <CardBody>
+                  {studentEnrollments.length > 0 ? (
+                    <Box overflowX="auto">
+                      <Table variant="simple" size="sm">
+                        <Thead>
+                          <Tr>
+                            <Th>Code</Th>
+                            <Th>Name</Th>
+                            <Th>Credits</Th>
+                            <Th isNumeric>A1</Th>
+                            <Th isNumeric>A2</Th>
+                            <Th isNumeric>A3</Th>
+                            <Th isNumeric>A4</Th>
+                            <Th isNumeric>Q1</Th>
+                            <Th isNumeric>Q2</Th>
+                            <Th isNumeric>Q3</Th>
+                            <Th isNumeric>Q4</Th>
+                            <Th isNumeric>Mid</Th>
+                            <Th isNumeric>Final</Th>
                           </Tr>
-                        ))}
-                      </Tbody>
-                    </Table>
+                        </Thead>
+                        <Tbody>
+                          {studentEnrollments.map(({ id, course }) => {
+                            if (!course) return null;
+
+                            const marksForThisCourse = studentMarks.filter(m => m.course_id === course.id);
+
+                            const renderMark = (type) => {
+                              const mark = marksForThisCourse.find(m => m.type === type);
+                              return mark?.obtained_number !== null && mark?.obtained_number !== undefined
+                                ? `${mark.obtained_number}/${mark.total_number ?? 100}`
+                                : '-';
+                            };
+
+                            return (
+                              <Tr key={id}>
+                                <Td fontWeight="medium">{course.code}</Td>
+                                <Td>{course.name}</Td>
+                                <Td textAlign="center">{course.credit_hours ?? 'N/A'}</Td>
+                                <Td isNumeric>{renderMark('Assignment 1')}</Td>
+                                <Td isNumeric>{renderMark('Assignment 2')}</Td>
+                                <Td isNumeric>{renderMark('Assignment 3')}</Td>
+                                <Td isNumeric>{renderMark('Assignment 4')}</Td>
+                                <Td isNumeric>{renderMark('Quiz 1')}</Td>
+                                <Td isNumeric>{renderMark('Quiz 2')}</Td>
+                                <Td isNumeric>{renderMark('Quiz 3')}</Td>
+                                <Td isNumeric>{renderMark('Quiz 4')}</Td>
+                                <Td isNumeric>{renderMark('Midterm')}</Td>
+                                <Td isNumeric>{renderMark('Final')}</Td>
+                              </Tr>
+                            );
+                          })}
+                        </Tbody>
+                      </Table>
+                    </Box>
                   ) : (
-                    <Text>No courses enrolled for the current semester.</Text>
+                    <Text>You are not currently enrolled in any courses.</Text>
                   )}
-                </TabPanel>
-                
-                <TabPanel>
-                  <Text>Historical course data will be displayed here.</Text>
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
-          </CardBody>
-        </Card>
-        
-        {/* Recent Activity */}
-        <Card bg={cardBg} boxShadow="md" borderTop="4px solid" borderColor={borderColor}>
-          <CardHeader bg={headerBg} py={3}>
-            <Heading size="md">
-              <Flex align="center">
-                <Icon as={FaClipboardList} mr={2} />
-                Recent Activities
-              </Flex>
-            </Heading>
-          </CardHeader>
-          <CardBody>
-            <Table variant="simple" size="sm">
-              <Thead>
-                <Tr>
-                  <Th>Activity</Th>
-                  <Th>Course</Th>
-                  <Th>Date</Th>
-                  <Th>Status</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                <Tr>
-                  <Td>Assignment Submission</Td>
-                  <Td>Database Management</Td>
-                  <Td>2 days ago</Td>
-                  <Td><Badge colorScheme="green">Completed</Badge></Td>
-                </Tr>
-                <Tr>
-                  <Td>Quiz Attempt</Td>
-                  <Td>Mobile App Development</Td>
-                  <Td>5 days ago</Td>
-                  <Td><Badge colorScheme="green">Passed</Badge></Td>
-                </Tr>
-                <Tr>
-                  <Td>Assignment Upload</Td>
-                  <Td>Software Engineering</Td>
-                  <Td>1 week ago</Td>
-                  <Td><Badge colorScheme="yellow">Pending Review</Badge></Td>
-                </Tr>
-              </Tbody>
-            </Table>
-          </CardBody>
-        </Card>
+                </CardBody>
+              </Card>
+            </TabPanel>
+
+            <TabPanel px={0}>
+               <Card bg={cardBg} boxShadow="md">
+                <CardHeader bg={headerBg} py={3}>
+                    <Flex justify="space-between" align="center" wrap="wrap" gap={2}>
+                        <Heading size="md">Available Courses for Registration</Heading>
+                         <Button
+                            colorScheme="green"
+                            leftIcon={<FaPlusSquare />}
+                            size="sm"
+                            onClick={handleEnrollment}
+                            isLoading={isEnrolling}
+                            isDisabled={selectedCoursesToEnroll.size === 0}
+                        >
+                            Enroll in Selected ({selectedCoursesToEnroll.size})
+                        </Button>
+                    </Flex>
+                </CardHeader>
+                <CardBody>
+                    {allCourses.length > 0 ? (
+                    <Box overflowX="auto">
+                        <Table variant="simple" size="sm">
+                        <Thead>
+                            <Tr>
+                            <Th>Select</Th>
+                            <Th>Code</Th>
+                            <Th>Name</Th>
+                            <Th>Credits</Th>
+                            <Th>Description</Th>
+                            <Th>Status</Th>
+                            </Tr>
+                        </Thead>
+                        <Tbody>
+                            {allCourses.map((course) => {
+                            const isEnrolled = enrolledIdsSet.has(course.id);
+                            const isSelected = selectedCoursesToEnroll.has(course.id);
+
+                            return (
+                                <Tr key={course.id} opacity={isEnrolled ? 0.6 : 1}>
+                                <Td>
+                                    <Checkbox
+                                    isChecked={isSelected}
+                                    isDisabled={isEnrolled}
+                                    onChange={(e) => handleCourseSelectionChange(course.id, e.target.checked)}
+                                    colorScheme="green"
+                                    />
+                                </Td>
+                                <Td>{course.code}</Td>
+                                <Td>{course.name}</Td>
+                                <Td textAlign="center">{course.credit_hours ?? 'N/A'}</Td>
+                                <Td whiteSpace="normal">{course.description || 'N/A'}</Td>
+                                <Td>
+                                    {isEnrolled ? (
+                                    <Badge colorScheme="green" variant="solid">Enrolled</Badge>
+                                    ) : (
+                                    <Badge colorScheme="gray">Available</Badge>
+                                    )}
+                                </Td>
+                                </Tr>
+                            );
+                            })}
+                        </Tbody>
+                        </Table>
+                    </Box>
+                    ) : (
+                    <Text>No courses available for registration at this time.</Text>
+                    )}
+                </CardBody>
+                </Card>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </Stack>
     </DashboardLayout>
   );
