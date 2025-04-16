@@ -514,103 +514,90 @@ async function postProcessTranscription(transcription) {
 }
 
 app.post("/transcribe", async (req, res) => {
-  let tempFilePath;
   try {
     console.log('Transcribe request received');
     
-    // Check if req.files exists
     if (!req.files) {
       console.error('No files object in request');
       return res.status(400).json({ error: 'No files were uploaded. Make sure you have access to your microphone.' });
     }
     
-    // Check for audio file
     if (!req.files.audio) {
       console.error('No audio file in request.files');
       return res.status(400).json({ error: 'No audio file received. Please check your microphone permissions.' });
     }
 
     const audioFile = req.files.audio;
+    // Access the path directly from express-fileupload
+    const currentTempPath = req.files.audio.tempFilePath; 
     console.log(`Received audio file: ${audioFile.name}, size: ${audioFile.size} bytes, mimetype: ${audioFile.mimetype}`);
+    console.log(`Temporary file at: ${currentTempPath}`); // Log the actual temp path
     
-    // Check audio file size before processing
-    if (audioFile.size > 25 * 1024 * 1024) { // 25MB limit
+    if (audioFile.size > 25 * 1024 * 1024) { 
       console.error('File too large:', audioFile.size);
+      // Clean up the oversized temp file immediately
+      if (fs.existsSync(currentTempPath)) fs.unlinkSync(currentTempPath);
       return res.status(400).json({ error: 'Audio file too large, please keep recordings under 25MB' });
     }
     
-    // Check for tiny files which might indicate recording issues
-    if (audioFile.size < 1000) { // Less than 1KB
+    if (audioFile.size < 1000) { 
       console.error('File too small:', audioFile.size);
+      if (fs.existsSync(currentTempPath)) fs.unlinkSync(currentTempPath);
       return res.status(400).json({ error: 'Audio file too small or empty. Please try recording again.' });
     }
     
-    // Generate a unique filename with timestamp
-    tempFilePath = path.join('/tmp', `audio-${Date.now()}-${Math.floor(Math.random() * 1000)}.webm`);
-    console.log(`Saving to temp file: ${tempFilePath}`);
+    console.log('Sending temporary file to Whisper API');
     
-    try {
-      await audioFile.mv(tempFilePath);
-    } catch (moveError) {
-      console.error('Error moving audio file:', moveError);
-      return res.status(500).json({ error: `Failed to process audio file: ${moveError.message}` });
+    if (!fs.existsSync(currentTempPath)) {
+      console.error(`Temp file does not exist at expected path: ${currentTempPath}`);
+      return res.status(500).json({ error: 'Failed to access temporary audio file' });
     }
     
-    console.log('File moved successfully, sending to Whisper API');
-    
-    // Verify the file exists and is readable
-    if (!fs.existsSync(tempFilePath)) {
-      console.error('Temp file does not exist after move');
-      return res.status(500).json({ error: 'Failed to save audio file' });
-    }
-    
-    // Get file stats
-    const stats = fs.statSync(tempFilePath);
-    console.log(`Temp file size: ${stats.size} bytes`);
+    const stats = fs.statSync(currentTempPath);
+    console.log(`Temp file size before stream: ${stats.size} bytes`);
     
     if (stats.size === 0) {
-      console.error('Temp file is empty');
-      fs.unlinkSync(tempFilePath);
+      console.error('Temp file is empty before stream');
+      fs.unlinkSync(currentTempPath);
       return res.status(400).json({ error: 'Audio file is empty' });
     }
 
-    // Create readable stream
-    const fileStream = fs.createReadStream(tempFilePath);
+    // Use the path provided by express-fileupload directly
+    const fileStream = fs.createReadStream(currentTempPath);
     fileStream.on('error', (streamErr) => {
-      console.error('Stream error:', streamErr);
+      console.error('Stream error reading temp file:', streamErr);
     });
 
-    // Specify response format as text for faster processing
     let rawTranscription;
     try {
       rawTranscription = await openai.audio.transcriptions.create({
         file: fileStream,
         model: "whisper-1",
         response_format: "text",
-        language: "en" // Specify language for faster processing
+        language: "en"
       });
       console.log('Transcription successful:', rawTranscription);
     } catch (whisperError) {
       console.error('Whisper API error:', whisperError);
-      
-      // Clean up temp file
-      if (fs.existsSync(tempFilePath)) {
-        fs.unlinkSync(tempFilePath);
+      // Clean up temp file - use currentTempPath
+      if (fs.existsSync(currentTempPath)) {
+        fs.unlinkSync(currentTempPath);
       }
-      
       return res.status(500).json({ 
         error: `Transcription failed: ${whisperError.message}`,
         details: whisperError.toString()
       });
+    } 
+    // Note: No finally block here, cleanup happens below or in catch
+
+    // Clean up temp file - use currentTempPath
+    if (fs.existsSync(currentTempPath)) {
+      fs.unlinkSync(currentTempPath);
+      console.log('Temp file deleted after transcription');
+    } else {
+      console.warn(`Could not find temp file to delete at: ${currentTempPath}`);
     }
 
-    // Clean up temp file
-    if (fs.existsSync(tempFilePath)) {
-      fs.unlinkSync(tempFilePath);
-      console.log('Temp file deleted');
-    }
-
-    // If transcription is empty or too short
     if (!rawTranscription || rawTranscription.trim().length < 2) {
       console.log('Transcription empty or too short');
       return res.status(400).json({ 
@@ -618,34 +605,25 @@ app.post("/transcribe", async (req, res) => {
       });
     }
 
-    // Post-process the transcription - run this in parallel with getting the response
     const processTranscriptionPromise = postProcessTranscription(rawTranscription);
-    
-    // Start getting the chatbot response with the raw transcription to save time
-    // We'll use the processed version later when available
     const responsePromise = handleQuery(rawTranscription);
     
-    // Wait for both operations to complete
     const [processedTranscription, initialResponse] = await Promise.all([
       processTranscriptionPromise,
       responsePromise
     ]);
     console.log('Both processing steps completed');
     
-    // If the processed transcription is significantly different, get a new response
     if (processedTranscription && 
         rawTranscription.length > 10 &&
         levenshteinDistance(rawTranscription, processedTranscription) / rawTranscription.length > 0.3) {
-      // If the processed transcription is very different, get a new response
       console.log('Significant difference in transcription, getting updated response');
       const updatedResponse = await handleQuery(processedTranscription);
-      
       return res.json({ 
         transcription: processedTranscription,
         response: updatedResponse
       });
     } else {
-      // If the processed transcription isn't very different, use the initial response
       console.log('Using initial response with processed transcription');
       return res.json({ 
         transcription: processedTranscription || rawTranscription,
@@ -653,14 +631,15 @@ app.post("/transcribe", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Transcription error:', error);
-    // Clean up temp file if it exists
-    if (tempFilePath && fs.existsSync(tempFilePath)) {
+    console.error('Transcription endpoint error:', error);
+    // Clean up temp file if error occurred - check req.files existence first
+    const pathToCheck = req?.files?.audio?.tempFilePath;
+    if (pathToCheck && fs.existsSync(pathToCheck)) {
       try {
-        fs.unlinkSync(tempFilePath);
+        fs.unlinkSync(pathToCheck);
         console.log('Temp file deleted after error');
       } catch (cleanupError) {
-        console.error('Failed to delete temp file:', cleanupError);
+        console.error('Failed to delete temp file after error:', cleanupError);
       }
     }
     res.status(500).json({ 
