@@ -1,3 +1,4 @@
+// Backend server for ZABBOT AI Assistant - v1.0.1
 import express from "express";
 import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
