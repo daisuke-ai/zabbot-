@@ -530,6 +530,7 @@ app.post("/transcribe", async (req, res) => {
     const audioFile = req.files.audio;
     // Access the path directly from express-fileupload
     const currentTempPath = req.files.audio.tempFilePath; 
+    console.log('[DEBUG] Received temp file path:', currentTempPath);
     console.log(`Received audio file: ${audioFile.name}, size: ${audioFile.size} bytes, mimetype: ${audioFile.mimetype}`);
     console.log(`Temporary file at: ${currentTempPath}`); // Log the actual temp path
     
