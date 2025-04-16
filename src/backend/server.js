@@ -548,7 +548,8 @@ app.post("/transcribe", async (req, res) => {
       return res.status(400).json({ error: 'Audio file too small or empty. Please try recording again.' });
     }
 
-    const uniqueFilename = `audio-${Date.now()}-${audioFile.md5()}.webm`;
+    // Corrected unique filename generation
+    const uniqueFilename = `audio-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.webm`;
     tempFilePath = path.join(os.tmpdir(), uniqueFilename);
     console.log(`Attempting to move uploaded file to explicit temp path: ${tempFilePath}`);
 
