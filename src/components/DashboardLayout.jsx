@@ -23,7 +23,8 @@ import {
   Menu,
   MenuButton,
   MenuList,
-  MenuItem
+  MenuItem,
+  useToast
 } from '@chakra-ui/react';
 import { FaHome, FaUserCircle, FaSignOutAlt, FaBars, FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +40,7 @@ function DashboardLayout({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const toast = useToast();
   
   // Responsive sidebar
   const isMobile = useBreakpointValue({ base: true, lg: false });
@@ -54,6 +56,14 @@ function DashboardLayout({
       navigate('/portal');
     } catch (error) {
       console.error('Logout error:', error);
+      // Add a toast notification for logout failure
+      toast({ 
+          title: 'Logout Failed',
+          description: error.message || 'An error occurred during logout.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+      });
     }
   };
   

@@ -91,7 +91,7 @@ function EnhancedChatbot({ inputText }) {
       
       animationFrameRef.current = requestAnimationFrame(checkVolume);
 
-      mediaRecorderRef.current.ondataavailable = (e) => {
+      mediaRecorderRef.current.ondataavailable = (e) => { 
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 

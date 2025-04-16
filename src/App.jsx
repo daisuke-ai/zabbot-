@@ -110,9 +110,7 @@ function AppContent() {
         
         {/* Protected Routes */}
         <Route path="/chatbot" element={
-          <ProtectedRoute>
             <ChatbotPage />
-          </ProtectedRoute>
         } />
       
         

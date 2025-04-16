@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
             .from('users')
             .select('*') // Fetch all necessary fields
             .eq('user_id', session.user.id)
-            .maybeSingle(); // Use maybeSingle to handle potential missing profile gracefully
+            .maybeSingle();
             
           if (profileError) {
               console.error("AuthContext: Error fetching initial profile:", profileError);
@@ -46,6 +46,8 @@ export const AuthProvider = ({ children }) => {
              // Keep session.user for basic auth info, but profile data is missing
              currentUser = session.user;
           }
+        } else {
+            console.log("AuthContext: No active session found initially.");
         }
         setUser(currentUser); // Set user state based on session and profile
         console.log("AuthContext: Initial user state set:", currentUser);

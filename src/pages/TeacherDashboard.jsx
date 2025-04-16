@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Box, 
   Heading, 
@@ -41,7 +41,11 @@ import {
   Textarea,
   Select,
   useDisclosure,
-  HStack
+  HStack,
+  Spinner,
+  useToast,
+  InputGroup,
+  InputLeftAddon
 } from '@chakra-ui/react';
 import { 
   FaChalkboardTeacher, 
@@ -51,101 +55,239 @@ import {
   FaChartLine,
   FaPlus,
   FaEdit,
-  FaEye
+  FaEye,
+  FaSave
 } from 'react-icons/fa';
 import DashboardLayout from '../components/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseService';
 
+// --- Define Mark Types and Totals --- 
+const MARK_TYPES = {
+  'Assignment 1': 10,
+  'Assignment 2': 10,
+  'Assignment 3': 10,
+  'Assignment 4': 10,
+  'Quiz 1': 10,
+  'Quiz 2': 10,
+  'Quiz 3': 10,
+  'Quiz 4': 10,
+  'Midterm': 50,
+  'Final': 100,
+};
+const MARK_TYPE_KEYS = Object.keys(MARK_TYPES);
+// ---------------------------------
+
 function TeacherDashboard() {
   const { user } = useAuth();
-  const [classes, setClasses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState(null);
-  const [stats, setStats] = useState({
-    totalClasses: 0,
-    totalStudents: 0,
-    assignmentsCreated: 0,
-    avgAttendance: 0
-  });
+  const toast = useToast();
+
+  // --- State Refactoring --- 
+  const [assignedCourses, setAssignedCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [students, setStudents] = useState([]);
+  const [isSavingMarks, setIsSavingMarks] = useState(false);
   
-  // Colors
+  // State for the marks modal
+  const { isOpen: isMarksModalOpen, onOpen: onMarksModalOpen, onClose: onMarksModalClose } = useDisclosure();
+  const [selectedCourseForMarks, setSelectedCourseForMarks] = useState(null);
+  const [studentsInCourse, setStudentsInCourse] = useState([]);
+  const [marksData, setMarksData] = useState({});
+  const [isFetchingModalData, setIsFetchingModalData] = useState(false);
+
+  // --- Colors --- 
   const cardBg = useColorModeValue('white', 'gray.700');
-  const headerBg = useColorModeValue('red.50', 'gray.800');
+  const headerBg = useColorModeValue('green.50', 'gray.800');
   const borderColor = useColorModeValue('green.500', 'green.400');
 
-  useEffect(() => {
-    if (user) {
-      fetchTeacherData();
-    }
-  }, [user]);
-  
-  const fetchTeacherData = async () => {
+  // --- Data Fetching --- 
+  const fetchTeacherData = useCallback(async () => {
+    if (!user?.id) return;
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      
-      // Fetch classes taught by this teacher
-      const { data: classesData, error: classesError } = await supabase
-        .from('classes')
-        .select('*')
+      // 1. Fetch course IDs assigned to the teacher
+      const { data: courseAssignments, error: assignmentError } = await supabase
+        .from('teacher_courses')
+        .select('course_id')
         .eq('teacher_id', user.id);
-      
-      setClasses(classesData || []);
 
-      // Fetch students in these classes
-      const { data: studentsData, error: studentsError } = await supabase
-        .from('enrollments')
-        .select('student:student_id (*)')
-        .in('class_id', classesData.map(c => c.id));
+      if (assignmentError) throw assignmentError;
       
-      setStudents(studentsData?.map(s => s.student) || []);
+      const courseIds = courseAssignments.map(a => a.course_id);
       
-      // Calculate statistics
-      const totalStudents = studentsData?.length || 0;
+      if (courseIds.length === 0) {
+        setAssignedCourses([]);
+        setIsLoading(false);
+        return; // No courses assigned
+      }
       
-      setStats({
-        totalClasses: classesData.length,
-        totalStudents,
-        assignmentsCreated: Math.floor(Math.random() * 30), // Demo data
-        avgAttendance: Math.floor(75 + Math.random() * 25) // Demo data
-      });
+      // 2. Fetch details for assigned courses
+      const { data: coursesData, error: coursesError } = await supabase
+        .from('courses')
+        .select('id, code, name, credit_hours')
+        .in('id', courseIds);
+        
+      if (coursesError) throw coursesError;
+      setAssignedCourses(coursesData || []);
       
     } catch (error) {
       console.error('Error fetching teacher data:', error);
+      toast({ title: 'Error Loading Data', description: error.message, status: 'error' });
+      setAssignedCourses([]); // Reset on error
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, toast]);
+
+  useEffect(() => {
+    fetchTeacherData();
+  }, [fetchTeacherData]);
   
-  const handleViewClass = (classData) => {
-    setSelectedClass(classData);
-    onOpen();
-  };
-  
-  const handleUpdateGrades = async (studentId, classId, grade) => {
+  // --- Modal Logic --- 
+  const openMarksModal = async (course) => {
+    if (!course) return;
+    setSelectedCourseForMarks(course);
+    setIsFetchingModalData(true);
+    setStudentsInCourse([]);
+    setMarksData({});
+    onMarksModalOpen();
+
     try {
-      const { error } = await supabase
-        .from('enrollments')
-        .update({ grade })
-        .eq('student_id', studentId)
-        .eq('class_id', classId);
+      // 1. Fetch student IDs enrolled in this course
+      const { data: enrollments, error: enrollmentError } = await supabase
+        .from('student_courses')
+        .select('student_id')
+        .eq('course_id', course.id);
+
+      if (enrollmentError) throw enrollmentError;
+      const studentIds = enrollments.map(e => e.student_id);
+
+      if (studentIds.length === 0) {
+        setIsFetchingModalData(false);
+        return; // No students enrolled
+      }
+
+      // 2. Fetch student details
+      const { data: studentsData, error: studentError } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, email')
+        .in('id', studentIds);
+
+      if (studentError) throw studentError;
+      setStudentsInCourse(studentsData || []);
+
+      // 3. Fetch existing marks for these students in this course
+      const { data: existingMarks, error: marksError } = await supabase
+        .from('marks')
+        .select('student_id, type, obtained_number, total_number')
+        .eq('course_id', course.id)
+        .in('student_id', studentIds);
+
+      if (marksError) throw marksError;
       
-      if (error) throw error;
+      // 4. Process marks into the desired state structure
+      const processedMarks = {};
+      studentsData.forEach(student => {
+          processedMarks[student.id] = {};
+          MARK_TYPE_KEYS.forEach(markType => {
+              const foundMark = existingMarks.find(m => m.student_id === student.id && m.type === markType);
+              processedMarks[student.id][markType] = {
+                  obtained: foundMark?.obtained_number ?? '',
+                  total: foundMark?.total_number ?? MARK_TYPES[markType]
+              };
+          });
+      });
+      setMarksData(processedMarks);
+
     } catch (error) {
-      console.error('Error updating grade:', error);
+        console.error('Error fetching modal data:', error);
+        toast({ title: 'Error Loading Students/Marks', description: error.message, status: 'error' });
+        onMarksModalClose();
+    } finally {
+        setIsFetchingModalData(false);
     }
   };
   
-  // Menu items for the sidebar
+  // --- Handle Input Change in Modal --- 
+  const handleMarkChange = (studentId, markType, value) => {
+      const numericValue = value === '' ? '' : Number(value);
+      
+      const total = marksData[studentId]?.[markType]?.total ?? MARK_TYPES[markType];
+      if (numericValue !== '' && (isNaN(numericValue) || numericValue < 0 || numericValue > total)) {
+           toast({ title: 'Invalid Input', description: `Mark must be between 0 and ${total}.`, status: 'warning', duration: 2000 });
+           return;
+      }
+
+      setMarksData(prev => ({
+          ...prev,
+          [studentId]: {
+              ...prev[studentId],
+              [markType]: {
+                  ...prev[studentId]?.[markType],
+                  obtained: numericValue
+              }
+          }
+      }));
+  };
+
+  // --- Handle Saving Marks --- 
+  const handleSaveMarks = async () => {
+      if (!selectedCourseForMarks) return;
+      setIsSavingMarks(true);
+
+      const marksToUpsert = [];
+      Object.keys(marksData).forEach(studentId => {
+          Object.keys(marksData[studentId]).forEach(markType => {
+              const mark = marksData[studentId][markType];
+              if (mark.obtained !== '' && !isNaN(Number(mark.obtained))) {
+                  marksToUpsert.push({
+                      student_id: studentId,
+                      course_id: selectedCourseForMarks.id,
+                      teacher_id: user.id,
+                      type: markType,
+                      obtained_number: Number(mark.obtained),
+                      total_number: mark.total ?? MARK_TYPES[markType]
+                  });
+              }
+          });
+      });
+
+      if (marksToUpsert.length === 0) {
+          toast({ title: 'No Marks Entered', description: 'Please enter marks before saving.', status: 'info' });
+          setIsSavingMarks(false);
+          return;
+      }
+
+      try {
+          console.log("Upserting marks:", marksToUpsert);
+          const { error } = await supabase
+              .from('marks')
+              .upsert(marksToUpsert, { onConflict: 'student_id, course_id, type' });
+
+          if (error) throw error;
+
+          toast({ title: 'Marks Saved Successfully', status: 'success' });
+          onMarksModalClose();
+
+      } catch (error) {
+          console.error('Error saving marks:', error);
+          toast({ title: 'Error Saving Marks', description: error.message, status: 'error' });
+      } finally {
+          setIsSavingMarks(false);
+      }
+  };
+
+  // --- Menu Items (Adjust as needed) --- 
   const menuItems = [
-    { label: 'My Classes', icon: FaChalkboardTeacher, path: '/teacher-dashboard' },
-    { label: 'Schedule', icon: FaCalendarAlt, path: '/teacher-dashboard/schedule' },
-    { label: 'Assignments', icon: FaClipboardList, path: '/teacher-dashboard/assignments' },
-    { label: 'Students', icon: FaUsers, path: '/teacher-dashboard/students' },
-    { label: 'Reports', icon: FaChartLine, path: '/teacher-dashboard/reports' }
+    { label: 'My Courses', icon: FaChalkboardTeacher, path: '/teacher-dashboard' },
   ];
+
+  if (isLoading) {
+    return (
+      <DashboardLayout title="Teacher Dashboard" menuItems={menuItems} userRole="teacher" roleColor="green">
+        <Flex justify="center" align="center" h="50vh"><Spinner size="xl" /></Flex>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout 
@@ -155,230 +297,117 @@ function TeacherDashboard() {
       roleColor="green"
     >
       <Stack spacing={6}>
-        {/* Stats Cards */}
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4}>
-          <Card bg={cardBg} boxShadow="md">
-            <CardBody>
-              <Stat>
-                <StatLabel>Teaching</StatLabel>
-                <StatNumber>{stats.totalClasses}</StatNumber>
-                <StatHelpText>Active classes</StatHelpText>
-              </Stat>
-            </CardBody>
-          </Card>
-          
-          <Card bg={cardBg} boxShadow="md">
-            <CardBody>
-              <Stat>
-                <StatLabel>Students</StatLabel>
-                <StatNumber>{stats.totalStudents}</StatNumber>
-                <StatHelpText>Across all classes</StatHelpText>
-              </Stat>
-            </CardBody>
-          </Card>
-          
-          <Card bg={cardBg} boxShadow="md">
-            <CardBody>
-              <Stat>
-                <StatLabel>Assignments</StatLabel>
-                <StatNumber>{stats.assignmentsCreated}</StatNumber>
-                <StatHelpText>Created this semester</StatHelpText>
-              </Stat>
-            </CardBody>
-          </Card>
-          
-          <Card bg={cardBg} boxShadow="md">
-            <CardBody>
-              <Stat>
-                <StatLabel>Avg. Attendance</StatLabel>
-                <StatNumber>{stats.avgAttendance}%</StatNumber>
-                <StatHelpText>For all classes</StatHelpText>
-              </Stat>
-            </CardBody>
-          </Card>
-        </SimpleGrid>
-        
-        {/* Class List */}
-        <Card bg={cardBg} boxShadow="md" borderTop="4px solid" borderColor={borderColor}>
-          <CardHeader bg={headerBg} py={3}>
-            <Flex align="center" justify="space-between">
-              <Heading size="md">
-                <Flex align="center">
-                  <Icon as={FaChalkboardTeacher} mr={2} />
-                  My Classes
-                </Flex>
-              </Heading>
-              <Button 
-                size="sm" 
-                colorScheme="green" 
-                leftIcon={<FaPlus />}
-              >
-                Add Class
-              </Button>
-            </Flex>
-          </CardHeader>
-          <CardBody>
-            <Tabs colorScheme="green" isLazy>
-              <TabList>
-                <Tab>Current Semester</Tab>
-                <Tab>All Classes</Tab>
-              </TabList>
-              
-              <TabPanels>
-                <TabPanel>
-                  {classes.length > 0 ? (
-                    <Table variant="simple" size="sm">
-                      <Thead>
-                        <Tr>
-                          <Th>Class Name</Th>
-                          <Th>Department</Th>
-                          <Th>Program</Th>
-                          <Th>Students</Th>
-                          <Th>Actions</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
-                        {classes.map((cls) => (
-                          <Tr key={cls.id}>
-                            <Td>{cls.name}</Td>
-                            <Td>{cls.programs.departments.name}</Td>
-                            <Td>{cls.programs.name}</Td>
-                            <Td>{cls.studentCount}</Td>
-                            <Td>
-                              <HStack spacing={2}>
-                                <Button 
-                                  size="xs" 
-                                  colorScheme="blue" 
-                                  variant="ghost"
-                                  leftIcon={<FaEye />}
-                                  onClick={() => handleViewClass(cls)}
-                                >
-                                  View
-                                </Button>
-                                <Button 
-                                  size="xs" 
-                                  colorScheme="green" 
-                                  variant="ghost"
-                                  leftIcon={<FaEdit />}
-                                >
-                                  Edit
-                                </Button>
-                              </HStack>
-                            </Td>
-                          </Tr>
-                        ))}
-                      </Tbody>
-                    </Table>
-                  ) : (
-                    <Text>No classes assigned for the current semester.</Text>
-                  )}
-                </TabPanel>
-                
-                <TabPanel>
-                  <Text>Historical class data will be displayed here.</Text>
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
-          </CardBody>
-        </Card>
-        
-        {/* Recent Activities */}
+        {/* Assigned Courses List */}
         <Card bg={cardBg} boxShadow="md" borderTop="4px solid" borderColor={borderColor}>
           <CardHeader bg={headerBg} py={3}>
             <Heading size="md">
               <Flex align="center">
-                <Icon as={FaClipboardList} mr={2} />
-                Recent Activities
+                <Icon as={FaChalkboardTeacher} mr={2} />
+                My Assigned Courses
               </Flex>
             </Heading>
           </CardHeader>
           <CardBody>
-            <Table variant="simple" size="sm">
-              <Thead>
-                <Tr>
-                  <Th>Activity</Th>
-                  <Th>Class</Th>
-                  <Th>Date</Th>
-                  <Th>Status</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                <Tr>
-                  <Td>New Assignment Created</Td>
-                  <Td>Database Management</Td>
-                  <Td>Today</Td>
-                  <Td><Badge colorScheme="green">Active</Badge></Td>
-                </Tr>
-                <Tr>
-                  <Td>Attendance Taken</Td>
-                  <Td>Mobile App Development</Td>
-                  <Td>Yesterday</Td>
-                  <Td><Badge colorScheme="blue">Completed</Badge></Td>
-                </Tr>
-                <Tr>
-                  <Td>Assignment Graded</Td>
-                  <Td>Software Engineering</Td>
-                  <Td>3 days ago</Td>
-                  <Td><Badge colorScheme="purple">Published</Badge></Td>
-                </Tr>
-              </Tbody>
-            </Table>
-          </CardBody>
-        </Card>
-      </Stack>
-      
-      {/* Class Details Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            {selectedClass?.name} - Class Details
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Stack spacing={4}>
-              <Box>
-                <Heading size="sm" mb={2}>Class Information</Heading>
-                <Text><strong>Department:</strong> {selectedClass?.programs.departments.name}</Text>
-                <Text><strong>Program:</strong> {selectedClass?.programs.name}</Text>
-                <Text><strong>Total Students:</strong> {selectedClass?.studentCount}</Text>
-              </Box>
-              
-              <Box>
-                <Heading size="sm" mb={2}>Enrolled Students</Heading>
+            {assignedCourses.length > 0 ? (
+              <Box overflowX="auto">
                 <Table variant="simple" size="sm">
                   <Thead>
                     <Tr>
+                      <Th>Code</Th>
                       <Th>Name</Th>
-                      <Th>Email</Th>
+                      <Th>Credits</Th>
                       <Th>Actions</Th>
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {selectedClass?.enrollments.map((enrollment) => (
-                      <Tr key={enrollment.id}>
-                        <Td>{`${enrollment.student.first_name} ${enrollment.student.last_name}`}</Td>
-                        <Td>{enrollment.student.email}</Td>
+                    {assignedCourses.map((course) => (
+                      <Tr key={course.id}>
+                        <Td fontWeight="bold">{course.code}</Td>
+                        <Td>{course.name}</Td>
+                        <Td textAlign="center">{course.credit_hours}</Td>
                         <Td>
-                          <Button size="xs" colorScheme="blue" variant="ghost">
-                            View Profile
+                          <Button 
+                            size="xs" 
+                            colorScheme="blue" 
+                            variant="outline"
+                            leftIcon={<FaUsers />}
+                            onClick={() => openMarksModal(course)}
+                          >
+                            Manage Students & Marks
                           </Button>
                         </Td>
                       </Tr>
                     ))}
                   </Tbody>
                 </Table>
-    </Box>
-            </Stack>
+              </Box>
+            ) : (
+              <Text>You are not currently assigned to any courses.</Text>
+            )}
+          </CardBody>
+        </Card>
+      </Stack>
+      
+      {/* Marks Modal */}
+      <Modal isOpen={isMarksModalOpen} onClose={onMarksModalClose} size="4xl" scrollBehavior="inside">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Manage Marks for {selectedCourseForMarks?.code} - {selectedCourseForMarks?.name}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {isFetchingModalData ? (
+                <Flex justify="center" align="center" h="200px"><Spinner size="xl" /></Flex>
+            ) : studentsInCourse.length === 0 ? (
+                <Text>No students enrolled in this course.</Text>
+            ) : (
+              <Box overflowX="auto">
+                <Table variant="simple" size="sm">
+                  <Thead>
+                    <Tr>
+                      <Th>Student Name</Th>
+                      {MARK_TYPE_KEYS.map(type => (
+                        <Th key={type} isNumeric>{type} (/{MARK_TYPES[type]})</Th>
+                      ))}
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {studentsInCourse.map((student) => (
+                      <Tr key={student.id}>
+                        <Td>{student.first_name} {student.last_name}</Td>
+                        {MARK_TYPE_KEYS.map(markType => (
+                          <Td key={markType} isNumeric>
+                            <Input 
+                              type="number" 
+                              size="xs"
+                              w="60px" 
+                              textAlign="right"
+                              value={marksData[student.id]?.[markType]?.obtained ?? ''}
+                              onChange={(e) => handleMarkChange(student.id, markType, e.target.value)}
+                              placeholder="-"
+                              max={marksData[student.id]?.[markType]?.total ?? MARK_TYPES[markType]}
+                              min={0}
+                            />
+                          </Td>
+                        ))}
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </Box>
+            )}
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="green" mr={3}>
-              Take Attendance
+            <Button 
+              colorScheme="green" 
+              mr={3}
+              leftIcon={<FaSave />}
+              onClick={handleSaveMarks}
+              isLoading={isSavingMarks}
+              isDisabled={isFetchingModalData || studentsInCourse.length === 0}
+            >
+              Save Marks
             </Button>
-            <Button colorScheme="blue" mr={3}>
-              Create Assignment
-            </Button>
-            <Button variant="ghost" onClick={onClose}>
+            <Button variant="ghost" onClick={onMarksModalClose}>
               Close
             </Button>
           </ModalFooter>

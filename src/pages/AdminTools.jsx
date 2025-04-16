@@ -334,6 +334,12 @@ function AdminTools() {
   const handleLogout = async () => {
     try {
       await logout();
+      toast({
+        title: 'Logged out successfully',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);

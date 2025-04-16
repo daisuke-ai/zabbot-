@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   Box, 
   Heading, 
@@ -57,26 +57,31 @@ import {
   Link,
   List,
   ListItem,
-  ListIcon
+  ListIcon,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  CheckboxGroup,
+  Checkbox,
+  Stack as ChakraStack
 } from '@chakra-ui/react';
 import { 
   FaUserTie, 
   FaChalkboardTeacher, 
   FaUserGraduate, 
   FaCalendarAlt, 
-  FaClipboardList,
   FaPlus,
-  FaEdit,
   FaEye,
-  FaSignOutAlt,
   FaCheck,
   FaTimes,
-  FaBell,
   FaListAlt,
-  FaUserCheck,
   FaUserPlus,
   FaEyeSlash,
-  FaExternalLinkAlt
+  FaExternalLinkAlt,
+  FaBook,
+  FaLink
 } from 'react-icons/fa';
 import DashboardLayout from '../components/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
@@ -107,7 +112,11 @@ function ProgramManagerDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isCreatingTeacher, setIsCreatingTeacher] = useState(false);
-  const [isCreatingClass, setIsCreatingClass] = useState(false);
+  const [isCreatingCourse, setIsCreatingCourse] = useState(false);
+  const [allCourses, setAllCourses] = useState([]);
+  const [departmentCourseDetails, setDepartmentCourseDetails] = useState([]);
+  const [isFetchingCourses, setIsFetchingCourses] = useState(false);
+  const [isAssigningCourse, setIsAssigningCourse] = useState(false);
   
   const { 
     isOpen: isApprovalDialogOpen, 
@@ -122,12 +131,14 @@ function ProgramManagerDashboard() {
   } = useDisclosure();
   
   const { 
-    isOpen: isAddClassModalOpen, 
-    onOpen: onAddClassModalOpen, 
-    onClose: onAddClassModalClose 
+    isOpen: isAddCourseModalOpen, 
+    onOpen: onAddCourseModalOpen, 
+    onClose: onAddCourseModalClose 
   } = useDisclosure();
   
   const { isOpen: isCalendarOpen, onOpen: onCalendarOpen, onClose: onCalendarClose } = useDisclosure();
+  
+  const { isOpen: isAssignCourseModalOpen, onOpen: onAssignCourseModalOpen, onClose: onAssignCourseModalClose } = useDisclosure();
   
   const toast = useToast();
   
@@ -139,52 +150,165 @@ function ProgramManagerDashboard() {
   const cancelRef = useRef();
   
   const [newTeacher, setNewTeacher] = useState({ firstName: '', lastName: '', email: '', password: '' });
-  const [newClass, setNewClass] = useState({ name: '', description: '', teacher_id: '' });
+  const [newCourse, setNewCourse] = useState({ code: '', name: '', description: '', credit_hours: 3 });
   const [showPassword, setShowPassword] = useState(false);
   
   const [selectedUserForAction, setSelectedUserForAction] = useState(null);
   const [actionType, setActionType] = useState(null);
+  const [selectedTeacherForAssignment, setSelectedTeacherForAssignment] = useState(null);
+  const [coursesToAssign, setCoursesToAssign] = useState([]);
+  const [teacherAssignedCourses, setTeacherAssignedCourses] = useState([]);
   
-  useEffect(() => {
-    const fetchPmData = async () => {
-      if (!user?.id) { setIsLoading(false); return; }
-      setIsLoading(true);
+  // Define fetchPmData outside useEffect, wrapped in useCallback
+  const fetchPmData = useCallback(async () => {
+    if (!user?.id) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      // Fetch PM Department
+      const { data: pmData, error: pmError } = await supabase
+        .from('users')
+        .select('department_name')
+        .eq('id', user.id)
+        .single();
+      if (pmError || !pmData?.department_name)
+        throw new Error(pmError?.message || 'PM department not found.');
+      const departmentName = pmData.department_name;
+      setPmDepartmentName(departmentName);
+
+      // Fetch Teachers in Dept
+      const { data: teachersData, error: teachersError } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, email, created_at')
+        .eq('role', 'teacher')
+        .eq('department_name', departmentName)
+        .order('created_at', { ascending: false });
+      if (teachersError) throw teachersError;
+      setTeachers(teachersData || []);
+
+      // Fetch Students in Dept
+      const { data: studentsData, error: studentsError } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, email, created_at, active')
+        .eq('role', 'student')
+        .eq('department_name', departmentName)
+        .order('created_at', { ascending: false });
+      if (studentsError) throw studentsError;
+      setStudents(studentsData || []);
+
+      // Fetch Pending Student Approvals (for PM's dept)
+      const { data: pending, error: pendingError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('active', false)
+        .eq('role', 'student')
+        .eq('department_name', departmentName)
+        .order('created_at', { ascending: false });
+      if (pendingError) throw pendingError;
+      setPendingUsers(pending || []);
+
+      // Fetch Activity Log (Global)
+      const { data: logs, error: logError } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (logError) throw logError;
+      setActivityLog(logs || []);
+
+      // Fetch All Courses
+      const { data: allCoursesData, error: allCoursesError } = await supabase
+        .from('courses')
+        .select('id, code, name, description, credit_hours')
+        .order('code');
+      if (allCoursesError) {
+        console.error("Error fetching all courses:", allCoursesError);
+        toast({ title: 'Error Loading Courses', description: allCoursesError.message, status: 'error' });
+      }
+      setAllCourses(allCoursesData || []);
+
+      // Fetch Department Specific Course Details
       try {
-        // Fetch PM Department
-        const { data: pmData, error: pmError } = await supabase.from('users').select('department_name').eq('id', user.id).single();
-        if (pmError || !pmData?.department_name) throw new Error(pmError?.message || 'PM department not found.');
-        const departmentName = pmData.department_name; setPmDepartmentName(departmentName);
+        setIsFetchingCourses(true);
+        const teacherIds = teachersData.map(t => t.id);
+        const studentIds = studentsData.map(s => s.id);
+        let relevantCourseIds = new Set();
 
-        // Fetch Teachers in Dept
-        const { data: teachersData, error: teachersError } = await supabase.from('users').select('id, first_name, last_name, email, created_at').eq('role', 'teacher').eq('department_name', departmentName).order('created_at', { ascending: false });
-        if (teachersError) throw teachersError; setTeachers(teachersData || []);
+        if (teacherIds.length > 0) {
+          const { data: teacherCourses, error: tcError } = await supabase
+            .from('teacher_courses')
+            .select('course_id')
+            .in('teacher_id', teacherIds);
+          if (tcError) console.error("Error fetching teacher courses:", tcError);
+          else teacherCourses?.forEach(tc => relevantCourseIds.add(tc.course_id));
+        }
 
-        // Fetch Students in Dept
-        const { data: studentsData, error: studentsError } = await supabase.from('users').select('id, first_name, last_name, email, created_at, active').eq('role', 'student').eq('department_name', departmentName).order('created_at', { ascending: false });
-        if (studentsError) throw studentsError; setStudents(studentsData || []);
+        if (studentIds.length > 0) {
+          const { data: studentCourses, error: scError } = await supabase
+            .from('student_courses')
+            .select('course_id')
+            .in('student_id', studentIds);
+          if (scError) console.error("Error fetching student courses:", scError);
+          else studentCourses?.forEach(sc => relevantCourseIds.add(sc.course_id));
+        }
 
-        // Fetch Pending Student Approvals (Global)
-        const { data: pending, error: pendingError } = await supabase.from('users').select('*').eq('active', false).eq('role', 'student').order('created_at', { ascending: false });
-        if (pendingError) throw pendingError; setPendingUsers(pending || []);
+        const courseIdArray = Array.from(relevantCourseIds);
+        let detailedCourses = [];
 
-        // Fetch Activity Log (Global)
-        const { data: logs, error: logError } = await supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(50);
-        if (logError) throw logError; setActivityLog(logs || []);
+        if (courseIdArray.length > 0) {
+          const { data: coursesData, error: coursesError } = await supabase
+            .from('courses')
+            .select('id, code, name, credit_hours')
+            .in('id', courseIdArray)
+            .order('code');
+          if (coursesError) throw coursesError;
 
-        // TODO: Fetch actual Classes for the 'Classes' tab if needed
-        // const { data: classData, error: classError } = await supabase.from('classes')...
+          const [assignmentsRes, enrollmentsRes] = await Promise.all([
+            supabase.from('teacher_courses').select('course_id, teacher:users!inner(id, first_name, last_name)').in('course_id', courseIdArray).in('teacher_id', teacherIds),
+            supabase.from('student_courses').select('course_id, student:users!inner(id, first_name, last_name)').in('course_id', courseIdArray).in('student_id', studentIds)
+          ]);
 
-      } catch (error) {
-        console.error('Error fetching PM dashboard data:', error);
-        toast({ title: 'Error Loading Data', description: error.message, status: 'error'});
-        setPmDepartmentName(''); setTeachers([]); setStudents([]); setPendingUsers([]); setActivityLog([]); // Reset states
-      } finally { setIsLoading(false); }
-    };
+          if (assignmentsRes.error) console.error("Error fetching assignments:", assignmentsRes.error);
+          if (enrollmentsRes.error) console.error("Error fetching enrollments:", enrollmentsRes.error);
+
+          const assignments = assignmentsRes.data || [];
+          const enrollments = enrollmentsRes.data || [];
+
+          detailedCourses = coursesData.map(course => ({
+            ...course,
+            teachers: assignments.filter(a => a.course_id === course.id).map(a => a.teacher).filter(Boolean),
+            students: enrollments.filter(e => e.course_id === course.id).map(e => e.student).filter(Boolean)
+          }));
+        }
+        setDepartmentCourseDetails(detailedCourses);
+
+      } catch (courseError) {
+        console.error("Error fetching department course details:", courseError);
+        toast({ title: 'Error Loading Course View', description: courseError.message, status: 'error' });
+        setDepartmentCourseDetails([]);
+      } finally {
+        setIsFetchingCourses(false);
+      }
+
+    } catch (error) {
+      console.error('Error fetching PM dashboard data:', error);
+      toast({ title: 'Error Loading Data', description: error.message, status: 'error' });
+      setPmDepartmentName(''); setTeachers([]); setStudents([]); setPendingUsers([]); setActivityLog([]);
+      setAllCourses([]); setDepartmentCourseDetails([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, toast]);
+
+  useEffect(() => {
+    // Call fetchPmData when user changes
     fetchPmData();
 
-    // Cleanup function for potential subscriptions (if added later)
+    // Cleanup function (if needed)
     return () => {};
-  }, [user, toast]);
+  }, [fetchPmData]); // Now fetchPmData is a dependency
   
   const handleCreateTeacher = async (e) => {
     e.preventDefault();
@@ -226,7 +350,11 @@ function ProgramManagerDashboard() {
         // --- 4. Handle Auth Error ---
         if (authError) {
             console.error("[handleCreateTeacher] Auth Error:", authError);
-            toast({ title: "Auth Error", description: authError.message, status: "error", duration: 5000 });
+             if (authError.message.includes("User already registered")) {
+                toast({ title: "User Exists", description: "This email is already registered.", status: "error" });
+             } else {
+                toast({ title: "Auth Error", description: authError.message, status: "error", duration: 5000 });
+             }
             throw authError; // Stop execution if auth fails
         }
 
@@ -292,19 +420,48 @@ function ProgramManagerDashboard() {
     }
   };
   
-  const handleCreateClass = async (e) => {
+  const handleCreateCourse = async (e) => {
     e.preventDefault();
-    if (!newClass.name) { toast({ title: 'Class Name Required', status: 'warning' }); return; }
-    if (!pmDepartmentName) { toast({ title: 'Error', description: 'Department context missing.', status: 'error' }); return; }
-    setIsCreatingClass(true);
+    if (!newCourse.code || !newCourse.name || !newCourse.credit_hours) {
+        toast({ title: 'Missing Fields', description: 'Course Code, Name, and Credit Hours are required.', status: 'warning' });
+        return;
+    }
+     if (isNaN(parseInt(newCourse.credit_hours)) || newCourse.credit_hours <= 0) {
+        toast({ title: 'Invalid Credit Hours', description: 'Credit hours must be a positive number.', status: 'warning' });
+        return;
+    }
+
+    setIsCreatingCourse(true);
     try {
-      console.log("Attempting to create class:", { ...newClass, department_name: pmDepartmentName });
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate delay
-      toast({ title: 'Class Created (Not Implemented)', description: 'Backend logic needed.', status: 'info' });
-      onAddClassModalClose();
-      setNewClass({ name: '', description: '', teacher_id: '' });
-    } catch (error) { toast({ title: 'Class Creation Failed', description: error.message, status: 'error' }); }
-    finally { setIsCreatingClass(false); }
+        const { data, error } = await supabase
+            .from('courses')
+            .insert({
+                code: newCourse.code.toUpperCase().trim(),
+                name: newCourse.name.trim(),
+                description: newCourse.description?.trim(),
+                credit_hours: parseInt(newCourse.credit_hours)
+            })
+            .select()
+            .single();
+
+        if (error) {
+            if (error.code === '23505') { // Handle unique constraint violation
+                 toast({ title: 'Course Code Exists', description: `A course with code ${newCourse.code.toUpperCase().trim()} already exists.`, status: 'error' });
+            } else {
+                throw error;
+            }
+        } else {
+            toast({ title: 'Course Created', description: `Course ${data.code} - ${data.name} added successfully.`, status: 'success' });
+            setNewCourse({ code: '', name: '', description: '', credit_hours: 3 }); // Reset form
+            onAddCourseModalClose(); // Close modal
+            fetchPmData(); // Refresh data including courses after creation
+        }
+    } catch (error) {
+        console.error("Error creating course:", error);
+        toast({ title: 'Error Creating Course', description: error.message, status: 'error' });
+    } finally {
+        setIsCreatingCourse(false);
+    }
   };
 
   const openActionDialog = (userToAction, action) => {
@@ -327,16 +484,42 @@ function ProgramManagerDashboard() {
         toastStatus = 'success';
         toastTitle = 'User Approved';
       } else if (actionType === 'reject') {
-        const { error } = await supabase.from('users').delete().eq('id', selectedUserForAction.id);
-        if (error) throw error;
-        notificationMessage = `Rejected ${selectedUserForAction.first_name}.`;
+        // First, try to delete the auth user (requires admin or service role)
+        // This might fail if run from client-side without proper setup.
+        // Consider moving this to a secure backend function if needed.
+        try {
+            const { error: authDeleteError } = await supabase.auth.admin.deleteUser(selectedUserForAction.user_id);
+            if (authDeleteError && authDeleteError.message !== 'User not found') { // Ignore if auth user already gone
+                console.warn("Could not delete auth user:", authDeleteError.message);
+                // Don't block profile deletion if auth deletion fails, just warn
+            }
+        } catch (adminError) {
+             console.warn("Admin action (delete auth user) failed:", adminError.message);
+        }
+
+        // Then delete the profile from users table
+        const { error: profileDeleteError } = await supabase.from('users').delete().eq('id', selectedUserForAction.id);
+        if (profileDeleteError) throw profileDeleteError;
+
+        notificationMessage = `Rejected and removed ${selectedUserForAction.first_name}.`;
         toastStatus = 'warning';
-        toastTitle = 'User Rejected';
+        toastTitle = 'User Rejected & Removed';
       }
+      // Log the action
       await supabase.from('notifications').insert({ notification: notificationMessage });
+
       toast({ title: toastTitle, description: notificationMessage, status: toastStatus });
+
+      // Update local state immediately for UI responsiveness
       setPendingUsers(prev => prev.filter(u => u.id !== selectedUserForAction.id));
-    } catch (error) { toast({ title: 'Action Error', description: error.message, status: 'error' }); }
+      if (actionType === 'approve') {
+          // Optionally, re-fetch all data if the approved student should appear in the main list immediately
+          fetchPmData();
+      }
+    } catch (error) {
+      toast({ title: 'Action Error', description: error.message, status: 'error' });
+      console.error("Error during user action:", error);
+    }
     finally {
       setIsActionLoading(false);
       onApprovalDialogClose();
@@ -345,20 +528,64 @@ function ProgramManagerDashboard() {
     }
   };
 
-  const handleLogout = async () => {
+  // --- Function to open Assign Course Modal (Copied from HOD, uses PM context) --- 
+  const openAssignCourseModal = async (teacher) => {
+    setSelectedTeacherForAssignment(teacher);
+    setCoursesToAssign([]); // Reset selection
+    setTeacherAssignedCourses([]); // Reset assigned courses
+    
+    // Fetch courses already assigned to this teacher
     try {
-      await supabase.auth.signOut();
-      toast({
-        title: 'Logged out successfully',
-        status: 'success',
-        duration: 3000,
-      });
-      navigate('/');
+        const { data, error } = await supabase
+            .from('teacher_courses')
+            .select('course_id')
+            .eq('teacher_id', teacher.id);
+            
+        if (error) throw error;
+        setTeacherAssignedCourses(data.map(item => item.course_id)); // Store just the IDs
     } catch (error) {
-      console.error('Logout error:', error);
+        console.error("Error fetching assigned courses:", error);
+        toast({ title: 'Error', description: 'Could not fetch currently assigned courses.', status: 'error' });
     }
+    
+    onAssignCourseModalOpen();
   };
   
+  // --- Function to handle saving course assignments (Copied from HOD) ---
+  const handleAssignCourses = async () => {
+    if (!selectedTeacherForAssignment || coursesToAssign.length === 0) {
+        toast({ title: 'Error', description: 'No teacher or courses selected.', status: 'warning'});
+        return;
+    }
+    
+    setIsAssigningCourse(true);
+    const assignments = coursesToAssign.map(courseId => ({
+        teacher_id: selectedTeacherForAssignment.id,
+        course_id: courseId
+    }));
+    
+    try {
+        // Upsert allows inserting new or ignoring if composite key (teacher_id, course_id) exists
+        const { error } = await supabase
+            .from('teacher_courses')
+            .upsert(assignments, { onConflict: 'teacher_id, course_id', ignoreDuplicates: true }); 
+            
+        if (error) throw error;
+        
+        toast({ title: 'Courses Assigned', description: `Successfully assigned ${assignments.length} course(s) to ${selectedTeacherForAssignment.first_name}.`, status: 'success'});
+        onAssignCourseModalClose();
+        fetchPmData(); // Refresh data to update course view
+    } catch (error) {
+        console.error("Error assigning courses:", error);
+        toast({ title: 'Assignment Failed', description: error.message, status: 'error'});
+    } finally {
+        setIsAssigningCourse(false);
+        setSelectedTeacherForAssignment(null);
+        setCoursesToAssign([]);
+        setTeacherAssignedCourses([]);
+    }
+  };
+
   // Menu items for the sidebar
   const menuItems = [
     { label: 'Dashboard', icon: FaUserTie, path: '/pm-dashboard' },
@@ -371,17 +598,17 @@ function ProgramManagerDashboard() {
     pendingApprovals: pendingUsers.length,
   }), [teachers, students, pendingUsers]);
   
-  if (isLoading) {
+  if (isLoading && !pmDepartmentName) {
     return (
-      <Box textAlign="center" mt={10}>
-        <Spinner size="xl" />
-      </Box>
+      <DashboardLayout title="PM Dashboard (Loading...)" menuItems={menuItems} userRole="Program Manager" roleColor="blue">
+         <Flex justify="center" align="center" h="50vh"><Spinner size="xl" /></Flex>
+      </DashboardLayout>
     );
   }
 
   return (
     <DashboardLayout 
-      title={`PM Dashboard (${pmDepartmentName || 'No Department'})`}
+      title={`PM Dashboard (${pmDepartmentName || 'Loading Department...'})`}
       menuItems={menuItems}
       userRole="Program Manager"
       roleColor="blue"
@@ -414,43 +641,27 @@ function ProgramManagerDashboard() {
 
         {/* Stats Cards */}
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
-          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Teachers</StatLabel><StatNumber>{calculatedStats.totalTeachers}</StatNumber><StatHelpText>In {pmDepartmentName}</StatHelpText></Stat></CardBody></Card>
-          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Students</StatLabel><StatNumber>{calculatedStats.totalStudents}</StatNumber><StatHelpText>In {pmDepartmentName}</StatHelpText></Stat></CardBody></Card>
-          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Pending Approvals</StatLabel><StatNumber>{calculatedStats.pendingApprovals}</StatNumber><StatHelpText>Students Waiting</StatHelpText></Stat></CardBody></Card>
+          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Teachers</StatLabel><StatNumber>{calculatedStats.totalTeachers}</StatNumber><StatHelpText>In {pmDepartmentName || 'Dept.'}</StatHelpText></Stat></CardBody></Card>
+          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Students</StatLabel><StatNumber>{calculatedStats.totalStudents}</StatNumber><StatHelpText>In {pmDepartmentName || 'Dept.'}</StatHelpText></Stat></CardBody></Card>
+          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Pending Approvals</StatLabel><StatNumber>{calculatedStats.pendingApprovals}</StatNumber><StatHelpText>Dept. Students Waiting</StatHelpText></Stat></CardBody></Card>
         </SimpleGrid>
         
         {/* Main Content Tabs */}
-        <Tabs colorScheme="blue" variant="enclosed">
+        <Tabs colorScheme="blue" variant="enclosed" isLazy>
         <TabList>
-            <Tab><Icon as={FaChalkboardTeacher} mr={2}/>Classes</Tab>
             <Tab><Icon as={FaUserGraduate} mr={2}/>Students</Tab>
             <Tab><Icon as={FaChalkboardTeacher} mr={2}/>Teachers</Tab>
             <Tab><Icon as={FaCheck} mr={2}/>Student Approvals <Badge ml={1} colorScheme={calculatedStats.pendingApprovals > 0 ? 'red' : 'green'}>{calculatedStats.pendingApprovals}</Badge></Tab>
+            <Tab><Icon as={FaBook} mr={2}/>Courses</Tab>
+            <Tab><Icon as={FaEye} mr={2}/>Course View</Tab>
             <Tab><Icon as={FaListAlt} mr={2}/>Activity Log</Tab>
         </TabList>
         
         <TabPanels>
-            {/* Classes Tab Panel */}
-            <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md">
-                <CardHeader bg={headerBg} py={3}>
-                   <Flex justify="space-between" align="center">
-                      <Heading size="md">Manage Classes</Heading>
-                       <Button colorScheme="blue" size="sm" leftIcon={<FaPlus />} onClick={onAddClassModalOpen}>
-                         Add Class
-              </Button>
-            </Flex>
-                </CardHeader>
-                <CardBody>
-                    <Text>Class list and management functionality will be added here.</Text>
-                </CardBody>
-              </Card>
-            </TabPanel>
-
             {/* Students Tab Panel */}
             <TabPanel px={0}>
               <Card bg={cardBg} boxShadow="md">
-                <CardHeader bg={headerBg} py={3}><Heading size="md">Students in {pmDepartmentName}</Heading></CardHeader>
+                <CardHeader bg={headerBg} py={3}><Heading size="md">Students in {pmDepartmentName || 'Department'}</Heading></CardHeader>
                 <CardBody>
                    {students.length > 0 ? (
                       <Box overflowX="auto">
@@ -471,7 +682,7 @@ function ProgramManagerDashboard() {
               <Card bg={cardBg} boxShadow="md">
                 <CardHeader bg={headerBg} py={3}>
                   <Flex justify="space-between" align="center">
-                    <Heading size="md">Teachers in {pmDepartmentName}</Heading>
+                    <Heading size="md">Teachers in {pmDepartmentName || 'Department'}</Heading>
                     <Button colorScheme="blue" size="sm" leftIcon={<FaUserPlus />} onClick={onAddTeacherModalOpen}>
                 Add Teacher
               </Button>
@@ -481,9 +692,26 @@ function ProgramManagerDashboard() {
                     {teachers.length > 0 ? (
                        <Box overflowX="auto">
                            <Table variant="simple" size="sm">
-                               <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Joined</Th></Tr></Thead>
+                               <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Joined</Th><Th>Actions</Th></Tr></Thead>
                                <Tbody>
-                                 {teachers.map(teacher => ( <Tr key={teacher.id}> <Td>{teacher.first_name} {teacher.last_name}</Td> <Td>{teacher.email}</Td> <Td>{new Date(teacher.created_at).toLocaleDateString()}</Td> </Tr> ))}
+                                 {teachers.map(teacher => ( 
+                                     <Tr key={teacher.id}> 
+                                         <Td>{teacher.first_name} {teacher.last_name}</Td> 
+                                         <Td>{teacher.email}</Td> 
+                                         <Td>{new Date(teacher.created_at).toLocaleDateString()}</Td>
+                                         <Td>
+                                            <Button 
+                                                size="xs" 
+                                                colorScheme="teal"
+                                                variant="outline"
+                                                leftIcon={<FaLink />} 
+                                                onClick={() => openAssignCourseModal(teacher)}
+                                            >
+                                                Assign Course
+                                            </Button>
+                                         </Td>
+                                     </Tr> 
+                                 ))}
                                </Tbody>
                            </Table>
                        </Box>
@@ -495,9 +723,9 @@ function ProgramManagerDashboard() {
             {/* Student Approvals Tab Panel */}
             <TabPanel px={0}>
               <Card bg={cardBg} boxShadow="md">
-                <CardHeader bg={headerBg} py={3}><Heading size="md">Pending Student Signup Requests</Heading></CardHeader>
+                <CardHeader bg={headerBg} py={3}><Heading size="md">Pending Student Signup Requests ({pmDepartmentName || 'Department'})</Heading></CardHeader>
                 <CardBody>
-                    {pendingUsers.length === 0 ? (<Text>No pending student signups.</Text>) : (
+                    {pendingUsers.length === 0 ? (<Text>No pending student signups for this department.</Text>) : (
                      <Box overflowX="auto">
                          <Table variant="simple" size="sm">
                             <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Department</Th><Th>Signup Date</Th><Th>Actions</Th></Tr></Thead>
@@ -524,6 +752,121 @@ function ProgramManagerDashboard() {
               </Card>
           </TabPanel>
           
+            {/* --- Courses Tab Panel (Modified) --- */}
+            <TabPanel px={0}>
+               <Card bg={cardBg} boxShadow="md">
+                 <CardHeader bg={headerBg} py={3}>
+                    <Flex justify="space-between" align="center">
+                       <Heading size="md">Manage Courses</Heading>
+                        <Button
+                          colorScheme="green"
+                          size="sm"
+                          leftIcon={<FaPlus />}
+                          onClick={onAddCourseModalOpen}
+                        >
+                          Add New Course
+                        </Button>
+                     </Flex>
+                 </CardHeader>
+                 <CardBody>
+                     <Heading size="sm" mb={3} fontWeight="medium">Existing Courses (System-wide)</Heading>
+                     {isLoading ? (
+                         <Flex justify="center" p={5}><Spinner /></Flex>
+                     ) : allCourses.length === 0 ? (
+                         <Text>No courses found in the system.</Text>
+                     ) : (
+                         <Box overflowX="auto">
+                             <Table variant="simple" size="sm">
+                                 <Thead>
+                                     <Tr>
+                                         <Th>Code</Th>
+                                         <Th>Name</Th>
+                                         <Th>Credits</Th>
+                                         <Th>Description</Th>
+                                     </Tr>
+                                 </Thead>
+                                 <Tbody>
+                                     {allCourses.map((course) => (
+                                         <Tr key={course.id}>
+                                             <Td fontWeight="bold">{course.code}</Td>
+                                             <Td>{course.name}</Td>
+                                             <Td textAlign="center">{course.credit_hours}</Td>
+                                             <Td whiteSpace="normal" maxW="300px" overflow="hidden" textOverflow="ellipsis">{course.description || <Text as="i" color="gray.500">N/A</Text>}</Td>
+                                         </Tr>
+                                     ))}
+                                 </Tbody>
+                             </Table>
+                         </Box>
+                     )}
+                 </CardBody>
+               </Card>
+            </TabPanel>
+            {/* --- End Courses Tab Panel --- */}
+
+            {/* --- Department Course View Tab Panel (Added) --- */}
+            <TabPanel px={0}>
+               <Card bg={cardBg} boxShadow="md">
+                 <CardHeader bg={headerBg} py={3}><Heading size="md">Department Course Offerings</Heading></CardHeader>
+                  <CardBody>
+                   {isFetchingCourses ? (
+                     <Flex justify="center" align="center" p={10}><Spinner /></Flex>
+                   ) : departmentCourseDetails.length === 0 ? (
+                     <Text>No courses currently offered involving teachers or students from the {pmDepartmentName} department.</Text>
+                   ) : (
+                     <Accordion allowMultiple defaultIndex={[]}>
+                       {departmentCourseDetails.map((course) => (
+                         <AccordionItem key={course.id}>
+                           <h2>
+                             <AccordionButton _expanded={{ bg: headerBg, color: 'inherit' }}>
+                               <Box flex='1' textAlign='left' fontWeight="medium">
+                                 {course.code} - {course.name} ({course.credit_hours} Credits)
+                               </Box>
+                               <AccordionIcon />
+                             </AccordionButton>
+                           </h2>
+                           <AccordionPanel pb={4}>
+                             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={5} mt={2}>
+                               <Box>
+                                 <Heading size="sm" mb={2}>Assigned Teacher(s)</Heading>
+                                 {course.teachers.length > 0 ? (
+                                   <List spacing={1} fontSize="sm">
+                                     {course.teachers.map(teacher => (
+                                       <ListItem key={teacher.id}>
+                                         <ListIcon as={FaChalkboardTeacher} color="teal.500" />
+                                         {teacher.first_name} {teacher.last_name}
+                                       </ListItem>
+                                     ))}
+                                   </List>
+                                 ) : (
+                                   <Text fontSize="sm" fontStyle="italic">No teachers currently assigned from this department.</Text>
+                                 )}
+                               </Box>
+                               <Box>
+                                 <Heading size="sm" mb={2}>Enrolled Student(s)</Heading>
+                                  {course.students.length > 0 ? (
+                                    <List spacing={1} fontSize="sm">
+                                      {course.students.map(student => (
+                                        <ListItem key={student.id}>
+                                           <ListIcon as={FaUserGraduate} color="purple.500" />
+                                          {student.first_name} {student.last_name}
+                                        </ListItem>
+                                      ))}
+                                    </List>
+                                  ) : (
+                                    <Text fontSize="sm" fontStyle="italic">No students currently enrolled from this department.</Text>
+                                  )}
+                               </Box>
+                             </SimpleGrid>
+                           </AccordionPanel>
+                         </AccordionItem>
+                       ))}
+                     </Accordion>
+                    )}
+                  </CardBody>
+                </Card>
+            </TabPanel>
+            {/* --- End Department Course View Tab Panel --- */}
+
             {/* Activity Log Tab Panel */}
             <TabPanel px={0}>
                <Card bg={cardBg} boxShadow="md">
@@ -540,7 +883,7 @@ function ProgramManagerDashboard() {
                     )}
                  </CardBody>
                </Card>
-          </TabPanel>
+            </TabPanel>
 
         </TabPanels>
       </Tabs>
@@ -570,22 +913,38 @@ function ProgramManagerDashboard() {
         </ModalContent>
       </Modal>
 
-      {/* Add Class Modal */}
-      <Modal isOpen={isAddClassModalOpen} onClose={onAddClassModalClose} isCentered>
+      {/* Add Course Modal */}
+      <Modal isOpen={isAddCourseModalOpen} onClose={onAddCourseModalClose} isCentered>
           <ModalOverlay />
-          <ModalContent as="form" onSubmit={handleCreateClass}>
-            <ModalHeader>Add New Class</ModalHeader>
+          <ModalContent as="form" onSubmit={handleCreateCourse}>
+            <ModalHeader>Add New Course</ModalHeader>
             <ModalCloseButton />
             <ModalBody pb={6}>
               <VStack spacing={4}>
-                  <FormControl isRequired><FormLabel>Class Name</FormLabel><Input placeholder='e.g., Advanced Algorithms' value={newClass.name} onChange={(e) => setNewClass({...newClass, name: e.target.value})} /></FormControl>
-                  <FormControl><FormLabel>Description</FormLabel><Input placeholder='Optional description' value={newClass.description} onChange={(e) => setNewClass({...newClass, description: e.target.value})} /></FormControl>
-                  {teachers.length > 0 && ( <FormControl><FormLabel>Assign Teacher</FormLabel><Select placeholder="Select teacher (optional)" value={newClass.teacher_id} onChange={(e) => setNewClass({...newClass, teacher_id: e.target.value})}>{teachers.map(t => (<option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>))}</Select></FormControl> )}
+                  <FormControl isRequired><FormLabel>Course Code</FormLabel><Input placeholder='e.g., CS101' value={newCourse.code} onChange={(e) => setNewCourse({...newCourse, code: e.target.value})} /></FormControl>
+                  <FormControl isRequired><FormLabel>Course Name</FormLabel><Input placeholder='e.g., Introduction to Computing' value={newCourse.name} onChange={(e) => setNewCourse({...newCourse, name: e.target.value})} /></FormControl>
+                  <FormControl>
+                     <FormLabel>Description</FormLabel>
+                     <Input
+                        placeholder="Optional: Brief description of the course"
+                        value={newCourse.description}
+                        onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+                     />
+                  </FormControl>
+                  <FormControl isRequired>
+                     <FormLabel>Credit Hours</FormLabel>
+                     <Input
+                        type="number"
+                        min="1"
+                        value={newCourse.credit_hours}
+                        onChange={(e) => setNewCourse({ ...newCourse, credit_hours: e.target.value })}
+                     />
+                  </FormControl>
               </VStack>
             </ModalBody>
             <ModalFooter>
-              <Button onClick={onAddClassModalClose} mr={3} variant="ghost">Cancel</Button>
-              <Button colorScheme='blue' type="submit" isLoading={isCreatingClass} leftIcon={<FaPlus/>}>Create Class</Button>
+              <Button onClick={onAddCourseModalClose} mr={3} variant="ghost">Cancel</Button>
+              <Button colorScheme='green' type="submit" isLoading={isCreatingCourse} leftIcon={<FaPlus/>}>Create Course</Button>
             </ModalFooter>
           </ModalContent>
       </Modal>
@@ -600,7 +959,7 @@ function ProgramManagerDashboard() {
               {actionType === 'approve'
                 ? `Approve signup for ${selectedUserForAction?.first_name || 'this user'}?`
                 : actionType === 'reject'
-                ? `Reject signup for ${selectedUserForAction?.first_name || 'this user'}? This deletes request.`
+                ? `Reject signup for ${selectedUserForAction?.first_name || 'this user'}? This deletes the user and their request.`
                 : 'Are you sure you want to proceed?'
               }
            </AlertDialogBody>
@@ -613,11 +972,59 @@ function ProgramManagerDashboard() {
                  isLoading={isActionLoading}
                  isDisabled={!actionType}
                >
-                 {actionType === 'approve' ? 'Approve' : actionType === 'reject' ? 'Reject' : 'Confirm'}
+                 {actionType === 'approve' ? 'Approve' : actionType === 'reject' ? 'Reject & Remove' : 'Confirm'}
               </Button>
            </AlertDialogFooter>
         </AlertDialogContent></AlertDialogOverlay>
       </AlertDialog>
+
+      {/* --- Assign Course Modal (New - Copied from HOD) --- */}
+      <Modal isOpen={isAssignCourseModalOpen} onClose={onAssignCourseModalClose} size="xl" scrollBehavior="inside">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Assign Courses to {selectedTeacherForAssignment?.first_name} {selectedTeacherForAssignment?.last_name}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {allCourses.length > 0 ? (
+              <CheckboxGroup 
+                colorScheme="teal"
+                value={coursesToAssign} 
+                onChange={(values) => setCoursesToAssign(values)}
+              >
+                <Text mb={2} fontWeight="medium">Available Courses (Check to assign):</Text>
+                <ChakraStack spacing={2} maxHeight="400px" overflowY="auto" p={2} borderWidth="1px" borderRadius="md">
+                  {allCourses.map(course => {
+                    const isAlreadyAssigned = teacherAssignedCourses.includes(course.id);
+                    return (
+                        <Checkbox 
+                            key={course.id} 
+                            value={course.id} 
+                            isDisabled={isAlreadyAssigned}
+                        >
+                            {course.code} - {course.name} {isAlreadyAssigned && <Badge ml={2} colorScheme="green">Assigned</Badge>}
+                        </Checkbox>
+                    );
+                  })}
+                </ChakraStack>
+              </CheckboxGroup>
+            ) : (
+              <Text>No courses available in the system to assign.</Text>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onAssignCourseModalClose} mr={3} variant="ghost">Cancel</Button>
+            <Button 
+              colorScheme="teal"
+              onClick={handleAssignCourses} 
+              isLoading={isAssigningCourse}
+              isDisabled={coursesToAssign.length === 0}
+              leftIcon={<FaCheck/>}
+            >
+              Save Assignments ({coursesToAssign.length})
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       {/* Academic Calendar Modal */}
       <Modal isOpen={isCalendarOpen} onClose={onCalendarClose} size="3xl" scrollBehavior="inside">
