@@ -389,9 +389,8 @@ function ProgramManagerDashboard() {
         if (userProfileError) {
             console.error("[handleCreateTeacher] Profile Insert Error:", userProfileError);
             toast({ title: "Profile Creation Error", description: userProfileError.message, status: "error", duration: 5000 });
-            // NOTE: Unlike previous attempts, we are NOT trying to delete the auth user here,
-            // mirroring the HOD portal's simpler approach. Manual cleanup might be needed if this step fails.
-            throw userProfileError; // Stop execution
+           
+            throw userProfileError; 
         }
 
         // --- 8. Success ---
@@ -406,7 +405,7 @@ function ProgramManagerDashboard() {
         // --- 9. Reset Form, Close Modal, Refresh Data ---
         setNewTeacher({ firstName: "", lastName: "", email: "", password: "" }); // Reset form
         onAddTeacherModalClose(); // Close the specific modal
-        fetchPmData(); // Refetch all necessary dashboard data
+        fetchPmData(); 
 
     } catch (error) {
         // Catch errors from any step above

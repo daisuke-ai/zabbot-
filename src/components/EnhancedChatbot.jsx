@@ -18,11 +18,44 @@ import {
   useToast,
   CircularProgress,
   CircularProgressLabel,
-  Badge
+  Badge,
+  Heading,
+  List,
+  ListItem,
+  OrderedList,
+  UnorderedList,
+  Link,
+  Code,
 } from '@chakra-ui/react';
 import { chatService } from '../services/chatService';
 import '../styles/blog.css';
 import { FaMicrophone, FaStop, FaPaperPlane, FaVolumeMute } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+// Define custom components for Markdown rendering
+const markdownComponents = {
+  p: ({ node, ...props }) => <Text fontSize="sm" mb={2} {...props} />,
+  h1: ({ node, ...props }) => <Heading as="h1" size="lg" mb={4} {...props} />,
+  h2: ({ node, ...props }) => <Heading as="h2" size="md" mb={3} {...props} />,
+  h3: ({ node, ...props }) => <Heading as="h3" size="sm" mb={2} {...props} />,
+  h4: ({ node, ...props }) => <Heading as="h4" size="xs" mb={2} {...props} />,
+  h5: ({ node, ...props }) => <Heading as="h5" size="xs" mb={2} {...props} />,
+  h6: ({ node, ...props }) => <Heading as="h6" size="xs" mb={2} {...props} />,
+  ol: ({ node, ...props }) => <OrderedList spacing={1} mb={3} ml={5} {...props} />,
+  ul: ({ node, ...props }) => <UnorderedList spacing={1} mb={3} ml={5} {...props} />,
+  li: ({ node, ...props }) => <ListItem fontSize="sm" {...props} />,
+  a: ({ node, ...props }) => <Link color="blue.500" isExternal {...props} />,
+  strong: ({ node, ...props }) => <Text as="strong" fontWeight="bold" {...props} />,
+  em: ({ node, ...props }) => <Text as="em" fontStyle="italic" {...props} />,
+  code: ({ node, inline, ...props }) => 
+    inline ? (
+      <Code fontSize="sm" {...props} />
+    ) : (
+      <Code display="block" whiteSpace="pre-wrap" p={2} borderRadius="md" my={2} {...props} />
+    ),
+  pre: ({ node, ...props }) => <Box as="pre" p={2} bg="gray.100" borderRadius="md" my={2} overflowX="auto" {...props} />,
+};
 
 function EnhancedChatbot({ inputText }) {
   const [messages, setMessages] = useState([]);
@@ -520,13 +553,22 @@ function EnhancedChatbot({ inputText }) {
                   borderWidth={message.sender === 'bot' ? '1px' : '0'}
                   borderColor="gray.200"
                 >
-                  <Text fontWeight="medium" fontSize="sm">
-                    {message.isTemp ? (
-                      <Spinner size="sm" mr={2} color="gray.400" />
-                    ) : message.isError ? (
-                      <Text color="red.500">{message.text}</Text>
-                    ) : message.text}
-                  </Text>
+                  {message.sender === 'bot' && !message.isTemp && !message.isError ? (
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={markdownComponents}
+                    >
+                      {message.text}
+                    </ReactMarkdown>
+                  ) : (
+                    <Text fontWeight="medium" fontSize="sm">
+                      {message.isTemp ? (
+                        <Spinner size="sm" mr={2} color="gray.400" />
+                      ) : message.isError ? (
+                        <Text color="red.500">{message.text}</Text>
+                      ) : message.text}
+                    </Text>
+                  )}
                   <Text
                     fontSize="xs"
                     opacity={0.7}
