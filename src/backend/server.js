@@ -521,6 +521,7 @@ async function postProcessTranscription(transcription) {
 app.post("/transcribe", async (req, res) => {
   let tempFilePath = null;
   try {
+    console.log('--- RUNNING LATEST TRANSCRIBE CODE v3 ---'); 
     console.log('Transcribe request received');
     
     if (!req.files || !req.files.audio) {
