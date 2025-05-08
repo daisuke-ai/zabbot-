@@ -1,14 +1,19 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const chatService = {
-  async sendMessage(message) {
+  async sendMessage(message, userContext = null) {
     try {
+      const body = { query: message };
+      if (userContext) {
+        body.userContext = userContext;
+      }
+
       const response = await fetch(`${API_URL}/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: message }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -23,14 +28,19 @@ export const chatService = {
     }
   },
 
-  async sendMessageStreaming(message, onChunk) {
+  async sendMessageStreaming(message, onChunk, userContext = null) {
     try {
+      const body = { query: message };
+      if (userContext) {
+        body.userContext = userContext;
+      }
+
       const response = await fetch(`${API_URL}/query-stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: message }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -86,21 +96,28 @@ export const chatService = {
     }
   },
 
-  async transcribeAudio(formData) {
+  async transcribeAudio(formData, userContext = null) {
     try {
+      if (userContext) {
+        // FormData can only append strings or Blobs. Convert userContext object to JSON string.
+        formData.append('userContext', JSON.stringify(userContext));
+      }
+
       const response = await fetch(`${API_URL}/transcribe`, {
         method: 'POST',
-        body: formData // Send as FormData instead of JSON
+        body: formData 
+        // Content-Type for FormData is set automatically by the browser to multipart/form-data
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Transcription failed: ${errorText}`);
+        // Construct a new Error object with a clear message
+        throw new Error(`Transcription failed: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
       return await response.json();
     } catch (error) {
-      console.error('Transcription Error:', error);
+      console.error('Transcription Service Error:', error);
       throw error;
     }
   }

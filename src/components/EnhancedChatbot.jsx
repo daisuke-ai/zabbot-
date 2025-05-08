@@ -57,7 +57,7 @@ const markdownComponents = {
   pre: ({ node, ...props }) => <Box as="pre" p={2} bg="gray.100" borderRadius="md" my={2} overflowX="auto" {...props} />,
 };
 
-function EnhancedChatbot({ inputText }) {
+function EnhancedChatbot({ inputText, currentUserContext = null }) {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -152,7 +152,6 @@ function EnhancedChatbot({ inputText }) {
     setIsLoading(true);
     
     try {
-      // Add user message immediately
       const userMessage = {
         text: inputMessage,
         sender: 'user',
@@ -162,10 +161,9 @@ function EnhancedChatbot({ inputText }) {
       setMessages(prev => [...prev, userMessage]);
       setInputMessage('');
       
-      // Use regular non-streaming functionality since streaming isn't working properly
-      const response = await chatService.sendMessage(userMessage.text);
+      // Pass currentUserContext if available
+      const response = await chatService.sendMessage(userMessage.text, currentUserContext);
       
-      // Add bot response
       setMessages(prev => [...prev, {
         text: response,
         sender: 'bot',
@@ -304,17 +302,15 @@ function EnhancedChatbot({ inputText }) {
           const filename = `recording.${actualMimeType.includes('webm') ? 'webm' : actualMimeType.includes('mp4') ? 'm4a' : 'ogg'}`;
           formData.append('audio', audioBlob, filename);
           
-          // Show a loading indicator for voice processing
           const tempUserMessageId = Date.now();
           setMessages(prev => [...prev, 
             { id: tempUserMessageId, text: "Processing your voice message...", sender: 'user', timestamp: new Date(), isTemp: true }
           ]);
 
-          // Call the API with better error handling
           try {
-            const { transcription, response } = await chatService.transcribeAudio(formData);
+            // Pass currentUserContext to transcribeAudio, which will pass it to sendMessage
+            const { transcription, response } = await chatService.transcribeAudio(formData, currentUserContext);
             
-            // Check if we got valid responses
             if (!transcription) {
               throw new Error('No transcription returned from server');
             }

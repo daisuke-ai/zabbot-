@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import {
+import { 
   Box,
   Heading,
   SimpleGrid,
@@ -155,7 +155,7 @@ function HodPortal() {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isAssigningCourse, setIsAssigningCourse] = useState(false);
 
-  const {
+  const { 
     isOpen: isAddPmOpen,
     onOpen: onAddPmOpen,
     onClose: onAddPmClose,
@@ -352,13 +352,13 @@ function HodPortal() {
       });
       if (authError) {
         if (authError.message.includes("User already registered")) {
-           toast({
+      toast({
              title: "User Exists",
              description: "This email is already registered.",
              status: "error",
-             duration: 5000,
-             isClosable: true,
-           });
+        duration: 5000,
+        isClosable: true,
+      });
         } else {
           toast({
             title: "Auth Error",
@@ -386,13 +386,13 @@ function HodPortal() {
       const { error: userError } = await supabase.from("users").insert(profileData);
       if (userError) {
         console.error("Profile insert failed, potentially orphaned auth user:", authData.user.id);
-        toast({
+      toast({
           title: "Profile Creation Error",
           description: userError.message,
           status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        duration: 5000,
+        isClosable: true,
+      });
         throw userError;
       }
 
@@ -409,22 +409,22 @@ function HodPortal() {
 
   const handleRemovePM = async (pmToRemove) => {
     if (!pmToRemove || !pmToRemove.id) {
-      toast({
+        toast({
         title: "Error",
         description: "PM information is missing for removal.",
         status: "error",
-      });
-      return;
-    }
-
+        });
+        return;
+      }
+      
     if (
       !window.confirm(
         `Are you sure you want to remove PM ${pmToRemove.first_name} ${pmToRemove.last_name} from the department?\n\nNOTE: This only removes their profile record. The underlying authentication account must be removed manually by an administrator via the Supabase dashboard.`
       )
     ) {
-      return;
-    }
-
+        return;
+      }
+      
     setIsSubmittingPM(true);
 
     try {
@@ -434,16 +434,16 @@ function HodPortal() {
         .eq("id", pmToRemove.id);
 
       if (profileDeleteError) {
-        toast({
+      toast({
           title: "Error removing PM Profile",
           description: profileDeleteError.message,
           status: "error",
           duration: 5000,
-          isClosable: true,
-        });
+        isClosable: true,
+      });
         throw profileDeleteError;
       }
-
+      
       toast({
         title: "PM Profile Removed",
         description: `PM ${pmToRemove.first_name} ${pmToRemove.last_name}'s profile removed. Remember to manually delete their authentication account if required.`,
@@ -484,13 +484,13 @@ function HodPortal() {
         options: { data: { first_name: newTeacher.firstName.trim(), last_name: newTeacher.lastName.trim(), role: "teacher" } },
       });
       if (authError) {
-        toast({
+      toast({
           title: "Auth Error",
           description: authError.message,
           status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        duration: 5000,
+        isClosable: true,
+      });
         throw authError;
       }
       if (!authData?.user?.id) {
@@ -508,13 +508,13 @@ function HodPortal() {
       const { error: userProfileError } = await supabase.from("users").insert(profileData);
       if (userProfileError) {
         console.error("Profile insert failed, potentially orphaned auth user:", authData.user.id);
-        toast({
+      toast({
           title: "Profile Creation Error",
           description: userProfileError.message,
           status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        duration: 5000,
+        isClosable: true,
+      });
         throw userProfileError;
       }
 
@@ -677,7 +677,7 @@ function HodPortal() {
   };
 
   if (isLoading) {
-    return (
+  return (
       <DashboardLayout title={`HOD Dashboard (Loading...)`} menuItems={menuItems} userRole="HOD" roleColor="red">
         <Flex justify="center" align="center" h="50vh"><Spinner size="xl" /></Flex>
       </DashboardLayout>
@@ -694,10 +694,10 @@ function HodPortal() {
       <Stack spacing={6}>
         <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
           <Heading size="lg">Department Management</Heading>
-          <HStack>
+                <HStack>
             <Button as={Link} href="https://szabist-isb.edu.pk/timetable-all/" isExternal colorScheme="teal" size="sm" leftIcon={<FaExternalLinkAlt />}>View Timetable</Button>
             <Button colorScheme="purple" size="sm" leftIcon={<FaCalendarAlt />} onClick={onCalendarOpen}>Academic Calendar</Button>
-          </HStack>
+                </HStack>
         </Flex>
 
         <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4}>
@@ -708,7 +708,7 @@ function HodPortal() {
         </SimpleGrid>
 
         <Tabs colorScheme={tabColorScheme} variant="enclosed" isLazy>
-          <TabList>
+        <TabList>
             <Tab><Icon as={FaUserTie} mr={2}/>Program Managers</Tab>
             <Tab><Icon as={FaChalkboardTeacher} mr={2}/>Teachers</Tab>
             <Tab><Icon as={FaUserGraduate} mr={2}/>Students</Tab>
@@ -716,28 +716,28 @@ function HodPortal() {
             <Tab><Icon as={FaBook} mr={2}/>Courses</Tab>
             <Tab><Icon as={FaEye} mr={2}/>Course View</Tab>
             <Tab><Icon as={FaListAlt} mr={2}/>Activity Log</Tab>
-          </TabList>
-
+        </TabList>
+        
           <TabPanels>
-            <TabPanel px={0}>
+          <TabPanel px={0}>
               <Card bg={cardBg} boxShadow="md">
                 <CardHeader bg={headerBg} py={3}>
                   <Flex justify="space-between" align="center">
                     <Heading size="md">Manage Program Managers</Heading>
                     <Button size="sm" colorScheme={tabColorScheme} leftIcon={<FaUserTie />} onClick={handleAddPM}>Add Program Manager</Button>
                   </Flex>
-                </CardHeader>
-                <CardBody>
+                  </CardHeader>
+                  <CardBody>
                   {pms.length > 0 ? (
                     <Box overflowX="auto">
                       <Table variant="simple" size="sm">
                          <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Actions</Th></Tr></Thead>
                          <Tbody>{pms.map((pm) => (<Tr key={pm.id}><Td>{`${pm.first_name} ${pm.last_name}`}</Td><Td>{pm.email}</Td><Td><HStack spacing={2}><Button size="xs" colorScheme="red" variant="ghost" leftIcon={<FaTrash />} onClick={() => handleRemovePM(pm)} isLoading={isSubmittingPM}>Remove</Button></HStack></Td></Tr>))}</Tbody>
                       </Table>
-                    </Box>
+                      </Box>
                   ) : (<Text>No Program Managers assigned.</Text>)}
-                </CardBody>
-              </Card>
+                  </CardBody>
+                </Card>
             </TabPanel>
 
             <TabPanel px={0}>
@@ -747,13 +747,13 @@ function HodPortal() {
                      <Heading size="md">Manage Teachers</Heading>
                      <Button colorScheme={tabColorScheme} size="sm" leftIcon={<FaUserPlus />} onClick={onAddTeacherModalOpen}>Add Teacher</Button>
                    </Flex>
-                 </CardHeader>
-                 <CardBody>
+                  </CardHeader>
+                  <CardBody>
                    {teachers.length > 0 ? (
                       <Box overflowX="auto">
                          <Table variant="simple" size="sm">
                             <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Joined</Th><Th>Actions</Th></Tr></Thead>
-                            <Tbody>
+                          <Tbody>
                                 {teachers.map(teacher => ( 
                                     <Tr key={teacher.id}> 
                                         <Td>{teacher.first_name} {teacher.last_name}</Td> 
@@ -769,15 +769,15 @@ function HodPortal() {
                                             >
                                                 Assign Course
                                             </Button>
-                                        </Td>
-                                    </Tr> 
-                                ))}
-                            </Tbody>
-                         </Table>
+                                </Td>
+                              </Tr>
+                            ))}
+                          </Tbody>
+                        </Table>
                       </Box>
                    ) : (<Text>No teachers found.</Text>)}
-                 </CardBody>
-               </Card>
+                  </CardBody>
+                </Card>
             </TabPanel>
 
             <TabPanel px={0}>
@@ -790,13 +790,13 @@ function HodPortal() {
                         <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Status</Th><Th>Joined</Th></Tr></Thead>
                         <Tbody>{students.map(student => ( <Tr key={student.id}><Td>{student.first_name} {student.last_name}</Td><Td>{student.email}</Td><Td><Badge colorScheme={student.active ? 'green' : 'yellow'}>{student.active ? 'Active' : 'Pending'}</Badge></Td><Td>{new Date(student.created_at).toLocaleDateString()}</Td></Tr>))}</Tbody>
                       </Table>
-                    </Box>
+              </Box>
                   ) : (<Text>No students found.</Text>)}
                 </CardBody>
               </Card>
-            </TabPanel>
-
-            <TabPanel px={0}>
+          </TabPanel>
+          
+          <TabPanel px={0}>
               <Card bg={cardBg} boxShadow="md">
                 <CardHeader bg={headerBg} py={3}><Heading size="md">Pending Student Signup Requests</Heading></CardHeader>
                 <CardBody>
@@ -815,12 +815,12 @@ function HodPortal() {
             <TabPanel px={0}>
                <Card bg={cardBg} boxShadow="md">
                  <CardHeader bg={headerBg} py={3}>
-                   <Flex justify="space-between" align="center">
+                    <Flex justify="space-between" align="center">
                      <Heading size="md">Manage Courses</Heading>
                      <Button colorScheme="green" size="sm" leftIcon={<FaPlus />} onClick={onAddCourseOpen}>Add New Course</Button>
-                   </Flex>
-                 </CardHeader>
-                 <CardBody>
+                    </Flex>
+                  </CardHeader>
+                  <CardBody>
                     <Heading size="sm" mb={3} fontWeight="medium">Existing Courses</Heading>
                     
                     {isLoading ? ( 
@@ -830,29 +830,29 @@ function HodPortal() {
                     ) : (
                         <Box overflowX="auto">
                             <Table variant="simple" size="sm">
-                                <Thead>
-                                    <Tr>
-                                        <Th>Code</Th>
+                        <Thead>
+                          <Tr>
+                            <Th>Code</Th>
                                         <Th>Name</Th>
                                         <Th>Credits</Th>
                                         <Th>Description</Th>
-                                    </Tr>
-                                </Thead>
-                                <Tbody>
+                          </Tr>
+                        </Thead>
+                        <Tbody>
                                     {allCourses.map((course) => (
                                         <Tr key={course.id}>
                                             <Td fontWeight="bold">{course.code}</Td>
                                             <Td>{course.name}</Td>
                                             <Td textAlign="center">{course.credit_hours}</Td>
                                             <Td whiteSpace="normal">{course.description || <Text as="i" color="gray.500">N/A</Text>}</Td>
-                                        </Tr>
-                                    ))}
-                                </Tbody>
-                            </Table>
+                            </Tr>
+                          ))}
+                        </Tbody>
+                      </Table>
                         </Box>
                     )}
-                 </CardBody>
-               </Card>
+                  </CardBody>
+                </Card>
             </TabPanel>
 
             <TabPanel px={0}>
@@ -871,7 +871,7 @@ function HodPortal() {
                              <AccordionButton _expanded={{ bg: headerBg, color: 'inherit' }}>
                                <Box flex='1' textAlign='left' fontWeight="medium">
                                  {course.code} - {course.name} ({course.credit_hours} Credits)
-                               </Box>
+              </Box>
                                <AccordionIcon />
                              </AccordionButton>
                            </h2>
@@ -915,7 +915,7 @@ function HodPortal() {
                    )}
                  </CardBody>
                </Card>
-            </TabPanel>
+          </TabPanel>
 
             <TabPanel px={0}>
                <Card bg={cardBg} boxShadow="md">
@@ -928,8 +928,8 @@ function HodPortal() {
                </Card>
             </TabPanel>
 
-          </TabPanels>
-        </Tabs>
+        </TabPanels>
+      </Tabs>
       </Stack>
 
       <Modal isOpen={isAddPmOpen} onClose={onAddPmClose} isCentered>
@@ -955,7 +955,7 @@ function HodPortal() {
             <ModalHeader>Add New Teacher Account</ModalHeader>
             <ModalCloseButton />
             <ModalBody pb={6}>
-               <VStack spacing={4}>
+              <VStack spacing={4}>
                   <FormControl isRequired><FormLabel>First Name</FormLabel><Input placeholder='First Name' value={newTeacher.firstName} onChange={(e) => setNewTeacher({...newTeacher, firstName: e.target.value})} /></FormControl>
                   <FormControl isRequired><FormLabel>Last Name</FormLabel><Input placeholder='Last Name' value={newTeacher.lastName} onChange={(e) => setNewTeacher({...newTeacher, lastName: e.target.value})} /></FormControl>
                   <FormControl isRequired><FormLabel>Email Address</FormLabel><Input type='email' placeholder='teacher@example.com' value={newTeacher.email} onChange={(e) => setNewTeacher({...newTeacher, email: e.target.value})} /></FormControl>
@@ -981,7 +981,7 @@ function HodPortal() {
                     <FormControl isRequired><FormLabel>Course Name</FormLabel><Input placeholder="e.g., Introduction to Computing" value={newCourse.name} onChange={(e) => setNewCourse({ ...newCourse, name: e.target.value })} /></FormControl>
                     <FormControl><FormLabel>Description</FormLabel><Input placeholder="Optional: Brief description" value={newCourse.description} onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })} /></FormControl>
                     <FormControl isRequired><FormLabel>Credit Hours</FormLabel><Input type="number" min="1" value={newCourse.credit_hours} onChange={(e) => setNewCourse({ ...newCourse, credit_hours: e.target.value })} /></FormControl>
-                </VStack>
+              </VStack>
              </ModalBody>
              <ModalFooter><Button onClick={onAddCourseClose} mr={3} variant="ghost">Cancel</Button><Button colorScheme='green' type="submit" isLoading={isCreatingCourse} leftIcon={<FaPlus/>}>Create Course</Button></ModalFooter>
           </ModalContent>
@@ -991,7 +991,7 @@ function HodPortal() {
         <AlertDialogOverlay><AlertDialogContent>
            <AlertDialogHeader>{actionType === 'approve' ? 'Confirm Approval' : 'Confirm Rejection'}</AlertDialogHeader>
            <AlertDialogBody>{`Are you sure you want to ${actionType} ${selectedUserForAction?.first_name || 'this user'}? ${actionType === 'reject' ? 'This removes the request.' : ''}`}</AlertDialogBody>
-           <AlertDialogFooter>
+            <AlertDialogFooter>
               <Button ref={cancelRef} onClick={onApprovalDialogClose} isDisabled={isActionLoading}>Cancel</Button>
               <Button colorScheme={actionType === 'approve' ? 'green' : 'red'} onClick={handleUserAction} ml={3} isLoading={isActionLoading} isDisabled={!actionType}>{actionType === 'approve' ? 'Approve' : 'Reject'}</Button>
            </AlertDialogFooter>
@@ -1032,7 +1032,7 @@ function HodPortal() {
           </ModalBody>
           <ModalFooter>
             <Button onClick={onAssignCourseModalClose} mr={3} variant="ghost">Cancel</Button>
-            <Button 
+              <Button 
               colorScheme="teal" 
               onClick={handleAssignCourses} 
               isLoading={isAssigningCourse}
@@ -1040,7 +1040,7 @@ function HodPortal() {
               leftIcon={<FaCheck/>}
             >
               Save Assignments ({coursesToAssign.length})
-            </Button>
+              </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

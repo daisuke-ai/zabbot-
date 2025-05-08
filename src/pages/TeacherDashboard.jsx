@@ -393,7 +393,7 @@ function TeacherDashboard() {
                     ))}
                   </Tbody>
                 </Table>
-              </Box>
+    </Box>
             )}
           </ModalBody>
           <ModalFooter>

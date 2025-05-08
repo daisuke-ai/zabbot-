@@ -5,6 +5,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -13,43 +14,41 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       try {
         // Get the current session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
             console.error("AuthContext: Error getting initial session:", sessionError);
             throw sessionError;
         }
-        
-        console.log("AuthContext: Initial session:", session);
+        setSession(currentSession);
+        console.log("AuthContext: Initial session:", currentSession);
         
         let currentUser = null;
-        if (session?.user) {
+        if (currentSession?.user) {
           // Get user profile from database if session exists
-           console.log(`AuthContext: Fetching profile for user ID: ${session.user.id}`);
+           console.log(`AuthContext: Fetching profile for user ID: ${currentSession.user.id}`);
            const { data: userProfile, error: profileError } = await supabase
             .from('users')
             .select('*') // Fetch all necessary fields
-            .eq('user_id', session.user.id)
+            .eq('user_id', currentSession.user.id)
             .maybeSingle();
             
           if (profileError) {
               console.error("AuthContext: Error fetching initial profile:", profileError);
-              // Don't throw here, allow app to load, maybe user needs to complete signup
           } else if (userProfile) {
               console.log("AuthContext: Initial profile found:", userProfile);
               currentUser = {
-                ...session.user, // Core auth data
-                ...userProfile  // Database profile data (includes role, active, etc.)
+                ...currentSession.user, // Core auth data (like email, auth id)
+                ...userProfile  // Your public.users table data (like custom id, role, department_name, active)
               };
           } else {
              console.warn("AuthContext: User session exists but no profile found in 'users' table.");
-             // Keep session.user for basic auth info, but profile data is missing
-             currentUser = session.user;
+             currentUser = currentSession.user; // Fallback to auth user data only
           }
         } else {
             console.log("AuthContext: No active session found initially.");
         }
-        setUser(currentUser); // Set user state based on session and profile
+        setUser(currentUser);
         console.log("AuthContext: Initial user state set:", currentUser);
 
       } catch (error) {
@@ -64,47 +63,45 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log(`AuthContext: onAuthStateChange event: ${event}`, session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log(`AuthContext: onAuthStateChange event: ${event}`, currentSession);
+      setSession(currentSession);
       let currentUser = null;
-      if (event === 'SIGNED_IN' && session?.user) {
-        console.log(`AuthContext: SIGNED_IN - Fetching profile for user ID: ${session.user.id}`);
+      if (event === 'SIGNED_IN' && currentSession?.user) {
+        console.log(`AuthContext: SIGNED_IN - Fetching profile for user ID: ${currentSession.user.id}`);
          const { data: userProfile, error: profileError } = await supabase
           .from('users')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('user_id', currentSession.user.id)
           .maybeSingle();
           
         if (profileError) {
              console.error("AuthContext: Error fetching profile on SIGNED_IN:", profileError);
-             // Keep basic session user data
-             currentUser = session.user;
+             currentUser = currentSession.user;
         } else if (userProfile) {
              console.log("AuthContext: Profile found on SIGNED_IN:", userProfile);
-             currentUser = { ...session.user, ...userProfile };
+             currentUser = { ...currentSession.user, ...userProfile };
         } else {
              console.warn("AuthContext: SIGNED_IN but no profile found in 'users' table.");
-             currentUser = session.user; // Fallback to basic auth user
+             currentUser = currentSession.user;
         }
       } else if (event === 'SIGNED_OUT') {
         console.log("AuthContext: SIGNED_OUT");
         currentUser = null;
-      } else if (session?.user) {
-          // Handle other events like TOKEN_REFRESHED if necessary, potentially re-fetch profile
-          // For simplicity, we might just rely on the existing user state unless explicitly signed out
-          // Or re-fetch profile on token refresh too:
+      } else if (currentSession?.user) {
            const { data: userProfile, error: profileError } = await supabase
             .from('users')
             .select('*')
-            .eq('user_id', session.user.id)
+            .eq('user_id', currentSession.user.id)
             .maybeSingle();
            if (userProfile && !profileError) {
-               currentUser = { ...session.user, ...userProfile };
+               currentUser = { ...currentSession.user, ...userProfile };
            } else {
-               currentUser = session.user; // Fallback
+               currentUser = currentSession.user; 
            }
+      } else {
+          currentUser = null;
       }
-      // Only update state if it has changed to avoid unnecessary re-renders
       setUser(currentUser);
       console.log("AuthContext: User state updated by listener:", currentUser);
     });
@@ -118,7 +115,8 @@ export const AuthProvider = ({ children }) => {
 
   // Auth context value
   const value = {
-    user, // This object should contain role, active status, etc. fetched from 'users' table
+    user, 
+    session,
     loading,
     login: async (email, password) => {
       console.log("AuthContext: login function called.");
@@ -138,7 +136,7 @@ export const AuthProvider = ({ children }) => {
       console.log(`AuthContext: Fetching profile for logged-in user: ${authData.user.id}`);
       const { data: userProfile, error: profileError } = await supabase
         .from('users')
-        .select('*') // Fetch all data including 'role' and 'active'
+        .select('*') 
         .eq('user_id', authData.user.id)
         .maybeSingle();
 
@@ -175,6 +173,7 @@ export const AuthProvider = ({ children }) => {
       // 4. If checks pass, update the user state (onAuthStateChange might also do this, but setting explicitly ensures immediate availability)
       const fullUser = { ...authData.user, ...userProfile };
       setUser(fullUser);
+      setSession(authData.session);
       console.log("AuthContext: User state set after successful login:", fullUser);
 
       // Return the combined user object (auth + profile)
@@ -186,8 +185,9 @@ export const AuthProvider = ({ children }) => {
       if (error) {
           console.error("AuthContext: Error signing out:", error);
       }
-      // onAuthStateChange listener should handle setting user to null
+      // onAuthStateChange listener should handle setting user and session to null
       // setUser(null); // Explicitly setting might cause race condition with listener
+      // setSession(null);
        console.log("AuthContext: Sign out process initiated.");
     },
     signup: async (email, password, metadata) => {
@@ -203,7 +203,7 @@ export const AuthProvider = ({ children }) => {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password: password.trim(),
-          options: options // Pass modified options
+          options: options 
         });
         
         if (error) {
@@ -211,6 +211,7 @@ export const AuthProvider = ({ children }) => {
              throw error;
         }
          console.log("AuthContext: Supabase signup successful:", data);
+         setSession(data.session);
 
         // Important: Need to insert into 'users' table immediately after signup
         if (data.user) {

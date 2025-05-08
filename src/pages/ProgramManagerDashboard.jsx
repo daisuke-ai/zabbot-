@@ -65,7 +65,8 @@ import {
   AccordionIcon,
   CheckboxGroup,
   Checkbox,
-  Stack as ChakraStack
+  Stack as ChakraStack,
+  Icon as ChakraIcon
 } from '@chakra-ui/react';
 import { 
   FaUserTie, 
@@ -81,12 +82,14 @@ import {
   FaEyeSlash,
   FaExternalLinkAlt,
   FaBook,
-  FaLink
+  FaLink,
+  FaRobot
 } from 'react-icons/fa';
 import DashboardLayout from '../components/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseService';
 import { useNavigate } from 'react-router-dom';
+import EnhancedChatbot from '../components/EnhancedChatbot';
 
 // --- Academic Calendar Data (Same as HOD Portal) ---
 const academicCalendarData = {
@@ -102,7 +105,7 @@ const academicCalendarData = {
 // --- End Academic Calendar Data ---
 
 function ProgramManagerDashboard() {
-  const { user, logout } = useAuth();
+  const { user, session, logout } = useAuth();
   const navigate = useNavigate();
   const [pmDepartmentName, setPmDepartmentName] = useState('');
   const [teachers, setTeachers] = useState([]);
@@ -159,12 +162,25 @@ function ProgramManagerDashboard() {
   const [coursesToAssign, setCoursesToAssign] = useState([]);
   const [teacherAssignedCourses, setTeacherAssignedCourses] = useState([]);
   
+  // Construct currentUserContext for the chatbot
+  const currentUserContext = useMemo(() => {
+    if (user && session && user.role && user.id) {
+      return {
+        userId: user.id, // This is the public.users.id from the merged user object
+        role: user.role,
+        departmentName: user.department_name || pmDepartmentName, // Use department_name from user profile, fallback to fetched pmDepartmentName
+        token: session.access_token
+      };
+    }
+    return null;
+  }, [user, session, pmDepartmentName]);
+  
   // Define fetchPmData outside useEffect, wrapped in useCallback
   const fetchPmData = useCallback(async () => {
     if (!user?.id) {
       setIsLoading(false);
-      return;
-    }
+        return;
+      }
     setIsLoading(true);
     try {
       // Fetch PM Department
@@ -200,8 +216,8 @@ function ProgramManagerDashboard() {
 
       // Fetch Pending Student Approvals (for PM's dept)
       const { data: pending, error: pendingError } = await supabase
-        .from('users')
-        .select('*')
+          .from('users')
+          .select('*')
         .eq('active', false)
         .eq('role', 'student')
         .eq('department_name', departmentName)
@@ -554,7 +570,7 @@ function ProgramManagerDashboard() {
   const handleAssignCourses = async () => {
     if (!selectedTeacherForAssignment || coursesToAssign.length === 0) {
         toast({ title: 'Error', description: 'No teacher or courses selected.', status: 'warning'});
-        return;
+      return;
     }
     
     setIsAssigningCourse(true);
@@ -588,6 +604,7 @@ function ProgramManagerDashboard() {
   // Menu items for the sidebar
   const menuItems = [
     { label: 'Dashboard', icon: FaUserTie, path: '/pm-dashboard' },
+    { label: 'AI Assistant', icon: FaRobot, path: '/pm-dashboard#ai-assistant'}
   ];
   
   // --- Calculate Stats ---
@@ -648,12 +665,13 @@ function ProgramManagerDashboard() {
         {/* Main Content Tabs */}
         <Tabs colorScheme="blue" variant="enclosed" isLazy>
         <TabList>
-            <Tab><Icon as={FaUserGraduate} mr={2}/>Students</Tab>
-            <Tab><Icon as={FaChalkboardTeacher} mr={2}/>Teachers</Tab>
-            <Tab><Icon as={FaCheck} mr={2}/>Student Approvals <Badge ml={1} colorScheme={calculatedStats.pendingApprovals > 0 ? 'red' : 'green'}>{calculatedStats.pendingApprovals}</Badge></Tab>
-            <Tab><Icon as={FaBook} mr={2}/>Courses</Tab>
-            <Tab><Icon as={FaEye} mr={2}/>Course View</Tab>
-            <Tab><Icon as={FaListAlt} mr={2}/>Activity Log</Tab>
+            <Tab><ChakraIcon as={FaUserGraduate} mr={2}/>Students</Tab>
+            <Tab><ChakraIcon as={FaChalkboardTeacher} mr={2}/>Teachers</Tab>
+            <Tab><ChakraIcon as={FaCheck} mr={2}/>Student Approvals <Badge ml={1} colorScheme={calculatedStats.pendingApprovals > 0 ? 'red' : 'green'}>{calculatedStats.pendingApprovals}</Badge></Tab>
+            <Tab><ChakraIcon as={FaBook} mr={2}/>Courses</Tab>
+            <Tab><ChakraIcon as={FaEye} mr={2}/>Course View</Tab>
+            <Tab><ChakraIcon as={FaListAlt} mr={2}/>Activity Log</Tab>
+            <Tab><ChakraIcon as={FaRobot} mr={2}/>AI Assistant</Tab>
         </TabList>
         
         <TabPanels>
@@ -699,7 +717,7 @@ function ProgramManagerDashboard() {
                                          <Td>{teacher.email}</Td> 
                                          <Td>{new Date(teacher.created_at).toLocaleDateString()}</Td>
                                          <Td>
-                                            <Button 
+              <Button 
                                                 size="xs" 
                                                 colorScheme="teal"
                                                 variant="outline"
@@ -707,9 +725,9 @@ function ProgramManagerDashboard() {
                                                 onClick={() => openAssignCourseModal(teacher)}
                                             >
                                                 Assign Course
-                                            </Button>
+              </Button>
                                          </Td>
-                                     </Tr> 
+                </Tr>
                                  ))}
                                </Tbody>
                            </Table>
@@ -757,15 +775,15 @@ function ProgramManagerDashboard() {
                  <CardHeader bg={headerBg} py={3}>
                     <Flex justify="space-between" align="center">
                        <Heading size="md">Manage Courses</Heading>
-                        <Button
-                          colorScheme="green"
+              <Button 
+                colorScheme="green" 
                           size="sm"
                           leftIcon={<FaPlus />}
                           onClick={onAddCourseModalOpen}
-                        >
+              >
                           Add New Course
-                        </Button>
-                     </Flex>
+              </Button>
+            </Flex>
                  </CardHeader>
                  <CardBody>
                      <Heading size="sm" mb={3} fontWeight="medium">Existing Courses (System-wide)</Heading>
@@ -776,30 +794,30 @@ function ProgramManagerDashboard() {
                      ) : (
                          <Box overflowX="auto">
                              <Table variant="simple" size="sm">
-                                 <Thead>
-                                     <Tr>
+              <Thead>
+                <Tr>
                                          <Th>Code</Th>
-                                         <Th>Name</Th>
+                  <Th>Name</Th>
                                          <Th>Credits</Th>
                                          <Th>Description</Th>
-                                     </Tr>
-                                 </Thead>
-                                 <Tbody>
+                </Tr>
+              </Thead>
+              <Tbody>
                                      {allCourses.map((course) => (
                                          <Tr key={course.id}>
                                              <Td fontWeight="bold">{course.code}</Td>
                                              <Td>{course.name}</Td>
                                              <Td textAlign="center">{course.credit_hours}</Td>
                                              <Td whiteSpace="normal" maxW="300px" overflow="hidden" textOverflow="ellipsis">{course.description || <Text as="i" color="gray.500">N/A</Text>}</Td>
-                                         </Tr>
-                                     ))}
-                                 </Tbody>
-                             </Table>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
                          </Box>
                      )}
                  </CardBody>
                </Card>
-            </TabPanel>
+          </TabPanel>
             {/* --- End Courses Tab Panel --- */}
 
             {/* --- Department Course View Tab Panel (Added) --- */}
@@ -863,7 +881,7 @@ function ProgramManagerDashboard() {
                     )}
                   </CardBody>
                 </Card>
-            </TabPanel>
+          </TabPanel>
             {/* --- End Department Course View Tab Panel --- */}
 
             {/* Activity Log Tab Panel */}
@@ -882,6 +900,29 @@ function ProgramManagerDashboard() {
                     )}
                  </CardBody>
                </Card>
+            </TabPanel>
+
+            {/* AI Assistant Tab Panel - New */}
+            <TabPanel px={0}>
+              <Card bg={cardBg} boxShadow="md">
+                <CardHeader bg={headerBg} py={3}>
+                  <Heading size="md">
+                    <Flex align="center">
+                      <ChakraIcon as={FaRobot} mr={2}/> Department AI Assistant
+                    </Flex>
+                  </Heading>
+                </CardHeader>
+                <CardBody>
+                  {currentUserContext ? (
+                    <EnhancedChatbot currentUserContext={currentUserContext} inputText={undefined} />
+                  ) : (
+                    <Flex justify="center" align="center" h="200px">
+                      <Spinner size="xl" mr={3}/> 
+                      <Text>Loading user context for AI Assistant...</Text>
+                    </Flex>
+                  )}
+                </CardBody>
+              </Card>
             </TabPanel>
 
         </TabPanels>
@@ -924,21 +965,21 @@ function ProgramManagerDashboard() {
                   <FormControl isRequired><FormLabel>Course Name</FormLabel><Input placeholder='e.g., Introduction to Computing' value={newCourse.name} onChange={(e) => setNewCourse({...newCourse, name: e.target.value})} /></FormControl>
                   <FormControl>
                      <FormLabel>Description</FormLabel>
-                     <Input
+              <Input 
                         placeholder="Optional: Brief description of the course"
                         value={newCourse.description}
                         onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-                     />
-                  </FormControl>
+              />
+            </FormControl>
                   <FormControl isRequired>
                      <FormLabel>Credit Hours</FormLabel>
-                     <Input
+              <Input 
                         type="number"
                         min="1"
                         value={newCourse.credit_hours}
                         onChange={(e) => setNewCourse({ ...newCourse, credit_hours: e.target.value })}
-                     />
-                  </FormControl>
+              />
+            </FormControl>
               </VStack>
             </ModalBody>
             <ModalFooter>
