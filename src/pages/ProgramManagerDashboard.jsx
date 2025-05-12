@@ -66,7 +66,8 @@ import {
   CheckboxGroup,
   Checkbox,
   Stack as ChakraStack,
-  Icon as ChakraIcon
+  Icon as ChakraIcon,
+  Textarea
 } from '@chakra-ui/react';
 import { 
   FaUserTie, 
@@ -83,7 +84,8 @@ import {
   FaExternalLinkAlt,
   FaBook,
   FaLink,
-  FaRobot
+  FaRobot,
+  FaBrain
 } from 'react-icons/fa';
 import DashboardLayout from '../components/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
@@ -120,6 +122,8 @@ function ProgramManagerDashboard() {
   const [departmentCourseDetails, setDepartmentCourseDetails] = useState([]);
   const [isFetchingCourses, setIsFetchingCourses] = useState(false);
   const [isAssigningCourse, setIsAssigningCourse] = useState(false);
+  const [trainingText, setTrainingText] = useState('');
+  const [isSubmittingTraining, setIsSubmittingTraining] = useState(false);
   
   const { 
     isOpen: isApprovalDialogOpen, 
@@ -601,10 +605,74 @@ function ProgramManagerDashboard() {
     }
   };
 
+  // --- Function to handle submitting training data ---
+  const handleTrainAISubmit = async () => {
+    if (!trainingText.trim()) {
+      toast({ title: 'No Text Provided', description: 'Please enter some text to train the AI.', status: 'warning' });
+      return;
+    }
+    if (!currentUserContext?.token) {
+      toast({ title: 'Authentication Error', description: 'User context not available. Cannot submit training data.', status: 'error' });
+      return;
+    }
+
+    setIsSubmittingTraining(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/train-custom-data`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentUserContext.token}`,
+        },
+        body: JSON.stringify({
+          text: trainingText,
+          userContext: { // Pass user context, especially department for sourcing/logging
+            department_name: currentUserContext.departmentName,
+            userId: currentUserContext.userId,
+            role: currentUserContext.role
+          }
+        }),
+      });
+
+      const resultText = await response.text(); // Get response as text first
+
+      if (!response.ok) {
+        // Try to parse as JSON if possible, otherwise use the text
+        let errorMessage = resultText;
+        try {
+          const errorJson = JSON.parse(resultText);
+          errorMessage = errorJson.message || resultText;
+        } catch (e) {
+          // Not JSON, use the raw text
+        }
+        throw new Error(errorMessage || `Server responded with ${response.status}`);
+      }
+
+      // If response.ok, try to parse as JSON
+      let result;
+      try {
+        result = JSON.parse(resultText);
+      } catch (e) {
+        // This might happen if server sends non-JSON even on success, though unlikely for this endpoint
+        console.warn("Server sent non-JSON success response:", resultText);
+        throw new Error("Received an unexpected response format from the server.");
+      }
+
+      toast({ title: 'Training Data Submitted', description: result.message || 'Data sent for embedding.', status: 'success' });
+      setTrainingText(''); // Clear textarea after successful submission
+    } catch (error) {
+      console.error("Error submitting training data:", error);
+      toast({ title: 'Submission Failed', description: error.message, status: 'error' });
+    } finally {
+      setIsSubmittingTraining(false);
+    }
+  };
+
   // Menu items for the sidebar
   const menuItems = [
     { label: 'Dashboard', icon: FaUserTie, path: '/pm-dashboard' },
-    { label: 'AI Assistant', icon: FaRobot, path: '/pm-dashboard#ai-assistant'}
+    { label: 'AI Assistant', icon: FaRobot, path: '/pm-dashboard#ai-assistant'},
+    { label: 'Train AI', icon: FaBrain, path: '/pm-dashboard#train-ai'},
   ];
   
   // --- Calculate Stats ---
@@ -672,6 +740,7 @@ function ProgramManagerDashboard() {
             <Tab><ChakraIcon as={FaEye} mr={2}/>Course View</Tab>
             <Tab><ChakraIcon as={FaListAlt} mr={2}/>Activity Log</Tab>
             <Tab><ChakraIcon as={FaRobot} mr={2}/>AI Assistant</Tab>
+            <Tab><ChakraIcon as={FaBrain} mr={2}/>Train AI</Tab>
         </TabList>
         
         <TabPanels>
@@ -883,6 +952,49 @@ function ProgramManagerDashboard() {
                 </Card>
           </TabPanel>
             {/* --- End Department Course View Tab Panel --- */}
+
+            {/* --- Train AI Tab Panel (New) --- */}
+            <TabPanel px={0}>
+              <Card bg={cardBg} boxShadow="md">
+                <CardHeader bg={headerBg} py={3}>
+                  <Heading size="md">
+                    <Flex align="center">
+                      <ChakraIcon as={FaBrain} mr={2}/> Custom AI Training Data
+                    </Flex>
+                  </Heading>
+                </CardHeader>
+                <CardBody>
+                  <VStack spacing={4} align="stretch">
+                    <Text>
+                      Enter text data below to train the AI. This data will be embedded and stored
+                      to improve the AI's knowledge base, particularly for department-specific information.
+                    </Text>
+                    <FormControl>
+                      <FormLabel htmlFor="training-text">Training Text:</FormLabel>
+                      <Textarea
+                        id="training-text"
+                        value={trainingText}
+                        onChange={(e) => setTrainingText(e.target.value)}
+                        placeholder="Paste or type your training data here. For example, details about new departmental policies, specific course information not found elsewhere, common queries and their standard answers, etc."
+                        rows={10}
+                        borderColor={borderColor}
+                        focusBorderColor={borderColor}
+                      />
+                    </FormControl>
+                    <Button
+                      colorScheme="blue"
+                      isLoading={isSubmittingTraining}
+                      onClick={handleTrainAISubmit}
+                      isDisabled={!trainingText.trim()}
+                      leftIcon={<FaPlus />}
+                    >
+                      Submit Training Data
+                    </Button>
+                  </VStack>
+                </CardBody>
+              </Card>
+            </TabPanel>
+            {/* --- End Train AI Tab Panel --- */}
 
             {/* Activity Log Tab Panel */}
             <TabPanel px={0}>

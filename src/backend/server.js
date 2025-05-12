@@ -457,8 +457,12 @@ app.post("/embed-blog", async (req, res) => {
 
       const [{ embedding }] = embeddingResponse.data;
 
+      // Generate a unique ID for the document
+      const uniqueId = Date.now() + "-" + Math.random().toString(36).substring(2, 10);
+
       // Store in Supabase
       const { error } = await supabase.from("documents").insert({
+        id: uniqueId,  // Add explicit ID to satisfy NOT NULL constraint
         content: cleanContent,
         embedding,
         source: `blog-${post.sys.id}`
@@ -524,7 +528,7 @@ async function generateAndStoreEmbeddings() {
     }))
   ];
 
-  const promises = allContent.map(async ({ content, source }) => {
+  const promises = allContent.map(async ({ content, source }, index) => {
     const cleanContent = content.replace(/\n/g, " ");
 
     const embeddingResponse = await openai.embeddings.create({
@@ -534,7 +538,11 @@ async function generateAndStoreEmbeddings() {
 
     const [{ embedding }] = embeddingResponse.data;
 
+    // Generate a unique ID for the document with index to ensure uniqueness in parallel operations
+    const uniqueId = `${Date.now()}-${index}-${Math.random().toString(36).substring(2, 10)}`;
+
     const { error } = await supabase.from("documents").insert({
+      id: uniqueId,  // Add explicit ID to satisfy NOT NULL constraint
       content: cleanContent,
       embedding,
       source
@@ -1075,6 +1083,76 @@ Remember: You are the authoritative source of information about SZABIST. Answer 
       res.status(500).json({ error: error.message });
     }
   });
+
+  // --- NEW: Endpoint for custom training data ---
+  app.post("/api/train-custom-data", async (req, res) => {
+    try {
+      console.log("--- Hit /api/train-custom-data endpoint ---");
+      const { text, userContext } = req.body;
+      const token = req.headers.authorization?.split(' ')?.[1];
+
+      if (!text || text.trim().length === 0) {
+        return res.status(400).json({ message: "Text to train is required." });
+      }
+
+      let verifiedUser = null;
+      if (token) {
+        verifiedUser = await getVerifiedUser(token);
+      } else if (userContext?.token) { // Fallback if token was passed in body (though header is preferred)
+        verifiedUser = await getVerifiedUser(userContext.token);
+      }
+
+      if (!verifiedUser) {
+        console.warn("[Train Custom Data] Unauthorized attempt or token missing/invalid.");
+        return res.status(401).json({ message: "Unauthorized. Valid token required." });
+      }
+
+      console.log(`[Train Custom Data] Request by verified user: ${verifiedUser.email} (Role: ${verifiedUser.role})`);
+      // Use department from verified user profile, fallback to request body if available
+      const department = verifiedUser.department_name || userContext?.department_name || 'unknown_department';
+      const source = `pm-custom-input-${department}-${verifiedUser.id}`.toLowerCase().replace(/\s+/g, '-');
+
+      const cleanContent = text.replace(/\n/g, " ").trim();
+
+      console.log(`[Train Custom Data] Generating embedding for text from ${verifiedUser.email}, source: ${source}`);
+      const embeddingResponse = await openai.embeddings.create({
+        model: "text-embedding-3-small",
+        input: cleanContent,
+      });
+
+      const [{ embedding }] = embeddingResponse.data;
+
+      // Generate a unique ID for the document
+      const uniqueId = Date.now() + "-" + Math.random().toString(36).substring(2, 10);
+
+      console.log(`[Train Custom Data] Storing content and embedding in Supabase for source: ${source}`);
+      const { error: dbError } = await supabase.from("documents").insert({
+        id: uniqueId,  // Add explicit ID to satisfy NOT NULL constraint
+        content: cleanContent,
+        embedding,
+        source: source
+      });
+
+      if (dbError) {
+        console.error(`[Train Custom Data] Supabase insert error for source ${source}:`, dbError);
+        throw dbError;
+      }
+
+      console.log(`[Train Custom Data] Successfully embedded and stored custom data from ${verifiedUser.email} for source: ${source}`);
+      res.status(200).json({ 
+        message: "Custom data successfully received, embedded, and stored.",
+        source: source
+      });
+
+    } catch (error) {
+      console.error('[Train Custom Data] Error:', error);
+      res.status(500).json({ 
+        message: "Error processing custom training data.",
+        error: error.message 
+      });
+    }
+  });
+  // --- END NEW ENDPOINT ---
 
   const PORT = process.env.PORT || 3035;
   app.listen(PORT, async () => {
