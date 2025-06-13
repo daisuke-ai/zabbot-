@@ -47,11 +47,13 @@ import {
   FaInfoCircle,
   FaPlusSquare,
   FaCalculator,
-  FaPercentage
+  FaPercentage,
+  FaBrain
 } from 'react-icons/fa';
 import DashboardLayout from '../components/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseService';
+import DatabaseChatbot from '../components/DatabaseChatbot';
 
 // --- Helper Function for Grade Point Calculation ---
 const getGradePoint = (obtained, total) => {
@@ -108,6 +110,18 @@ function StudentDashboard() {
   const headerBg = useColorModeValue('gray.50', 'gray.800');
   const borderColor = useColorModeValue('purple.500', 'purple.300');
   
+  // Define currentUserContext for the chatbot
+  const currentUserContext = useMemo(() => {
+    if (user && user.id && user.role) {
+      return {
+        userId: user.id,
+        role: user.role,
+        departmentName: user.user_metadata?.department_name || 'N/A' // Assuming department_name might be in user_metadata or set from profile fetch
+      };
+    }
+    return null;
+  }, [user]);
+
   useEffect(() => {
     if (user && user.id) {
       fetchDashboardData(user.id);
@@ -325,7 +339,7 @@ function StudentDashboard() {
     >
       <Stack spacing={6}>
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
-          <Card bg={cardBg} boxShadow="md">
+          <Card bg={cardBg} boxShadow="md" borderRadius="lg">
             <CardBody>
               <Stat>
                 <StatLabel><Icon as={FaCalculator} mr={2}/>Current GPA</StatLabel>
@@ -336,7 +350,7 @@ function StudentDashboard() {
             </CardBody>
           </Card>
           
-          <Card bg={cardBg} boxShadow="md">
+          <Card bg={cardBg} boxShadow="md" borderRadius="lg">
             <CardBody>
               <Stat>
                 <StatLabel><Icon as={FaBook} mr={2}/>Enrolled Courses</StatLabel>
@@ -346,7 +360,7 @@ function StudentDashboard() {
             </CardBody>
           </Card>
           
-          <Card bg={cardBg} boxShadow="md">
+          <Card bg={cardBg} boxShadow="md" borderRadius="lg">
             <CardBody>
               <Stat>
                 <StatLabel><Icon as={FaPercentage} mr={2}/>Average %</StatLabel>
@@ -361,11 +375,12 @@ function StudentDashboard() {
           <TabList>
             <Tab><Icon as={FaBook} mr={2} />My Courses & Marks</Tab>
             <Tab><Icon as={FaPlusSquare} mr={2} />Register for Courses</Tab>
+            <Tab><Icon as={FaBrain} mr={2} />My Database Assistant</Tab>
           </TabList>
 
           <TabPanels>
             <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md">
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}>
                   <Heading size="md">My Enrolled Courses & Marks Breakdown</Heading>
                 </CardHeader>
@@ -432,7 +447,7 @@ function StudentDashboard() {
             </TabPanel>
 
             <TabPanel px={0}>
-               <Card bg={cardBg} boxShadow="md">
+               <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}>
                     <Flex justify="space-between" align="center" wrap="wrap" gap={2}>
                         <Heading size="md">Available Courses for Registration</Heading>
@@ -443,6 +458,7 @@ function StudentDashboard() {
                             onClick={handleEnrollment}
                             isLoading={isEnrolling}
                             isDisabled={selectedCoursesToEnroll.size === 0}
+                            borderRadius="md"
                         >
                             Enroll in Selected ({selectedCoursesToEnroll.size})
                         </Button>
@@ -475,6 +491,7 @@ function StudentDashboard() {
                                     isDisabled={isEnrolled}
                                     onChange={(e) => handleCourseSelectionChange(course.id, e.target.checked)}
                                     colorScheme="green"
+                                    borderRadius="md"
                                     />
                                 </Td>
                                 <Td>{course.code}</Td>
@@ -483,9 +500,9 @@ function StudentDashboard() {
                                 <Td whiteSpace="normal">{course.description || 'N/A'}</Td>
                                 <Td>
                                     {isEnrolled ? (
-                                    <Badge colorScheme="green" variant="solid">Enrolled</Badge>
+                                    <Badge colorScheme="green" variant="solid" borderRadius="md">Enrolled</Badge>
                                     ) : (
-                                    <Badge colorScheme="gray">Available</Badge>
+                                    <Badge colorScheme="gray" borderRadius="md">Available</Badge>
                                     )}
                                 </Td>
                                 </Tr>
@@ -499,6 +516,29 @@ function StudentDashboard() {
                     )}
                 </CardBody>
                 </Card>
+            </TabPanel>
+            
+            {/* New Tab for Database Assistant */}
+            <TabPanel px={0}>
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
+                <CardHeader bg={headerBg} py={3}>
+                  <Heading size="md">
+                    <Flex align="center">
+                      <Icon as={FaBrain} mr={2}/> My Database Assistant
+                    </Flex>
+                  </Heading>
+                </CardHeader>
+                <CardBody>
+                  {currentUserContext ? (
+                    <DatabaseChatbot currentUserContext={currentUserContext} />
+                  ) : (
+                    <Flex justify="center" align="center" h="200px">
+                      <Spinner size="xl" mr={3}/>
+                      <Text>Loading user context for Database Assistant...</Text>
+                    </Flex>
+                  )}
+                </CardBody>
+              </Card>
             </TabPanel>
           </TabPanels>
         </Tabs>

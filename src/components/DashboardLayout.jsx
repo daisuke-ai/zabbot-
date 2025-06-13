@@ -47,8 +47,8 @@ function DashboardLayout({
   
   // Theme colors
   const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('red.500', 'red.400');
-  const sidebarBg = useColorModeValue('gray.50', 'gray.900');
+  const borderColor = useColorModeValue('purple.600', 'purple.400'); // Set to vibrant purple
+  const sidebarBg = useColorModeValue('purple.50', 'purple.900'); // Set to vibrant purple background
   
   const handleLogout = async () => {
     try {
@@ -123,8 +123,9 @@ function DashboardLayout({
         px={4}
         py={2}
         borderBottom="1px"
-        borderColor={borderColor}
+        borderColor={borderColor} // Apply new border color
         bg={bgColor}
+        boxShadow="md" // Add shadow to header
       >
         <Flex align="center">
           {isMobile && (
@@ -175,10 +176,10 @@ function DashboardLayout({
             as="nav"
             w="240px"
             h="calc(100vh - 60px)"
-            bg={sidebarBg}
+            bg={sidebarBg} // Apply new sidebar background
             p={4}
             borderRight="1px"
-            borderColor="gray.200"
+            borderColor={borderColor} // Apply new border color
             display={{ base: 'none', lg: 'block' }}
           >
             <VStack align="stretch" spacing={4}>
@@ -188,11 +189,14 @@ function DashboardLayout({
                   leftIcon={<Icon as={item.icon} />}
                   variant="ghost"
                   justifyContent="flex-start"
-                  onClick={item.onClick ? item.onClick : () => navigate(item.path)}
+                  _hover={{ bg: `${roleColor}.100`, color: `${roleColor}.700` }} // Energetic hover effect
+                  _active={{ bg: `${roleColor}.200` }} // Energetic active effect
+                  borderRadius="md" // Slightly rounded buttons
+                  onClick={item.onClick ? item.onClick : () => navigate(item.path)} // Ensure onClick is preserved
                 >
                   {item.label}
                 </Button>
-              ))}
+              ))}\
               <Spacer minH="20px" />
               <Button
                 leftIcon={<Icon as={FaSignOutAlt} />}
@@ -219,4 +223,4 @@ function DashboardLayout({
   );
 }
 
-export default DashboardLayout; 
+export default DashboardLayout;

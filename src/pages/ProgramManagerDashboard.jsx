@@ -85,13 +85,15 @@ import {
   FaBook,
   FaLink,
   FaRobot,
-  FaBrain
+  FaBrain,
+  FaSave,
+  FaUsers
 } from 'react-icons/fa';
 import DashboardLayout from '../components/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseService';
 import { useNavigate } from 'react-router-dom';
-import EnhancedChatbot from '../components/EnhancedChatbot';
+import DatabaseChatbot from '../components/DatabaseChatbot';
 
 // --- Academic Calendar Data (Same as HOD Portal) ---
 const academicCalendarData = {
@@ -107,7 +109,7 @@ const academicCalendarData = {
 // --- End Academic Calendar Data ---
 
 function ProgramManagerDashboard() {
-  const { user, session, logout } = useAuth();
+  const { user, session } = useAuth();
   const navigate = useNavigate();
   const [pmDepartmentName, setPmDepartmentName] = useState('');
   const [teachers, setTeachers] = useState([]);
@@ -122,8 +124,6 @@ function ProgramManagerDashboard() {
   const [departmentCourseDetails, setDepartmentCourseDetails] = useState([]);
   const [isFetchingCourses, setIsFetchingCourses] = useState(false);
   const [isAssigningCourse, setIsAssigningCourse] = useState(false);
-  const [trainingText, setTrainingText] = useState('');
-  const [isSubmittingTraining, setIsSubmittingTraining] = useState(false);
   
   const { 
     isOpen: isApprovalDialogOpen, 
@@ -165,21 +165,22 @@ function ProgramManagerDashboard() {
   const [selectedTeacherForAssignment, setSelectedTeacherForAssignment] = useState(null);
   const [coursesToAssign, setCoursesToAssign] = useState([]);
   const [teacherAssignedCourses, setTeacherAssignedCourses] = useState([]);
+  const [aiTrainingText, setAiTrainingText] = useState('');
+  const [isEmbeddingText, setIsEmbeddingText] = useState(false);
   
   // Construct currentUserContext for the chatbot
   const currentUserContext = useMemo(() => {
     if (user && session && user.role && user.id) {
       return {
-        userId: user.id, // This is the public.users.id from the merged user object
+        userId: user.id,
         role: user.role,
-        departmentName: user.department_name || pmDepartmentName, // Use department_name from user profile, fallback to fetched pmDepartmentName
+        departmentName: user.department_name || pmDepartmentName,
         token: session.access_token
       };
     }
     return null;
   }, [user, session, pmDepartmentName]);
   
-  // Define fetchPmData outside useEffect, wrapped in useCallback
   const fetchPmData = useCallback(async () => {
     if (!user?.id) {
       setIsLoading(false);
@@ -187,7 +188,6 @@ function ProgramManagerDashboard() {
       }
     setIsLoading(true);
     try {
-      // Fetch PM Department
       const { data: pmData, error: pmError } = await supabase
         .from('users')
         .select('department_name')
@@ -198,7 +198,6 @@ function ProgramManagerDashboard() {
       const departmentName = pmData.department_name;
       setPmDepartmentName(departmentName);
 
-      // Fetch Teachers in Dept
       const { data: teachersData, error: teachersError } = await supabase
         .from('users')
         .select('id, first_name, last_name, email, created_at')
@@ -208,7 +207,6 @@ function ProgramManagerDashboard() {
       if (teachersError) throw teachersError;
       setTeachers(teachersData || []);
 
-      // Fetch Students in Dept
       const { data: studentsData, error: studentsError } = await supabase
         .from('users')
         .select('id, first_name, last_name, email, created_at, active')
@@ -218,7 +216,6 @@ function ProgramManagerDashboard() {
       if (studentsError) throw studentsError;
       setStudents(studentsData || []);
 
-      // Fetch Pending Student Approvals (for PM's dept)
       const { data: pending, error: pendingError } = await supabase
           .from('users')
           .select('*')
@@ -229,7 +226,6 @@ function ProgramManagerDashboard() {
       if (pendingError) throw pendingError;
       setPendingUsers(pending || []);
 
-      // Fetch Activity Log (Global)
       const { data: logs, error: logError } = await supabase
         .from('notifications')
         .select('*')
@@ -238,7 +234,6 @@ function ProgramManagerDashboard() {
       if (logError) throw logError;
       setActivityLog(logs || []);
 
-      // Fetch All Courses
       const { data: allCoursesData, error: allCoursesError } = await supabase
         .from('courses')
         .select('id, code, name, description, credit_hours')
@@ -249,7 +244,6 @@ function ProgramManagerDashboard() {
       }
       setAllCourses(allCoursesData || []);
 
-      // Fetch Department Specific Course Details
       try {
         setIsFetchingCourses(true);
         const teacherIds = teachersData.map(t => t.id);
@@ -323,98 +317,75 @@ function ProgramManagerDashboard() {
   }, [user, toast]);
 
   useEffect(() => {
-    // Call fetchPmData when user changes
     fetchPmData();
-
-    // Cleanup function (if needed)
-    return () => {};
-  }, [fetchPmData]); // Now fetchPmData is a dependency
+  }, [fetchPmData]); 
   
   const handleCreateTeacher = async (e) => {
     e.preventDefault();
 
-    // --- 1. Validation (Similar to HOD Portal) ---
     if (!newTeacher.firstName || !newTeacher.lastName || !newTeacher.email || !newTeacher.password) {
       toast({ title: 'Missing Fields', description: 'Please fill all required fields.', status: 'warning', duration: 3000 }); return;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email regex
+    const emailRegex = /^[\S]+@[\S]+\.[\S]+$/;
     if (!emailRegex.test(newTeacher.email)) {
       toast({ title: 'Invalid Email', description: 'Please enter a valid email.', status: 'error', duration: 3000 }); return;
     }
     if (newTeacher.password.length < 6) {
       toast({ title: 'Weak Password', description: 'Password must be at least 6 characters.', status: 'warning', duration: 3000 }); return;
     }
-    if (!pmDepartmentName) { // Ensure PM's department is known
+    if (!pmDepartmentName) {
       toast({ title: 'Error', description: 'Cannot identify Program Manager Department.', status: 'error', duration: 5000 }); return;
     }
 
-    // --- 2. Set Loading State ---
     setIsCreatingTeacher(true);
-    console.log("[handleCreateTeacher] Attempting creation...");
-
     try {
-        // --- 3. Create user in Supabase Auth ---
-        console.log("[handleCreateTeacher] Calling supabase.auth.signUp for:", newTeacher.email);
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: newTeacher.email.trim(),
             password: newTeacher.password,
             options: {
-                data: { // Metadata stored in auth.users table (raw_user_meta_data)
+                data: {
                     first_name: newTeacher.firstName.trim(),
                     last_name: newTeacher.lastName.trim(),
-                    role: "teacher", // Set the role in metadata
+                    role: "teacher",
                 },
             },
         });
 
-        // --- 4. Handle Auth Error ---
         if (authError) {
-            console.error("[handleCreateTeacher] Auth Error:", authError);
              if (authError.message.includes("User already registered")) {
                 toast({ title: "User Exists", description: "This email is already registered.", status: "error" });
              } else {
                 toast({ title: "Auth Error", description: authError.message, status: "error", duration: 5000 });
              }
-            throw authError; // Stop execution if auth fails
+            throw authError;
         }
 
-        // --- 5. Check for User ID from Auth ---
         if (!authData?.user?.id) {
             const errMsg = "Auth creation succeeded but no user ID returned.";
-            console.error("[handleCreateTeacher]", errMsg, authData);
             toast({ title: "User Creation Failed", description: errMsg, status: "error", duration: 5000 });
-            throw new Error(errMsg); // Stop execution
+            throw new Error(errMsg);
         }
 
         const createdAuthUserId = authData.user.id;
-        console.log(`[handleCreateTeacher] Auth user created: ${createdAuthUserId}`);
-
-        // --- 6. Create user profile in public.users table ---
         const profileData = {
-            user_id: createdAuthUserId, // Link using the ID from auth step
-            email: newTeacher.email.trim(), // Ensure email consistency
+            user_id: createdAuthUserId,
+            email: newTeacher.email.trim(),
             first_name: newTeacher.firstName.trim(),
             last_name: newTeacher.lastName.trim(),
-            role: "teacher", // Set role in the users table
-            department_name: pmDepartmentName, // Assign PM's department
-            active: true // Teachers created by PM are active
+            role: "teacher",
+            department_name: pmDepartmentName,
+            active: true
         };
-        console.log("[handleCreateTeacher] Inserting profile into public.users:", profileData);
 
-        const { data: userProfileData, error: userProfileError } = await supabase
+        const { error: userProfileError } = await supabase
             .from("users")
             .insert(profileData);
 
-        // --- 7. Handle Profile Insert Error ---
         if (userProfileError) {
-            console.error("[handleCreateTeacher] Profile Insert Error:", userProfileError);
             toast({ title: "Profile Creation Error", description: userProfileError.message, status: "error", duration: 5000 });
-           
             throw userProfileError; 
         }
 
-        // --- 8. Success ---
-        console.log("[handleCreateTeacher] Teacher profile created successfully.");
         toast({
             title: "Teacher Created",
             description: `${newTeacher.firstName} ${newTeacher.lastName} added to ${pmDepartmentName}.`,
@@ -422,20 +393,14 @@ function ProgramManagerDashboard() {
             duration: 5000,
         });
 
-        // --- 9. Reset Form, Close Modal, Refresh Data ---
-        setNewTeacher({ firstName: "", lastName: "", email: "", password: "" }); // Reset form
-        onAddTeacherModalClose(); // Close the specific modal
+        setNewTeacher({ firstName: "", lastName: "", email: "", password: "" });
+        onAddTeacherModalClose();
         fetchPmData(); 
 
     } catch (error) {
-        // Catch errors from any step above
         console.error("Error during handleCreateTeacher:", error);
-        // Toast is likely already shown for specific errors, but a general one can be added if needed.
-        // toast({ title: "Failed to Create Teacher", description: error.message, status: "error", duration: 5000 });
     } finally {
-        // --- 10. ALWAYS Reset Loading State ---
-        console.log("[handleCreateTeacher] Operation finished, resetting loading state.");
-        setIsCreatingTeacher(false); // Ensure loading is turned off
+        setIsCreatingTeacher(false);
     }
   };
   
@@ -464,16 +429,16 @@ function ProgramManagerDashboard() {
             .single();
 
         if (error) {
-            if (error.code === '23505') { // Handle unique constraint violation
+            if (error.code === '23505') {
                  toast({ title: 'Course Code Exists', description: `A course with code ${newCourse.code.toUpperCase().trim()} already exists.`, status: 'error' });
             } else {
                 throw error;
             }
         } else {
             toast({ title: 'Course Created', description: `Course ${data.code} - ${data.name} added successfully.`, status: 'success' });
-            setNewCourse({ code: '', name: '', description: '', credit_hours: 3 }); // Reset form
-            onAddCourseModalClose(); // Close modal
-            fetchPmData(); // Refresh data including courses after creation
+            setNewCourse({ code: '', name: '', description: '', credit_hours: 3 });
+            onAddCourseModalClose();
+            fetchPmData();
         }
     } catch (error) {
         console.error("Error creating course:", error);
@@ -503,36 +468,32 @@ function ProgramManagerDashboard() {
         toastStatus = 'success';
         toastTitle = 'User Approved';
       } else if (actionType === 'reject') {
-        // First, try to delete the auth user (requires admin or service role)
-        // This might fail if run from client-side without proper setup.
-        // Consider moving this to a secure backend function if needed.
+        // IMPORTANT: See note at the bottom of the file about this section.
+        // This client-side admin call will likely fail.
         try {
             const { error: authDeleteError } = await supabase.auth.admin.deleteUser(selectedUserForAction.user_id);
-            if (authDeleteError && authDeleteError.message !== 'User not found') { // Ignore if auth user already gone
-                console.warn("Could not delete auth user:", authDeleteError.message);
-                // Don't block profile deletion if auth deletion fails, just warn
+            if (authDeleteError && authDeleteError.message !== 'User not found') {
+                console.warn("Could not delete auth user (expected on client-side):", authDeleteError.message);
+                toast({ title: 'Partial Deletion', description: 'Profile removed, but auth user may remain. Please contact admin.', status: 'warning', duration: 7000});
             }
         } catch (adminError) {
              console.warn("Admin action (delete auth user) failed:", adminError.message);
         }
 
-        // Then delete the profile from users table
         const { error: profileDeleteError } = await supabase.from('users').delete().eq('id', selectedUserForAction.id);
         if (profileDeleteError) throw profileDeleteError;
 
-        notificationMessage = `Rejected and removed ${selectedUserForAction.first_name}.`;
+        notificationMessage = `Rejected and removed profile for ${selectedUserForAction.first_name}.`;
         toastStatus = 'warning';
-        toastTitle = 'User Rejected & Removed';
+        toastTitle = 'User Rejected & Profile Removed';
       }
-      // Log the action
+      
       await supabase.from('notifications').insert({ notification: notificationMessage });
 
       toast({ title: toastTitle, description: notificationMessage, status: toastStatus });
 
-      // Update local state immediately for UI responsiveness
       setPendingUsers(prev => prev.filter(u => u.id !== selectedUserForAction.id));
       if (actionType === 'approve') {
-          // Optionally, re-fetch all data if the approved student should appear in the main list immediately
           fetchPmData();
       }
     } catch (error) {
@@ -547,13 +508,11 @@ function ProgramManagerDashboard() {
     }
   };
 
-  // --- Function to open Assign Course Modal (Copied from HOD, uses PM context) --- 
   const openAssignCourseModal = async (teacher) => {
     setSelectedTeacherForAssignment(teacher);
-    setCoursesToAssign([]); // Reset selection
-    setTeacherAssignedCourses([]); // Reset assigned courses
+    setCoursesToAssign([]);
+    setTeacherAssignedCourses([]);
     
-    // Fetch courses already assigned to this teacher
     try {
         const { data, error } = await supabase
             .from('teacher_courses')
@@ -561,7 +520,7 @@ function ProgramManagerDashboard() {
             .eq('teacher_id', teacher.id);
             
         if (error) throw error;
-        setTeacherAssignedCourses(data.map(item => item.course_id)); // Store just the IDs
+        setTeacherAssignedCourses(data.map(item => item.course_id));
     } catch (error) {
         console.error("Error fetching assigned courses:", error);
         toast({ title: 'Error', description: 'Could not fetch currently assigned courses.', status: 'error' });
@@ -570,7 +529,6 @@ function ProgramManagerDashboard() {
     onAssignCourseModalOpen();
   };
   
-  // --- Function to handle saving course assignments (Copied from HOD) ---
   const handleAssignCourses = async () => {
     if (!selectedTeacherForAssignment || coursesToAssign.length === 0) {
         toast({ title: 'Error', description: 'No teacher or courses selected.', status: 'warning'});
@@ -584,7 +542,6 @@ function ProgramManagerDashboard() {
     }));
     
     try {
-        // Upsert allows inserting new or ignoring if composite key (teacher_id, course_id) exists
         const { error } = await supabase
             .from('teacher_courses')
             .upsert(assignments, { onConflict: 'teacher_id, course_id', ignoreDuplicates: true }); 
@@ -593,7 +550,7 @@ function ProgramManagerDashboard() {
         
         toast({ title: 'Courses Assigned', description: `Successfully assigned ${assignments.length} course(s) to ${selectedTeacherForAssignment.first_name}.`, status: 'success'});
         onAssignCourseModalClose();
-        fetchPmData(); // Refresh data to update course view
+        fetchPmData();
     } catch (error) {
         console.error("Error assigning courses:", error);
         toast({ title: 'Assignment Failed', description: error.message, status: 'error'});
@@ -605,77 +562,46 @@ function ProgramManagerDashboard() {
     }
   };
 
-  // --- Function to handle submitting training data ---
-  const handleTrainAISubmit = async () => {
-    if (!trainingText.trim()) {
-      toast({ title: 'No Text Provided', description: 'Please enter some text to train the AI.', status: 'warning' });
-      return;
-    }
-    if (!currentUserContext?.token) {
-      toast({ title: 'Authentication Error', description: 'User context not available. Cannot submit training data.', status: 'error' });
+  const handleEmbedText = async () => {
+    if (!aiTrainingText.trim()) {
+      toast({ title: 'Empty Text', description: 'Text cannot be empty.', status: 'warning', duration: 3000 });
       return;
     }
 
-    setIsSubmittingTraining(true);
+    setIsEmbeddingText(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/train-custom-data`, {
+      // Make API call to your backend server to embed and save the text
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/embed-text`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${currentUserContext.token}`,
+          'Authorization': `Bearer ${session.access_token}` // Pass token if authentication is needed on backend
         },
-        body: JSON.stringify({
-          text: trainingText,
-          userContext: { // Pass user context, especially department for sourcing/logging
-            department_name: currentUserContext.departmentName,
-            userId: currentUserContext.userId,
-            role: currentUserContext.role
-          }
-        }),
+        body: JSON.stringify({ text: aiTrainingText })
       });
 
-      const resultText = await response.text(); // Get response as text first
+      const result = await response.json();
 
       if (!response.ok) {
-        // Try to parse as JSON if possible, otherwise use the text
-        let errorMessage = resultText;
-        try {
-          const errorJson = JSON.parse(resultText);
-          errorMessage = errorJson.message || resultText;
-        } catch (e) {
-          // Not JSON, use the raw text
-        }
-        throw new Error(errorMessage || `Server responded with ${response.status}`);
+        throw new Error(result.error || 'Failed to embed text on server.');
       }
 
-      // If response.ok, try to parse as JSON
-      let result;
-      try {
-        result = JSON.parse(resultText);
-      } catch (e) {
-        // This might happen if server sends non-JSON even on success, though unlikely for this endpoint
-        console.warn("Server sent non-JSON success response:", resultText);
-        throw new Error("Received an unexpected response format from the server.");
-      }
+      toast({ title: 'Text Embedding Successful', description: result.message || 'Text has been successfully embedded and stored.', status: 'success', duration: 5000 });
+      setAiTrainingText('');
 
-      toast({ title: 'Training Data Submitted', description: result.message || 'Data sent for embedding.', status: 'success' });
-      setTrainingText(''); // Clear textarea after successful submission
     } catch (error) {
-      console.error("Error submitting training data:", error);
-      toast({ title: 'Submission Failed', description: error.message, status: 'error' });
+      console.error("Error embedding text:", error);
+      toast({ title: 'Error Embedding Text', description: error.message, status: 'error', duration: 5000 });
     } finally {
-      setIsSubmittingTraining(false);
+      setIsEmbeddingText(false);
     }
   };
 
-  // Menu items for the sidebar
   const menuItems = [
     { label: 'Dashboard', icon: FaUserTie, path: '/pm-dashboard' },
-    { label: 'AI Assistant', icon: FaRobot, path: '/pm-dashboard#ai-assistant'},
-    { label: 'Train AI', icon: FaBrain, path: '/pm-dashboard#train-ai'},
+    { label: 'Database Assistant', icon: FaBrain, path: '/pm-dashboard#db-assistant'},
   ];
   
-  // --- Calculate Stats ---
   const calculatedStats = useMemo(() => ({
     totalTeachers: teachers.length,
     totalStudents: students.length,
@@ -698,7 +624,6 @@ function ProgramManagerDashboard() {
       roleColor="blue"
     >
       <Stack spacing={6}>
-        {/* Header Row with Buttons */}
          <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
              <Heading size="lg">Department Overview</Heading>
              <HStack>
@@ -723,14 +648,12 @@ function ProgramManagerDashboard() {
              </HStack>
          </Flex>
 
-        {/* Stats Cards */}
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
-          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Teachers</StatLabel><StatNumber>{calculatedStats.totalTeachers}</StatNumber><StatHelpText>In {pmDepartmentName || 'Dept.'}</StatHelpText></Stat></CardBody></Card>
-          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Students</StatLabel><StatNumber>{calculatedStats.totalStudents}</StatNumber><StatHelpText>In {pmDepartmentName || 'Dept.'}</StatHelpText></Stat></CardBody></Card>
-          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Pending Approvals</StatLabel><StatNumber>{calculatedStats.pendingApprovals}</StatNumber><StatHelpText>Dept. Students Waiting</StatHelpText></Stat></CardBody></Card>
+          <Card bg={cardBg} boxShadow="md" borderRadius="lg"><CardBody><Stat><StatLabel>Teachers</StatLabel><StatNumber>{calculatedStats.totalTeachers}</StatNumber><StatHelpText>In {pmDepartmentName || 'Dept.'}</StatHelpText></Stat></CardBody></Card>
+          <Card bg={cardBg} boxShadow="md" borderRadius="lg"><CardBody><Stat><StatLabel>Students</StatLabel><StatNumber>{calculatedStats.totalStudents}</StatNumber><StatHelpText>In {pmDepartmentName || 'Dept.'}</StatHelpText></Stat></CardBody></Card>
+          <Card bg={cardBg} boxShadow="md" borderRadius="lg"><CardBody><Stat><StatLabel>Pending Approvals</StatLabel><StatNumber>{calculatedStats.pendingApprovals}</StatNumber><StatHelpText>Dept. Students Waiting</StatHelpText></Stat></CardBody></Card>
         </SimpleGrid>
         
-        {/* Main Content Tabs */}
         <Tabs colorScheme="blue" variant="enclosed" isLazy>
         <TabList>
             <Tab><ChakraIcon as={FaUserGraduate} mr={2}/>Students</Tab>
@@ -738,41 +661,39 @@ function ProgramManagerDashboard() {
             <Tab><ChakraIcon as={FaCheck} mr={2}/>Student Approvals <Badge ml={1} colorScheme={calculatedStats.pendingApprovals > 0 ? 'red' : 'green'}>{calculatedStats.pendingApprovals}</Badge></Tab>
             <Tab><ChakraIcon as={FaBook} mr={2}/>Courses</Tab>
             <Tab><ChakraIcon as={FaEye} mr={2}/>Course View</Tab>
+            <Tab><ChakraIcon as={FaBrain} mr={2}/>DB Assistant</Tab>
             <Tab><ChakraIcon as={FaListAlt} mr={2}/>Activity Log</Tab>
-            <Tab><ChakraIcon as={FaRobot} mr={2}/>AI Assistant</Tab>
-            <Tab><ChakraIcon as={FaBrain} mr={2}/>Train AI</Tab>
+            <Tab><ChakraIcon as={FaRobot} mr={2}/>Train AI</Tab>
         </TabList>
         
         <TabPanels>
-            {/* Students Tab Panel */}
             <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md">
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}><Heading size="md">Students in {pmDepartmentName || 'Department'}</Heading></CardHeader>
                 <CardBody>
                    {students.length > 0 ? (
                       <Box overflowX="auto">
                           <Table variant="simple" size="sm">
                               <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Status</Th><Th>Joined</Th></Tr></Thead>
-              <Tbody>
-                                {students.map(student => ( <Tr key={student.id}> <Td>{student.first_name} {student.last_name}</Td> <Td>{student.email}</Td> <Td><Badge colorScheme={student.active ? 'green' : 'yellow'}>{student.active ? 'Active' : 'Pending'}</Badge></Td> <Td>{new Date(student.created_at).toLocaleDateString()}</Td> </Tr> ))}
-              </Tbody>
-            </Table>
+                              <Tbody>
+                                {students.map(student => ( <Tr key={student.id}> <Td>{student.first_name} {student.last_name}</Td> <Td>{student.email}</Td> <Td><Badge colorScheme={student.active ? 'green' : 'yellow'} borderRadius="md">{student.active ? 'Active' : 'Pending'}</Badge></Td> <Td>{new Date(student.created_at).toLocaleDateString()}</Td> </Tr> ))}
+                              </Tbody>
+                           </Table>
                       </Box>
                    ) : (<Text>No students found in this department.</Text>)}
                 </CardBody>
               </Card>
           </TabPanel>
           
-            {/* Teachers Tab Panel */}
             <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md">
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}>
                   <Flex justify="space-between" align="center">
                     <Heading size="md">Teachers in {pmDepartmentName || 'Department'}</Heading>
-                    <Button colorScheme="blue" size="sm" leftIcon={<FaUserPlus />} onClick={onAddTeacherModalOpen}>
-                Add Teacher
-              </Button>
-            </Flex>
+                    <Button colorScheme="blue" size="sm" leftIcon={<FaUserPlus />} onClick={onAddTeacherModalOpen} borderRadius="md">
+                      Add Teacher
+                    </Button>
+                  </Flex>
                 </CardHeader>
                 <CardBody>
                     {teachers.length > 0 ? (
@@ -786,17 +707,18 @@ function ProgramManagerDashboard() {
                                          <Td>{teacher.email}</Td> 
                                          <Td>{new Date(teacher.created_at).toLocaleDateString()}</Td>
                                          <Td>
-              <Button 
+                                            <Button 
                                                 size="xs" 
                                                 colorScheme="teal"
                                                 variant="outline"
                                                 leftIcon={<FaLink />} 
                                                 onClick={() => openAssignCourseModal(teacher)}
+                                                borderRadius="md"
                                             >
                                                 Assign Course
-              </Button>
+                                            </Button>
                                          </Td>
-                </Tr>
+                                     </Tr>
                                  ))}
                                </Tbody>
                            </Table>
@@ -806,16 +728,15 @@ function ProgramManagerDashboard() {
               </Card>
             </TabPanel>
 
-            {/* Student Approvals Tab Panel */}
             <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md">
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}><Heading size="md">Pending Student Signup Requests ({pmDepartmentName || 'Department'})</Heading></CardHeader>
                 <CardBody>
                     {pendingUsers.length === 0 ? (<Text>No pending student signups for this department.</Text>) : (
                      <Box overflowX="auto">
                          <Table variant="simple" size="sm">
                             <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Department</Th><Th>Signup Date</Th><Th>Actions</Th></Tr></Thead>
-              <Tbody>
+                            <Tbody>
                                 {pendingUsers.map(pUser => (
                                 <Tr key={pUser.id}>
                                     <Td>{pUser.first_name} {pUser.last_name}</Td>
@@ -824,35 +745,35 @@ function ProgramManagerDashboard() {
                                     <Td>{new Date(pUser.created_at).toLocaleDateString()}</Td>
                                     <Td>
                                         <HStack spacing={2}>
-                                            <Button size="xs" colorScheme="green" leftIcon={<FaCheck />} onClick={() => openActionDialog(pUser, 'approve')} isLoading={isActionLoading && selectedUserForAction?.id === pUser.id && actionType === 'approve'}>Approve</Button>
-                                            <Button size="xs" colorScheme="red" leftIcon={<FaTimes />} onClick={() => openActionDialog(pUser, 'reject')} isLoading={isActionLoading && selectedUserForAction?.id === pUser.id && actionType === 'reject'}>Reject</Button>
+                                            <Button size="xs" colorScheme="green" leftIcon={<FaCheck />} onClick={() => openActionDialog(pUser, 'approve')} isLoading={isActionLoading && selectedUserForAction?.id === pUser.id && actionType === 'approve'} borderRadius="md">Approve</Button>
+                                            <Button size="xs" colorScheme="red" leftIcon={<FaTimes />} onClick={() => openActionDialog(pUser, 'reject')} isLoading={isActionLoading && selectedUserForAction?.id === pUser.id && actionType === 'reject'} borderRadius="md">Reject</Button>
                                         </HStack>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
+                                    </Td>
+                                  </Tr>
+                                ))}
+                            </Tbody>
+                         </Table>
                      </Box>
                     )}
                 </CardBody>
               </Card>
-          </TabPanel>
+            </TabPanel>
           
-            {/* --- Courses Tab Panel (Modified) --- */}
             <TabPanel px={0}>
-               <Card bg={cardBg} boxShadow="md">
+               <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                  <CardHeader bg={headerBg} py={3}>
                     <Flex justify="space-between" align="center">
                        <Heading size="md">Manage Courses</Heading>
-              <Button 
-                colorScheme="green" 
+                        <Button 
+                          colorScheme="green" 
                           size="sm"
                           leftIcon={<FaPlus />}
                           onClick={onAddCourseModalOpen}
-              >
+                          borderRadius="md"
+                        >
                           Add New Course
-              </Button>
-            </Flex>
+                        </Button>
+                    </Flex>
                  </CardHeader>
                  <CardBody>
                      <Heading size="sm" mb={3} fontWeight="medium">Existing Courses (System-wide)</Heading>
@@ -863,35 +784,33 @@ function ProgramManagerDashboard() {
                      ) : (
                          <Box overflowX="auto">
                              <Table variant="simple" size="sm">
-              <Thead>
-                <Tr>
-                                         <Th>Code</Th>
-                  <Th>Name</Th>
-                                         <Th>Credits</Th>
-                                         <Th>Description</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
+                                <Thead>
+                                  <Tr>
+                                    <Th>Code</Th>
+                                    <Th>Name</Th>
+                                    <Th>Credits</Th>
+                                    <Th>Description</Th>
+                                  </Tr>
+                                </Thead>
+                                <Tbody>
                                      {allCourses.map((course) => (
                                          <Tr key={course.id}>
                                              <Td fontWeight="bold">{course.code}</Td>
                                              <Td>{course.name}</Td>
                                              <Td textAlign="center">{course.credit_hours}</Td>
                                              <Td whiteSpace="normal" maxW="300px" overflow="hidden" textOverflow="ellipsis">{course.description || <Text as="i" color="gray.500">N/A</Text>}</Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
+                                          </Tr>
+                                        ))}
+                                </Tbody>
+                            </Table>
                          </Box>
                      )}
                  </CardBody>
                </Card>
-          </TabPanel>
-            {/* --- End Courses Tab Panel --- */}
+            </TabPanel>
 
-            {/* --- Department Course View Tab Panel (Added) --- */}
             <TabPanel px={0}>
-               <Card bg={cardBg} boxShadow="md">
+               <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                  <CardHeader bg={headerBg} py={3}><Heading size="md">Department Course Offerings</Heading></CardHeader>
                   <CardBody>
                    {isFetchingCourses ? (
@@ -903,7 +822,7 @@ function ProgramManagerDashboard() {
                        {departmentCourseDetails.map((course) => (
                          <AccordionItem key={course.id}>
                            <h2>
-                             <AccordionButton _expanded={{ bg: headerBg, color: 'inherit' }}>
+                             <AccordionButton _expanded={{ bg: headerBg, color: 'inherit' }} borderRadius="md">
                                <Box flex='1' textAlign='left' fontWeight="medium">
                                  {course.code} - {course.name} ({course.credit_hours} Credits)
                                </Box>
@@ -950,61 +869,38 @@ function ProgramManagerDashboard() {
                     )}
                   </CardBody>
                 </Card>
-          </TabPanel>
-            {/* --- End Department Course View Tab Panel --- */}
+            </TabPanel>
 
-            {/* --- Train AI Tab Panel (New) --- */}
             <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md">
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}>
                   <Heading size="md">
                     <Flex align="center">
-                      <ChakraIcon as={FaBrain} mr={2}/> Custom AI Training Data
+                      <ChakraIcon as={FaBrain} mr={2}/> Department Database Assistant
                     </Flex>
                   </Heading>
                 </CardHeader>
                 <CardBody>
-                  <VStack spacing={4} align="stretch">
-                    <Text>
-                      Enter text data below to train the AI. This data will be embedded and stored
-                      to improve the AI's knowledge base, particularly for department-specific information.
-                    </Text>
-                    <FormControl>
-                      <FormLabel htmlFor="training-text">Training Text:</FormLabel>
-                      <Textarea
-                        id="training-text"
-                        value={trainingText}
-                        onChange={(e) => setTrainingText(e.target.value)}
-                        placeholder="Paste or type your training data here. For example, details about new departmental policies, specific course information not found elsewhere, common queries and their standard answers, etc."
-                        rows={10}
-                        borderColor={borderColor}
-                        focusBorderColor={borderColor}
-                      />
-                    </FormControl>
-                    <Button
-                      colorScheme="blue"
-                      isLoading={isSubmittingTraining}
-                      onClick={handleTrainAISubmit}
-                      isDisabled={!trainingText.trim()}
-                      leftIcon={<FaPlus />}
-                    >
-                      Submit Training Data
-                    </Button>
-                  </VStack>
+                  {currentUserContext ? (
+                    <DatabaseChatbot currentUserContext={currentUserContext} />
+                  ) : (
+                    <Flex justify="center" align="center" h="200px">
+                      <Spinner size="xl" mr={3}/> 
+                      <Text>Loading user context for Database Assistant...</Text>
+                    </Flex>
+                  )}
                 </CardBody>
               </Card>
             </TabPanel>
-            {/* --- End Train AI Tab Panel --- */}
 
-            {/* Activity Log Tab Panel */}
             <TabPanel px={0}>
-               <Card bg={cardBg} boxShadow="md">
+               <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                  <CardHeader bg={headerBg} py={3}><Heading size="md">Recent Activity Log</Heading></CardHeader>
                  <CardBody>
                     {activityLog.length === 0 ? (<Text>No recent activity.</Text>) : (
                     <VStack spacing={3} align="stretch">
                         {activityLog.map(log => (
-                        <Card key={log.id} size="sm" variant="outline">
+                        <Card key={log.id} size="sm" variant="outline" borderRadius="md">
                             <CardBody><Flex justify="space-between" wrap="wrap"><Text fontSize="sm" mr={2}>{log.notification}</Text><Text fontSize="xs" color="gray.500" whiteSpace="nowrap">{new Date(log.created_at).toLocaleString()}</Text></Flex></CardBody>
                         </Card>
                         ))}
@@ -1014,25 +910,46 @@ function ProgramManagerDashboard() {
                </Card>
             </TabPanel>
 
-            {/* AI Assistant Tab Panel - New */}
             <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md">
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}>
                   <Heading size="md">
                     <Flex align="center">
-                      <ChakraIcon as={FaRobot} mr={2}/> Department AI Assistant
+                      <ChakraIcon as={FaRobot} mr={2}/> Train RAG Assistant
                     </Flex>
                   </Heading>
                 </CardHeader>
                 <CardBody>
-                  {currentUserContext ? (
-                    <EnhancedChatbot currentUserContext={currentUserContext} inputText={undefined} />
-                  ) : (
-                    <Flex justify="center" align="center" h="200px">
-                      <Spinner size="xl" mr={3}/> 
-                      <Text>Loading user context for AI Assistant...</Text>
-                    </Flex>
-                  )}
+                  <VStack spacing={4} align="stretch">
+                    <Text fontSize="md">
+                      Enter text below to train the RAG assistant. This will create an embedding of the text and store it in the `documents` table, making it available for the AI to reference in future queries.
+                    </Text>
+                    <FormControl>
+                      <FormLabel htmlFor="ai-training-text">Training Data Text</FormLabel>
+                      <Textarea
+                        id="ai-training-text"
+                        placeholder="Type or paste your training data here..."
+                        value={aiTrainingText}
+                        onChange={(e) => setAiTrainingText(e.target.value)}
+                        size="md"
+                        rows={10}
+                        borderRadius="md"
+                      />
+                    </FormControl>
+                    <Button
+                      colorScheme="purple"
+                      leftIcon={<FaSave />}
+                      onClick={handleEmbedText}
+                      isLoading={isEmbeddingText}
+                      isDisabled={!aiTrainingText.trim()}
+                      borderRadius="md"
+                    >
+                      Embed and Save Text
+                    </Button>
+                    <Text fontSize="sm" color="gray.500">
+                      Note: Large texts will be chunked automatically. Ensure text is relevant university information.
+                    </Text>
+                  </VStack>
                 </CardBody>
               </Card>
             </TabPanel>
@@ -1043,97 +960,109 @@ function ProgramManagerDashboard() {
 
       {/* Modals & Dialogs */}
       
-      {/* Add Teacher Modal */}
       <Modal isOpen={isAddTeacherModalOpen} onClose={onAddTeacherModalClose} isCentered>
         <ModalOverlay />
-        <ModalContent as="form" onSubmit={handleCreateTeacher}>
+        <ModalContent as="form" onSubmit={handleCreateTeacher} borderRadius="lg">
            <ModalHeader>Add New Teacher Account</ModalHeader>
           <ModalCloseButton />
            <ModalBody pb={6}>
               <VStack spacing={4}>
-                 <FormControl isRequired><FormLabel>First Name</FormLabel><Input placeholder='First Name' value={newTeacher.firstName} onChange={(e) => setNewTeacher({...newTeacher, firstName: e.target.value})} /></FormControl>
-                 <FormControl isRequired><FormLabel>Last Name</FormLabel><Input placeholder='Last Name' value={newTeacher.lastName} onChange={(e) => setNewTeacher({...newTeacher, lastName: e.target.value})} /></FormControl>
-                 <FormControl isRequired><FormLabel>Email Address</FormLabel><Input type='email' placeholder='teacher@example.com' value={newTeacher.email} onChange={(e) => setNewTeacher({...newTeacher, email: e.target.value})} /></FormControl>
-                 <FormControl isRequired><FormLabel>Password</FormLabel><InputGroup size='md'><Input pr='4.5rem' type={showPassword ? 'text' : 'password'} placeholder='Enter password' value={newTeacher.password} onChange={(e) => setNewTeacher({...newTeacher, password: e.target.value})}/><InputRightElement width='4.5rem'><Button h='1.75rem' size='sm' onClick={() => setShowPassword(!showPassword)}>{showPassword ? <FaEyeSlash/> : <FaEye/>}</Button></InputRightElement></InputGroup><Text fontSize="xs" color="gray.500" mt={1}>Min. 6 characters.</Text></FormControl>
-                 <FormControl isReadOnly><FormLabel>Department</FormLabel><Input value={pmDepartmentName} isDisabled /></FormControl>
+                 <FormControl isRequired><FormLabel>First Name</FormLabel><Input placeholder='First Name' value={newTeacher.firstName} onChange={(e) => setNewTeacher({...newTeacher, firstName: e.target.value})} borderRadius="md"/></FormControl>
+                 <FormControl isRequired><FormLabel>Last Name</FormLabel><Input placeholder='Last Name' value={newTeacher.lastName} onChange={(e) => setNewTeacher({...newTeacher, lastName: e.target.value})} borderRadius="md"/></FormControl>
+                 <FormControl isRequired><FormLabel>Email Address</FormLabel><Input type='email' placeholder='teacher@example.com' value={newTeacher.email} onChange={(e) => setNewTeacher({...newTeacher, email: e.target.value})} borderRadius="md"/></FormControl>
+                 <FormControl isRequired>
+                    <FormLabel>Password</FormLabel>
+                    <InputGroup size='md'>
+                        <Input pr='4.5rem' type={showPassword ? 'text' : 'password'} placeholder='Enter password' value={newTeacher.password} onChange={(e) => setNewTeacher({...newTeacher, password: e.target.value})} borderRadius="md"/>
+                        <InputRightElement width='4.5rem'>
+                            <Button h='1.75rem' size='sm' onClick={() => setShowPassword(!showPassword)} borderRadius="md">
+                                {showPassword ? <FaEyeSlash/> : <FaEye/>}
+                            </Button>
+                        </InputRightElement>
+                    </InputGroup>
+                    <Text fontSize="xs" color="gray.500" mt={1}>Min. 6 characters.</Text>
+                </FormControl>
+                 <FormControl isReadOnly><FormLabel>Department</FormLabel><Input value={pmDepartmentName} isDisabled borderRadius="md"/></FormControl>
               </VStack>
           </ModalBody>
           <ModalFooter>
-              <Button onClick={onAddTeacherModalClose} mr={3} variant="ghost">Cancel</Button>
-              <Button colorScheme='blue' type="submit" isLoading={isCreatingTeacher} leftIcon={<FaUserPlus/>}>Create Teacher</Button>
+              <Button onClick={onAddTeacherModalClose} mr={3} variant="ghost" borderRadius="md">Cancel</Button>
+              <Button colorScheme='blue' type="submit" isLoading={isCreatingTeacher} leftIcon={<FaUserPlus/>} borderRadius="md">Create Teacher</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-      {/* Add Course Modal */}
       <Modal isOpen={isAddCourseModalOpen} onClose={onAddCourseModalClose} isCentered>
           <ModalOverlay />
-          <ModalContent as="form" onSubmit={handleCreateCourse}>
+          <ModalContent as="form" onSubmit={handleCreateCourse} borderRadius="lg">
             <ModalHeader>Add New Course</ModalHeader>
             <ModalCloseButton />
             <ModalBody pb={6}>
               <VStack spacing={4}>
-                  <FormControl isRequired><FormLabel>Course Code</FormLabel><Input placeholder='e.g., CS101' value={newCourse.code} onChange={(e) => setNewCourse({...newCourse, code: e.target.value})} /></FormControl>
-                  <FormControl isRequired><FormLabel>Course Name</FormLabel><Input placeholder='e.g., Introduction to Computing' value={newCourse.name} onChange={(e) => setNewCourse({...newCourse, name: e.target.value})} /></FormControl>
+                  <FormControl isRequired><FormLabel>Course Code</FormLabel><Input placeholder='e.g., CS101' value={newCourse.code} onChange={(e) => setNewCourse({...newCourse, code: e.target.value})} borderRadius="md"/></FormControl>
+                  <FormControl isRequired><FormLabel>Course Name</FormLabel><Input placeholder='e.g., Introduction to Computing' value={newCourse.name} onChange={(e) => setNewCourse({...newCourse, name: e.target.value})} borderRadius="md"/></FormControl>
                   <FormControl>
                      <FormLabel>Description</FormLabel>
-              <Input 
+                     <Textarea 
                         placeholder="Optional: Brief description of the course"
                         value={newCourse.description}
                         onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-              />
-            </FormControl>
+                        borderRadius="md"
+                     />
+                  </FormControl>
                   <FormControl isRequired>
                      <FormLabel>Credit Hours</FormLabel>
-              <Input 
+                     <Input 
                         type="number"
                         min="1"
                         value={newCourse.credit_hours}
                         onChange={(e) => setNewCourse({ ...newCourse, credit_hours: e.target.value })}
-              />
-            </FormControl>
+                        borderRadius="md"
+                     />
+                  </FormControl>
               </VStack>
             </ModalBody>
             <ModalFooter>
-              <Button onClick={onAddCourseModalClose} mr={3} variant="ghost">Cancel</Button>
-              <Button colorScheme='green' type="submit" isLoading={isCreatingCourse} leftIcon={<FaPlus/>}>Create Course</Button>
+              <Button onClick={onAddCourseModalClose} mr={3} variant="ghost" borderRadius="md">Cancel</Button>
+              <Button colorScheme='green' type="submit" isLoading={isCreatingCourse} leftIcon={<FaPlus/>} borderRadius="md">Create Course</Button>
             </ModalFooter>
           </ModalContent>
       </Modal>
 
-      {/* Approve/Reject Confirmation Dialog */}
       <AlertDialog isOpen={isApprovalDialogOpen} leastDestructiveRef={cancelRef} onClose={onApprovalDialogClose}>
-        <AlertDialogOverlay><AlertDialogContent>
-           <AlertDialogHeader>
-             {actionType === 'approve' ? 'Confirm Approval' : actionType === 'reject' ? 'Confirm Rejection' : 'Confirm Action'}
-           </AlertDialogHeader>
-           <AlertDialogBody>
-              {actionType === 'approve'
-                ? `Approve signup for ${selectedUserForAction?.first_name || 'this user'}?`
-                : actionType === 'reject'
-                ? `Reject signup for ${selectedUserForAction?.first_name || 'this user'}? This deletes the user and their request.`
-                : 'Are you sure you want to proceed?'
-              }
-           </AlertDialogBody>
-           <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onApprovalDialogClose} isDisabled={isActionLoading}>Cancel</Button>
-              <Button
-                 colorScheme={actionType === 'approve' ? 'green' : 'red'}
-                 onClick={handleUserAction}
-                 ml={3}
-                 isLoading={isActionLoading}
-                 isDisabled={!actionType}
-               >
-                 {actionType === 'approve' ? 'Approve' : actionType === 'reject' ? 'Reject & Remove' : 'Confirm'}
-              </Button>
-           </AlertDialogFooter>
-        </AlertDialogContent></AlertDialogOverlay>
+        <AlertDialogOverlay>
+            <AlertDialogContent borderRadius="lg">
+                <AlertDialogHeader>
+                    {actionType === 'approve' ? 'Confirm Approval' : actionType === 'reject' ? 'Confirm Rejection' : 'Confirm Action'}
+                </AlertDialogHeader>
+                <AlertDialogBody>
+                    {actionType === 'approve'
+                    ? `Approve signup for ${selectedUserForAction?.first_name || 'this user'}?`
+                    : actionType === 'reject'
+                    ? `Reject signup for ${selectedUserForAction?.first_name || 'this user'}? This deletes the user's profile and attempts to remove their authentication account.`
+                    : 'Are you sure you want to proceed?'
+                    }
+                </AlertDialogBody>
+                <AlertDialogFooter>
+                    <Button ref={cancelRef} onClick={onApprovalDialogClose} isDisabled={isActionLoading} borderRadius="md">Cancel</Button>
+                    <Button
+                        colorScheme={actionType === 'approve' ? 'green' : 'red'}
+                        onClick={handleUserAction}
+                        ml={3}
+                        isLoading={isActionLoading}
+                        isDisabled={!actionType}
+                        borderRadius="md"
+                    >
+                        {actionType === 'approve' ? 'Approve' : actionType === 'reject' ? 'Reject & Remove' : 'Confirm'}
+                    </Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialogOverlay>
       </AlertDialog>
 
-      {/* --- Assign Course Modal (New - Copied from HOD) --- */}
       <Modal isOpen={isAssignCourseModalOpen} onClose={onAssignCourseModalClose} size="xl" scrollBehavior="inside">
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent borderRadius="lg">
           <ModalHeader>Assign Courses to {selectedTeacherForAssignment?.first_name} {selectedTeacherForAssignment?.last_name}</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
@@ -1152,8 +1081,9 @@ function ProgramManagerDashboard() {
                             key={course.id} 
                             value={course.id} 
                             isDisabled={isAlreadyAssigned}
+                            borderRadius="md"
                         >
-                            {course.code} - {course.name} {isAlreadyAssigned && <Badge ml={2} colorScheme="green">Assigned</Badge>}
+                            {course.code} - {course.name} {isAlreadyAssigned && <Badge ml={2} colorScheme="green" borderRadius="md">Assigned</Badge>}
                         </Checkbox>
                     );
                   })}
@@ -1164,13 +1094,14 @@ function ProgramManagerDashboard() {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onAssignCourseModalClose} mr={3} variant="ghost">Cancel</Button>
+            <Button onClick={onAssignCourseModalClose} mr={3} variant="ghost" borderRadius="md">Cancel</Button>
             <Button 
               colorScheme="teal"
               onClick={handleAssignCourses} 
               isLoading={isAssigningCourse}
               isDisabled={coursesToAssign.length === 0}
               leftIcon={<FaCheck/>}
+              borderRadius="md"
             >
               Save Assignments ({coursesToAssign.length})
             </Button>
@@ -1178,10 +1109,9 @@ function ProgramManagerDashboard() {
         </ModalContent>
       </Modal>
 
-      {/* Academic Calendar Modal */}
       <Modal isOpen={isCalendarOpen} onClose={onCalendarClose} size="3xl" scrollBehavior="inside">
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent borderRadius="lg">
           <ModalHeader>{academicCalendarData.title}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -1195,7 +1125,7 @@ function ProgramManagerDashboard() {
               <Box><Heading size="sm" mb={2}>Holidays</Heading><List spacing={1} fontSize="sm">{academicCalendarData.holidays.map((h, i) => (<ListItem key={i}><ListIcon as={FaCalendarAlt} color="red.500" /><b>{h.occasion}:</b> {h.dates}</ListItem>))}</List><Text fontSize="xs" mt={1}><i>Note: Holidays compensated on following Sunday. Ramadan dates highlighted in yellow (March/April - based on moon sighting).</i></Text></Box>
             </VStack>
           </ModalBody>
-          <ModalFooter> <Button onClick={onCalendarClose}>Close</Button> </ModalFooter>
+          <ModalFooter> <Button onClick={onCalendarClose} borderRadius="md">Close</Button> </ModalFooter>
         </ModalContent>
       </Modal>
 
@@ -1203,4 +1133,4 @@ function ProgramManagerDashboard() {
   );
 }
 
-export default ProgramManagerDashboard; 
+export default ProgramManagerDashboard;

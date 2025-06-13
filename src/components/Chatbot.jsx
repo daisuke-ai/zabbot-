@@ -109,6 +109,8 @@ function EnhancedChatbot({ inputText }) {
           
           const { transcription, response } = await chatService.transcribeAudio(formData);
           
+          console.log('EnhancedChatbot.onstop: AI response text to display:', response);
+
           setMessages(prev => [...prev, 
             { text: transcription, sender: 'user', timestamp: new Date() },
             { text: response, sender: 'bot', timestamp: new Date() }
@@ -170,12 +172,21 @@ function EnhancedChatbot({ inputText }) {
       // Get bot response
       const response = await chatService.sendMessage(inputMessage);
       
+      console.log('EnhancedChatbot.sendMessage: AI response text to display:', response.response);
+
       // Add bot response
       setMessages(prev => [...prev, {
-        text: response,
+        text: response.response,
         sender: 'bot',
         timestamp: new Date()
       }]);
+
+      // THEN THIS!
+      const ttsAudio = await chatService.generateSpeech(response.response);
+      if (audioRef.current) {
+        audioRef.current.src = ttsAudio;
+        await audioRef.current.play();
+      }
     } catch (error) {
       console.error('Error:', error);
       setMessages(prev => [...prev, {

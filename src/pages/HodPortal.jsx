@@ -83,11 +83,13 @@ import {
   FaEye,
   FaEyeSlash,
   FaLink,
+  FaBrain,
 } from "react-icons/fa";
 import DashboardLayout from "../components/DashboardLayout";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../services/supabaseService";
 import { useNavigate } from 'react-router-dom';
+import DatabaseChatbot from "../components/DatabaseChatbot";
 
 // --- Academic Calendar Data ---
 const academicCalendarData = {
@@ -191,6 +193,18 @@ function HodPortal() {
   const headerBg = useColorModeValue("red.50", "gray.800");
   const borderColor = useColorModeValue("red.500", "red.400");
   const tabColorScheme = "red";
+
+  // Define currentUserContext for the chatbot
+  const currentUserContext = useMemo(() => {
+    if (user && user.id && user.role) {
+      return {
+        userId: user.id,
+        role: user.role,
+        departmentName: departmentName || 'N/A' // Use the fetched departmentName
+      };
+    }
+    return null;
+  }, [user, departmentName]);
 
   useEffect(() => {
     if (user && user.id) {
@@ -701,10 +715,10 @@ function HodPortal() {
         </Flex>
 
         <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4}>
-          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Program Managers</StatLabel><StatNumber>{calculatedStats.totalPMs}</StatNumber><StatHelpText>In Department</StatHelpText></Stat></CardBody></Card>
-          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Teachers</StatLabel><StatNumber>{calculatedStats.totalTeachers}</StatNumber><StatHelpText>In Department</StatHelpText></Stat></CardBody></Card>
-          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Students</StatLabel><StatNumber>{calculatedStats.totalStudents}</StatNumber><StatHelpText>In Department</StatHelpText></Stat></CardBody></Card>
-          <Card bg={cardBg} boxShadow="md"><CardBody><Stat><StatLabel>Pending Approvals</StatLabel><StatNumber>{calculatedStats.pendingApprovals}</StatNumber><StatHelpText>Students Waiting</StatHelpText></Stat></CardBody></Card>
+          <Card bg={cardBg} boxShadow="md" borderRadius="lg"><CardBody><Stat><StatLabel>Program Managers</StatLabel><StatNumber>{calculatedStats.totalPMs}</StatNumber><StatHelpText>In Department</StatHelpText></Stat></CardBody></Card>
+          <Card bg={cardBg} boxShadow="md" borderRadius="lg"><CardBody><Stat><StatLabel>Teachers</StatLabel><StatNumber>{calculatedStats.totalTeachers}</StatNumber><StatHelpText>In Department</StatHelpText></Stat></CardBody></Card>
+          <Card bg={cardBg} boxShadow="md" borderRadius="lg"><CardBody><Stat><StatLabel>Students</StatLabel><StatNumber>{calculatedStats.totalStudents}</StatNumber><StatHelpText>In Department</StatHelpText></Stat></CardBody></Card>
+          <Card bg={cardBg} boxShadow="md" borderRadius="lg"><CardBody><Stat><StatLabel>Pending Approvals</StatLabel><StatNumber>{calculatedStats.pendingApprovals}</StatNumber><StatHelpText>Students Waiting</StatHelpText></Stat></CardBody></Card>
         </SimpleGrid>
 
         <Tabs colorScheme={tabColorScheme} variant="enclosed" isLazy>
@@ -716,11 +730,12 @@ function HodPortal() {
             <Tab><Icon as={FaBook} mr={2}/>Courses</Tab>
             <Tab><Icon as={FaEye} mr={2}/>Course View</Tab>
             <Tab><Icon as={FaListAlt} mr={2}/>Activity Log</Tab>
+            <Tab><Icon as={FaBrain} mr={2}/>DB Assistant</Tab>
         </TabList>
         
           <TabPanels>
           <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md">
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}>
                   <Flex justify="space-between" align="center">
                     <Heading size="md">Manage Program Managers</Heading>
@@ -741,7 +756,7 @@ function HodPortal() {
             </TabPanel>
 
             <TabPanel px={0}>
-               <Card bg={cardBg} boxShadow="md">
+               <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                  <CardHeader bg={headerBg} py={3}>
                    <Flex justify="space-between" align="center">
                      <Heading size="md">Manage Teachers</Heading>
@@ -766,6 +781,7 @@ function HodPortal() {
                                                 variant="outline"
                                                 leftIcon={<FaLink />} 
                                                 onClick={() => openAssignCourseModal(teacher)}
+                                                borderRadius="md"
                                             >
                                                 Assign Course
                                             </Button>
@@ -781,14 +797,14 @@ function HodPortal() {
             </TabPanel>
 
             <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md">
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}><Heading size="md">View Students</Heading></CardHeader>
                 <CardBody>
                   {students.length > 0 ? (
                     <Box overflowX="auto">
                       <Table variant="simple" size="sm">
                         <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Status</Th><Th>Joined</Th></Tr></Thead>
-                        <Tbody>{students.map(student => ( <Tr key={student.id}><Td>{student.first_name} {student.last_name}</Td><Td>{student.email}</Td><Td><Badge colorScheme={student.active ? 'green' : 'yellow'}>{student.active ? 'Active' : 'Pending'}</Badge></Td><Td>{new Date(student.created_at).toLocaleDateString()}</Td></Tr>))}</Tbody>
+                        <Tbody>{students.map(student => ( <Tr key={student.id}><Td>{student.first_name} {student.last_name}</Td><Td>{student.email}</Td><Td><Badge colorScheme={student.active ? 'green' : 'yellow'} borderRadius="md">{student.active ? 'Active' : 'Pending'}</Badge></Td><Td>{new Date(student.created_at).toLocaleDateString()}</Td></Tr>))}</Tbody>
                       </Table>
               </Box>
                   ) : (<Text>No students found.</Text>)}
@@ -797,14 +813,14 @@ function HodPortal() {
           </TabPanel>
           
           <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md">
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}><Heading size="md">Pending Student Signup Requests</Heading></CardHeader>
                 <CardBody>
                   {pendingUsers.length === 0 ? (<Text>No pending student signups.</Text>) : (
                     <Box overflowX="auto">
                       <Table variant="simple" size="sm">
                         <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Department</Th><Th>Signup Date</Th><Th>Actions</Th></Tr></Thead>
-                        <Tbody>{pendingUsers.map(pUser => (<Tr key={pUser.id}><Td>{pUser.first_name} {pUser.last_name}</Td><Td>{pUser.email}</Td><Td>{pUser.department_name || 'N/A'}</Td><Td>{new Date(pUser.created_at).toLocaleDateString()}</Td><Td><HStack spacing={2}><Button size="xs" colorScheme="green" leftIcon={<FaCheck />} onClick={() => openActionDialog(pUser, 'approve')} isLoading={isActionLoading && selectedUserForAction?.id === pUser.id && actionType === 'approve'}>Approve</Button><Button size="xs" colorScheme="red" leftIcon={<FaTimes />} onClick={() => openActionDialog(pUser, 'reject')} isLoading={isActionLoading && selectedUserForAction?.id === pUser.id && actionType === 'reject'}>Reject</Button></HStack></Td></Tr>))}</Tbody>
+                        <Tbody>{pendingUsers.map(pUser => (<Tr key={pUser.id}><Td>{pUser.first_name} {pUser.last_name}</Td><Td>{pUser.email}</Td><Td>{pUser.department_name || 'N/A'}</Td><Td>{new Date(pUser.created_at).toLocaleDateString()}</Td><Td><HStack spacing={2}><Button size="xs" colorScheme="green" leftIcon={<FaCheck />} onClick={() => openActionDialog(pUser, 'approve')} isLoading={isActionLoading && selectedUserForAction?.id === pUser.id && actionType === 'approve'} borderRadius="md">Approve</Button><Button size="xs" colorScheme="red" leftIcon={<FaTimes />} onClick={() => openActionDialog(pUser, 'reject')} isLoading={isActionLoading && selectedUserForAction?.id === pUser.id && actionType === 'reject'} borderRadius="md">Reject</Button></HStack></Td></Tr>))}</Tbody>
                       </Table>
                     </Box>
                   )}
@@ -813,11 +829,11 @@ function HodPortal() {
             </TabPanel>
             
             <TabPanel px={0}>
-               <Card bg={cardBg} boxShadow="md">
+               <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                  <CardHeader bg={headerBg} py={3}>
                     <Flex justify="space-between" align="center">
                      <Heading size="md">Manage Courses</Heading>
-                     <Button colorScheme="green" size="sm" leftIcon={<FaPlus />} onClick={onAddCourseOpen}>Add New Course</Button>
+                     <Button colorScheme="green" size="sm" leftIcon={<FaPlus />} onClick={onAddCourseOpen} borderRadius="md">Add New Course</Button>
                     </Flex>
                   </CardHeader>
                   <CardBody>
@@ -856,7 +872,7 @@ function HodPortal() {
             </TabPanel>
 
             <TabPanel px={0}>
-               <Card bg={cardBg} boxShadow="md">
+               <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                  <CardHeader bg={headerBg} py={3}><Heading size="md">Department Course Offerings</Heading></CardHeader>
                  <CardBody>
                    {isFetchingCourses ? (
@@ -868,7 +884,7 @@ function HodPortal() {
                        {departmentCourseDetails.map((course) => (
                          <AccordionItem key={course.id}>
                            <h2>
-                             <AccordionButton _expanded={{ bg: headerBg, color: 'inherit' }}>
+                             <AccordionButton _expanded={{ bg: headerBg, color: 'inherit' }} borderRadius="md">
                                <Box flex='1' textAlign='left' fontWeight="medium">
                                  {course.code} - {course.name} ({course.credit_hours} Credits)
               </Box>
@@ -918,14 +934,36 @@ function HodPortal() {
           </TabPanel>
 
             <TabPanel px={0}>
-               <Card bg={cardBg} boxShadow="md">
+               <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                  <CardHeader bg={headerBg} py={3}><Heading size="md">Recent Activity Log</Heading></CardHeader>
                  <CardBody>
                    {activityLog.length === 0 ? (<Text>No recent activity.</Text>) : (
-                     <VStack spacing={3} align="stretch">{activityLog.map(log => (<Card key={log.id} size="sm" variant="outline"><CardBody><Flex justify="space-between" wrap="wrap"><Text fontSize="sm" mr={2}>{log.notification}</Text><Text fontSize="xs" color="gray.500" whiteSpace="nowrap">{new Date(log.created_at).toLocaleString()}</Text></Flex></CardBody></Card>))}</VStack>
+                     <VStack spacing={3} align="stretch">{activityLog.map(log => (<Card key={log.id} size="sm" variant="outline" borderRadius="md"><CardBody><Flex justify="space-between" wrap="wrap"><Text fontSize="sm" mr={2}>{log.notification}</Text><Text fontSize="xs" color="gray.500" whiteSpace="nowrap">{new Date(log.created_at).toLocaleString()}</Text></Flex></CardBody></Card>))}</VStack>
                    )}
                  </CardBody>
                </Card>
+            </TabPanel>
+
+            <TabPanel px={0}>
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
+                <CardHeader bg={headerBg} py={3}>
+                  <Heading size="md">
+                    <Flex align="center">
+                      <Icon as={FaBrain} mr={2}/> Department Database Assistant
+                    </Flex>
+                  </Heading>
+                </CardHeader>
+                <CardBody>
+                  {currentUserContext ? (
+                    <DatabaseChatbot currentUserContext={currentUserContext} />
+                  ) : (
+                    <Flex justify="center" align="center" h="200px">
+                      <Spinner size="xl" mr={3}/>
+                      <Text>Loading user context for Database Assistant...</Text>
+                    </Flex>
+                  )}
+                </CardBody>
+              </Card>
             </TabPanel>
 
         </TabPanels>
@@ -934,73 +972,73 @@ function HodPortal() {
 
       <Modal isOpen={isAddPmOpen} onClose={onAddPmClose} isCentered>
          <ModalOverlay />
-         <ModalContent as="form" onSubmit={handleCreatePM}>
+         <ModalContent as="form" onSubmit={handleCreatePM} borderRadius="lg">
             <ModalHeader>Add Program Manager</ModalHeader>
             <ModalCloseButton />
             <ModalBody pb={6}>
                <VStack spacing={4}>
-                  <FormControl isRequired><FormLabel>First Name</FormLabel><Input value={newPM.first_name} onChange={(e) => setNewPM({ ...newPM, first_name: e.target.value })} /></FormControl>
-                  <FormControl isRequired><FormLabel>Last Name</FormLabel><Input value={newPM.last_name} onChange={(e) => setNewPM({ ...newPM, last_name: e.target.value })} /></FormControl>
-                  <FormControl isRequired><FormLabel>Email</FormLabel><Input type="email" value={newPM.email} onChange={(e) => setNewPM({ ...newPM, email: e.target.value })} /></FormControl>
-                  <FormControl isRequired><FormLabel>Password</FormLabel><Input type="password" value={newPM.password} onChange={(e) => setNewPM({ ...newPM, password: e.target.value })} /></FormControl>
-                  <FormControl><FormLabel>Department</FormLabel><Input value={departmentName} isReadOnly /></FormControl></VStack>
+                  <FormControl isRequired><FormLabel>First Name</FormLabel><Input value={newPM.first_name} onChange={(e) => setNewPM({ ...newPM, first_name: e.target.value })} borderRadius="md"/></FormControl>
+                  <FormControl isRequired><FormLabel>Last Name</FormLabel><Input value={newPM.last_name} onChange={(e) => setNewPM({ ...newPM, last_name: e.target.value })} borderRadius="md"/></FormControl>
+                  <FormControl isRequired><FormLabel>Email</FormLabel><Input type="email" value={newPM.email} onChange={(e) => setNewPM({ ...newPM, email: e.target.value })} borderRadius="md"/></FormControl>
+                  <FormControl isRequired><FormLabel>Password</FormLabel><Input type="password" value={newPM.password} onChange={(e) => setNewPM({ ...newPM, password: e.target.value })} borderRadius="md"/></FormControl>
+                  <FormControl><FormLabel>Department</FormLabel><Input value={departmentName} isReadOnly borderRadius="md"/></FormControl></VStack>
             </ModalBody>
-            <ModalFooter><Button mr={3} onClick={onAddPmClose} variant="ghost">Cancel</Button><Button colorScheme={tabColorScheme} type="submit" isLoading={isSubmittingPM}>Create Program Manager</Button></ModalFooter>
+            <ModalFooter><Button mr={3} onClick={onAddPmClose} variant="ghost" borderRadius="md">Cancel</Button><Button colorScheme={tabColorScheme} type="submit" isLoading={isSubmittingPM} borderRadius="md">Create Program Manager</Button></ModalFooter>
          </ModalContent>
       </Modal>
 
        <Modal isOpen={isAddTeacherModalOpen} onClose={onAddTeacherModalClose} isCentered>
          <ModalOverlay />
-         <ModalContent as="form" onSubmit={handleCreateTeacher}>
+         <ModalContent as="form" onSubmit={handleCreateTeacher} borderRadius="lg">
             <ModalHeader>Add New Teacher Account</ModalHeader>
             <ModalCloseButton />
             <ModalBody pb={6}>
               <VStack spacing={4}>
-                  <FormControl isRequired><FormLabel>First Name</FormLabel><Input placeholder='First Name' value={newTeacher.firstName} onChange={(e) => setNewTeacher({...newTeacher, firstName: e.target.value})} /></FormControl>
-                  <FormControl isRequired><FormLabel>Last Name</FormLabel><Input placeholder='Last Name' value={newTeacher.lastName} onChange={(e) => setNewTeacher({...newTeacher, lastName: e.target.value})} /></FormControl>
-                  <FormControl isRequired><FormLabel>Email Address</FormLabel><Input type='email' placeholder='teacher@example.com' value={newTeacher.email} onChange={(e) => setNewTeacher({...newTeacher, email: e.target.value})} /></FormControl>
-                  <FormControl isRequired><FormLabel>Password</FormLabel><InputGroup size='md'><Input pr='4.5rem' type={showPassword ? 'text' : 'password'} placeholder='Enter password' value={newTeacher.password} onChange={(e) => setNewTeacher({...newTeacher, password: e.target.value})}/><InputRightElement width='4.5rem'><Button h='1.75rem' size='sm' onClick={() => setShowPassword(!showPassword)}>{showPassword ? <FaEyeSlash/> : <FaEye/>}</Button></InputRightElement></InputGroup><Text fontSize="xs" color="gray.500" mt={1}>Min. 6 characters.</Text></FormControl>
-                  <FormControl isReadOnly><FormLabel>Department</FormLabel><Input value={departmentName} isDisabled /></FormControl>
+                  <FormControl isRequired><FormLabel>First Name</FormLabel><Input placeholder='First Name' value={newTeacher.firstName} onChange={(e) => setNewTeacher({...newTeacher, firstName: e.target.value})} borderRadius="md"/></FormControl>
+                  <FormControl isRequired><FormLabel>Last Name</FormLabel><Input placeholder='Last Name' value={newTeacher.lastName} onChange={(e) => setNewTeacher({...newTeacher, lastName: e.target.value})} borderRadius="md"/></FormControl>
+                  <FormControl isRequired><FormLabel>Email Address</FormLabel><Input type='email' placeholder='teacher@example.com' value={newTeacher.email} onChange={(e) => setNewTeacher({...newTeacher, email: e.target.value})} borderRadius="md"/></FormControl>
+                  <FormControl isRequired><FormLabel>Password</FormLabel><InputGroup size='md'><Input pr='4.5rem' type={showPassword ? 'text' : 'password'} placeholder='Enter password' value={newTeacher.password} onChange={(e) => setNewTeacher({...newTeacher, password: e.target.value})} borderRadius="md"/><InputRightElement width='4.5rem'><Button h='1.75rem' size='sm' onClick={() => setShowPassword(!showPassword)} borderRadius="md">{showPassword ? <FaEyeSlash/> : <FaEye/>}</Button></InputRightElement></InputGroup><Text fontSize="xs" color="gray.500" mt={1}>Min. 6 characters.</Text></FormControl>
+                  <FormControl isReadOnly><FormLabel>Department</FormLabel><Input value={departmentName} isDisabled borderRadius="md"/></FormControl>
                </VStack>
             </ModalBody>
             <ModalFooter>
-               <Button onClick={onAddTeacherModalClose} mr={3} variant="ghost">Cancel</Button>
-               <Button colorScheme={tabColorScheme} type="submit" isLoading={isCreatingTeacher} leftIcon={<FaUserPlus/>}>Create Teacher</Button>
+               <Button onClick={onAddTeacherModalClose} mr={3} variant="ghost" borderRadius="md">Cancel</Button>
+               <Button colorScheme={tabColorScheme} type="submit" isLoading={isCreatingTeacher} leftIcon={<FaUserPlus/>} borderRadius="md">Create Teacher</Button>
             </ModalFooter>
          </ModalContent>
        </Modal>
 
       <Modal isOpen={isAddCourseOpen} onClose={onAddCourseClose} isCentered>
           <ModalOverlay />
-          <ModalContent as="form" onSubmit={handleCreateCourse}>
+          <ModalContent as="form" onSubmit={handleCreateCourse} borderRadius="lg">
              <ModalHeader>Add New Course</ModalHeader>
              <ModalCloseButton />
              <ModalBody pb={6}>
                 <VStack spacing={4}>
-                    <FormControl isRequired><FormLabel>Course Code</FormLabel><Input placeholder="e.g., CS101" value={newCourse.code} onChange={(e) => setNewCourse({ ...newCourse, code: e.target.value })} textTransform="uppercase" /></FormControl>
-                    <FormControl isRequired><FormLabel>Course Name</FormLabel><Input placeholder="e.g., Introduction to Computing" value={newCourse.name} onChange={(e) => setNewCourse({ ...newCourse, name: e.target.value })} /></FormControl>
-                    <FormControl><FormLabel>Description</FormLabel><Input placeholder="Optional: Brief description" value={newCourse.description} onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })} /></FormControl>
-                    <FormControl isRequired><FormLabel>Credit Hours</FormLabel><Input type="number" min="1" value={newCourse.credit_hours} onChange={(e) => setNewCourse({ ...newCourse, credit_hours: e.target.value })} /></FormControl>
+                    <FormControl isRequired><FormLabel>Course Code</FormLabel><Input placeholder="e.g., CS101" value={newCourse.code} onChange={(e) => setNewCourse({ ...newCourse, code: e.target.value })} textTransform="uppercase" borderRadius="md"/></FormControl>
+                    <FormControl isRequired><FormLabel>Course Name</FormLabel><Input placeholder="e.g., Introduction to Computing" value={newCourse.name} onChange={(e) => setNewCourse({ ...newCourse, name: e.target.value })} borderRadius="md"/></FormControl>
+                    <FormControl><FormLabel>Description</FormLabel><Input placeholder="Optional: Brief description" value={newCourse.description} onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })} borderRadius="md"/></FormControl>
+                    <FormControl isRequired><FormLabel>Credit Hours</FormLabel><Input type="number" min="1" value={newCourse.credit_hours} onChange={(e) => setNewCourse({ ...newCourse, credit_hours: e.target.value })} borderRadius="md"/></FormControl>
               </VStack>
              </ModalBody>
-             <ModalFooter><Button onClick={onAddCourseClose} mr={3} variant="ghost">Cancel</Button><Button colorScheme='green' type="submit" isLoading={isCreatingCourse} leftIcon={<FaPlus/>}>Create Course</Button></ModalFooter>
+             <ModalFooter><Button onClick={onAddCourseClose} mr={3} variant="ghost" borderRadius="md">Cancel</Button><Button colorScheme='green' type="submit" isLoading={isCreatingCourse} leftIcon={<FaPlus/>} borderRadius="md">Create Course</Button></ModalFooter>
           </ModalContent>
       </Modal>
 
       <AlertDialog isOpen={isApprovalDialogOpen} leastDestructiveRef={cancelRef} onClose={onApprovalDialogClose} isCentered>
-        <AlertDialogOverlay><AlertDialogContent>
+        <AlertDialogOverlay><AlertDialogContent borderRadius="lg">
            <AlertDialogHeader>{actionType === 'approve' ? 'Confirm Approval' : 'Confirm Rejection'}</AlertDialogHeader>
            <AlertDialogBody>{`Are you sure you want to ${actionType} ${selectedUserForAction?.first_name || 'this user'}? ${actionType === 'reject' ? 'This removes the request.' : ''}`}</AlertDialogBody>
             <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onApprovalDialogClose} isDisabled={isActionLoading}>Cancel</Button>
-              <Button colorScheme={actionType === 'approve' ? 'green' : 'red'} onClick={handleUserAction} ml={3} isLoading={isActionLoading} isDisabled={!actionType}>{actionType === 'approve' ? 'Approve' : 'Reject'}</Button>
+              <Button ref={cancelRef} onClick={onApprovalDialogClose} isDisabled={isActionLoading} borderRadius="md">Cancel</Button>
+              <Button colorScheme={actionType === 'approve' ? 'green' : 'red'} onClick={handleUserAction} ml={3} isLoading={isActionLoading} isDisabled={!actionType} borderRadius="md">{actionType === 'approve' ? 'Approve' : 'Reject'}</Button>
            </AlertDialogFooter>
         </AlertDialogContent></AlertDialogOverlay>
       </AlertDialog>
 
       <Modal isOpen={isAssignCourseModalOpen} onClose={onAssignCourseModalClose} size="xl" scrollBehavior="inside">
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent borderRadius="lg">
           <ModalHeader>Assign Courses to {selectedTeacherForAssignment?.first_name} {selectedTeacherForAssignment?.last_name}</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
@@ -1019,8 +1057,9 @@ function HodPortal() {
                             key={course.id} 
                             value={course.id} 
                             isDisabled={isAlreadyAssigned}
+                            borderRadius="md"
                         >
-                            {course.code} - {course.name} {isAlreadyAssigned && <Badge ml={2} colorScheme="green">Assigned</Badge>}
+                            {course.code} - {course.name} {isAlreadyAssigned && <Badge ml={2} colorScheme="green" borderRadius="md">Assigned</Badge>}
                         </Checkbox>
                     );
                   })}
@@ -1031,13 +1070,14 @@ function HodPortal() {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onAssignCourseModalClose} mr={3} variant="ghost">Cancel</Button>
+            <Button onClick={onAssignCourseModalClose} mr={3} variant="ghost" borderRadius="md">Cancel</Button>
               <Button 
               colorScheme="teal" 
               onClick={handleAssignCourses} 
               isLoading={isAssigningCourse}
               isDisabled={coursesToAssign.length === 0}
               leftIcon={<FaCheck/>}
+              borderRadius="md"
             >
               Save Assignments ({coursesToAssign.length})
               </Button>
@@ -1047,7 +1087,7 @@ function HodPortal() {
 
       <Modal isOpen={isCalendarOpen} onClose={onCalendarClose} size="3xl" scrollBehavior="inside">
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent borderRadius="lg">
           <ModalHeader>{academicCalendarData.title}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -1130,7 +1170,7 @@ function HodPortal() {
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onCalendarClose}>Close</Button>
+            <Button onClick={onCalendarClose} borderRadius="md">Close</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

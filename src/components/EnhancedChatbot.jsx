@@ -165,14 +165,14 @@ function EnhancedChatbot({ inputText, currentUserContext = null }) {
       const response = await chatService.sendMessage(userMessage.text, currentUserContext);
       
       setMessages(prev => [...prev, {
-        text: response,
+        text: response.response,
         sender: 'bot',
         timestamp: new Date()
       }]);
       
       // Optional: Generate speech response
       try {
-        const ttsAudio = await chatService.generateSpeech(response);
+        const ttsAudio = await chatService.generateSpeech(response.response);
         if (ttsAudio && audioRef.current) {
           audioRef.current.src = ttsAudio;
           await audioRef.current.play();
@@ -554,15 +554,15 @@ function EnhancedChatbot({ inputText, currentUserContext = null }) {
                       remarkPlugins={[remarkGfm]}
                       components={markdownComponents}
                     >
-                      {message.text}
+                      {String(message.text)}
                     </ReactMarkdown>
                   ) : (
                     <Text fontWeight="medium" fontSize="sm">
                       {message.isTemp ? (
                         <Spinner size="sm" mr={2} color="gray.400" />
                       ) : message.isError ? (
-                        <Text color="red.500">{message.text}</Text>
-                      ) : message.text}
+                        <Text color="red.500">{String(message.text)}</Text>
+                      ) : String(message.text)}
                     </Text>
                   )}
                   <Text

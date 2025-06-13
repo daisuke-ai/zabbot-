@@ -21,6 +21,7 @@ export const chatService = {
       }
 
       const data = await response.json();
+      console.log('chatService.sendMessage: Received data from backend:', data);
       return data;
     } catch (error) {
       console.error('Error:', error);
