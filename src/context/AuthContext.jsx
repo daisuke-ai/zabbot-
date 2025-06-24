@@ -38,8 +38,9 @@ export const AuthProvider = ({ children }) => {
           } else if (userProfile) {
               console.log("AuthContext: Initial profile found:", userProfile);
               currentUser = {
-                ...currentSession.user, // Core auth data (like email, auth id)
-                ...userProfile  // Your public.users table data (like custom id, role, department_name, active)
+                ...currentSession.user,
+                ...userProfile,
+                id: userProfile.id // Explicitly ensure user.id is public.users.id
               };
           } else {
              console.warn("AuthContext: User session exists but no profile found in 'users' table.");
@@ -80,7 +81,7 @@ export const AuthProvider = ({ children }) => {
              currentUser = currentSession.user;
         } else if (userProfile) {
              console.log("AuthContext: Profile found on SIGNED_IN:", userProfile);
-             currentUser = { ...currentSession.user, ...userProfile };
+             currentUser = { ...currentSession.user, ...userProfile, id: userProfile.id }; // Explicitly ensure user.id is public.users.id
         } else {
              console.warn("AuthContext: SIGNED_IN but no profile found in 'users' table.");
              currentUser = currentSession.user;
@@ -95,7 +96,7 @@ export const AuthProvider = ({ children }) => {
             .eq('user_id', currentSession.user.id)
             .maybeSingle();
            if (userProfile && !profileError) {
-               currentUser = { ...currentSession.user, ...userProfile };
+               currentUser = { ...currentSession.user, ...userProfile, id: userProfile.id }; // Explicitly ensure user.id is public.users.id
            } else {
                currentUser = currentSession.user; 
            }
@@ -171,7 +172,7 @@ export const AuthProvider = ({ children }) => {
       // --- END CHECK ---
 
       // 4. If checks pass, update the user state (onAuthStateChange might also do this, but setting explicitly ensures immediate availability)
-      const fullUser = { ...authData.user, ...userProfile };
+      const fullUser = { ...authData.user, ...userProfile, id: userProfile.id }; // Explicitly ensure user.id is public.users.id
       setUser(fullUser);
       setSession(authData.session);
       console.log("AuthContext: User state set after successful login:", fullUser);

@@ -141,6 +141,7 @@ function StudentDashboard() {
   const fetchDashboardData = async (studentId) => {
     setIsLoading(true);
     setFetchError(null);
+    
     try {
       const { data: coursesData, error: coursesError } = await supabase
         .from('courses')
@@ -196,7 +197,7 @@ function StudentDashboard() {
       const courseId = enrollment.course.id;
       const creditHours = enrollment.course.credit_hours || 0;
 
-      const finalMark = findMark(studentMarks, courseId, 'Final');
+      const finalMark = findMark(studentMarks, courseId, 'final');
 
       if (finalMark && creditHours > 0 && finalMark.obtained_number !== null) {
         const gradePoint = getGradePoint(finalMark.obtained_number, finalMark.total_number);
@@ -387,7 +388,7 @@ function StudentDashboard() {
                 <CardBody>
                   {studentEnrollments.length > 0 ? (
                     <Box overflowX="auto">
-                      <Table variant="simple" size="sm">
+                      <Table variant="striped" colorScheme="purple" size="sm">
                         <Thead>
                           <Tr>
                             <Th>Code</Th>
@@ -403,6 +404,7 @@ function StudentDashboard() {
                             <Th isNumeric>Q4</Th>
                             <Th isNumeric>Mid</Th>
                             <Th isNumeric>Final</Th>
+                            <Th isNumeric>Total</Th>
                           </Tr>
                         </Thead>
                         <Tbody>
@@ -413,9 +415,29 @@ function StudentDashboard() {
 
                             const renderMark = (type) => {
                               const mark = marksForThisCourse.find(m => m.type === type);
+                              
+                              
                               return mark?.obtained_number !== null && mark?.obtained_number !== undefined
                                 ? `${mark.obtained_number}/${mark.total_number ?? 100}`
                                 : '-';
+                            };
+                            
+                            const renderTotalMarks = (marks) => {
+                                let totalObtained = 0;
+                                let totalPossible = 0;
+
+                                const allMarkTypes = ['A1', 'A2', 'A3', 'A4', 'Q1', 'Q2', 'Q3', 'Q4', 'midterm', 'final'];
+
+                                allMarkTypes.forEach(type => {
+                                    const mark = marks.find(m => m.type === type);
+                                    if (mark && mark.obtained_number !== null && mark.total_number !== null) {
+                                        totalObtained += mark.obtained_number;
+                                        totalPossible += mark.total_number;
+                                    }
+                                });
+
+                                if (totalPossible === 0) return 'N/A';
+                                return `${totalObtained.toFixed(1)}/${totalPossible.toFixed(1)}`;
                             };
 
                             return (
@@ -423,16 +445,17 @@ function StudentDashboard() {
                                 <Td fontWeight="medium">{course.code}</Td>
                                 <Td>{course.name}</Td>
                                 <Td textAlign="center">{course.credit_hours ?? 'N/A'}</Td>
-                                <Td isNumeric>{renderMark('Assignment 1')}</Td>
-                                <Td isNumeric>{renderMark('Assignment 2')}</Td>
-                                <Td isNumeric>{renderMark('Assignment 3')}</Td>
-                                <Td isNumeric>{renderMark('Assignment 4')}</Td>
-                                <Td isNumeric>{renderMark('Quiz 1')}</Td>
-                                <Td isNumeric>{renderMark('Quiz 2')}</Td>
-                                <Td isNumeric>{renderMark('Quiz 3')}</Td>
-                                <Td isNumeric>{renderMark('Quiz 4')}</Td>
-                                <Td isNumeric>{renderMark('Midterm')}</Td>
-                                <Td isNumeric>{renderMark('Final')}</Td>
+                                <Td isNumeric>{renderMark('A1')}</Td>
+                                <Td isNumeric>{renderMark('A2')}</Td>
+                                <Td isNumeric>{renderMark('A3')}</Td>
+                                <Td isNumeric>{renderMark('A4')}</Td>
+                                <Td isNumeric>{renderMark('Q1')}</Td>
+                                <Td isNumeric>{renderMark('Q2')}</Td>
+                                <Td isNumeric>{renderMark('Q3')}</Td>
+                                <Td isNumeric>{renderMark('Q4')}</Td>
+                                <Td isNumeric>{renderMark('midterm')}</Td>
+                                <Td isNumeric>{renderMark('final')}</Td>
+                                <Td isNumeric>{renderTotalMarks(marksForThisCourse)}</Td>
                               </Tr>
                             );
                           })}

@@ -22,6 +22,24 @@ const __dirname = dirname(__filename);
 
 dotenv.config();
 
+// --- Environment Variable Checks ---
+const requiredEnv = [
+  'OPENAI_API_KEY',
+  'SUPABASE_URL',
+  'SUPABASE_ANON_KEY',
+  // 'VITE_CONTENTFUL_SPACE_ID', // Optional, if Contentful is not always used
+  // 'VITE_CONTENTFUL_ACCESS_TOKEN', // Optional
+];
+
+requiredEnv.forEach(envVar => {
+  if (!process.env[envVar]) {
+    console.error(`ERROR: Environment variable ${envVar} is not set. Please ensure your .env file is correctly configured.`);
+    // Optionally, you might want to exit the process here if critical variables are missing
+    // process.exit(1);
+  }
+});
+// --- End Environment Variable Checks ---
+
 const app = express();
 
 // Increase payload size limit
@@ -292,25 +310,30 @@ app.post("/embed-blog", async (req, res) => {
 app.post("/api/embed-text", async (req, res) => {
   try {
     const { text } = req.body;
+    console.log('[API/Embed-Text] Request received. Checking text content...'); // Added log
 
     if (!text || text.trim().length === 0) {
+      console.warn('[API/Embed-Text] Validation failed: Text content is empty.'); // Changed to warn
       return res.status(400).json({ error: "Text content is required for embedding." });
     }
 
-    console.log(`[Embed Text Endpoint] Received text for embedding (length: ${text.length}).`);
+    console.log(`[API/Embed-Text] Text length: ${text.length}. Preparing content for embedding.`); // Added log
 
     const cleanContent = text.replace(/\n/g, " ").trim();
 
     if (cleanContent.length === 0) {
+      console.warn('[API/Embed-Text] Validation failed: Cleaned text content is empty.'); // Changed to warn
       return res.status(400).json({ error: "Cleaned text content is empty." });
     }
 
+    console.log('[API/Embed-Text] Attempting to generate embedding with OpenAI...'); // Added log
     // Generate embedding for the text
     const embeddingResponse = await openai.embeddings.create({
       model: "text-embedding-3-small",
       input: cleanContent,
     });
     const [{ embedding }] = embeddingResponse.data;
+    console.log('[API/Embed-Text] Embedding generated successfully. Storing in Supabase...'); // Added log
 
     // Generate a unique ID for the document
     const uniqueId = `pm-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
@@ -324,16 +347,16 @@ app.post("/api/embed-text", async (req, res) => {
     });
 
     if (error) {
-      console.error("Error storing embedded text:", error);
+      console.error("[API/Embed-Text] Supabase insert error:", error); // Added log
       throw error;
     }
 
-    console.log(`[Embed Text Endpoint] Successfully embedded and stored text with ID: ${uniqueId}`);
+    console.log(`[API/Embed-Text] Successfully embedded and stored text with ID: ${uniqueId}. Sending success response.`); // Added log
     res.status(200).json({ message: "Text successfully embedded and stored for RAG assistant." });
 
   } catch (error) {
-    console.error("[Embed Text Endpoint] Error embedding text:", error);
-    res.status(500).json({ error: error.message || "An error occurred while embedding text." });
+    console.error("[API/Embed-Text] Caught unhandled error:", error); // Added log
+    res.status(500).json({ error: error.message || "An unexpected error occurred while embedding text." }); // Improved error message
   }
 });
 

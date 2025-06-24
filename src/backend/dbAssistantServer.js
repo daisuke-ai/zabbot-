@@ -220,6 +220,7 @@ async function fetchStudentCourseEnrollmentData(userContext) {
   let query = supabase
     .from('student_courses')
     .select(`
+      id,
       student_id,
       students:users(first_name, last_name, email, department_name),
       course_id,
@@ -236,9 +237,11 @@ async function fetchStudentCourseEnrollmentData(userContext) {
       // Teachers can see enrollments for students in courses they are assigned to teach.
       // This requires joining with teacher_courses and then filtering by teacher_id.
       // For simplicity, let's assume teachers can see all enrollments related to their department for now.
-      // A more robust solution would involve more complex Supabase queries or RLS.
       if (departmentName) {
-        query = query.eq('students.department_name', departmentName); // Assuming students relation is joined
+        const { data: departmentStudentIds, error: studentIdsError } = await supabase.from('users').select('id').eq('department_name', departmentName);
+        if (studentIdsError) throw studentIdsError;
+        const studentIds = departmentStudentIds.map(s => s.id);
+        query = query.in('student_id', studentIds);
       } else {
         console.warn(`[DB Data Fetcher] Teacher role but no departmentName. Cannot filter enrollments.`);
         return [];
@@ -248,7 +251,10 @@ async function fetchStudentCourseEnrollmentData(userContext) {
     case 'hod':
       // PMs/HODs can see all enrollments within their department.
       if (departmentName) {
-        query = query.eq('students.department_name', departmentName); // Assuming students relation is joined
+        const { data: departmentStudentIds, error: studentIdsError } = await supabase.from('users').select('id').eq('department_name', departmentName);
+        if (studentIdsError) throw studentIdsError;
+        const studentIds = departmentStudentIds.map(s => s.id);
+        query = query.in('student_id', studentIds);
       } else {
         console.warn(`[DB Data Fetcher] PM/HOD role but no departmentName. Cannot filter enrollments.`);
         return [];
@@ -295,11 +301,11 @@ async function fetchMarksData(userContext) {
       query = query.eq('student_id', userId);
       break;
     case 'teacher':
-      // Teachers can see marks for students in courses they are assigned to teach.
-      // This requires joining with teacher_courses and then filtering.
-      // For simplicity, let's assume teachers can see all marks related to their department for now.
       if (departmentName) {
-        query = query.eq('students.department_name', departmentName); // Assuming students relation is joined
+        const { data: departmentStudentIds, error: studentIdsError } = await supabase.from('users').select('id').eq('department_name', departmentName);
+        if (studentIdsError) throw studentIdsError;
+        const studentIds = departmentStudentIds.map(s => s.id);
+        query = query.in('student_id', studentIds);
       } else {
         console.warn(`[DB Data Fetcher] Teacher role but no departmentName. Cannot filter marks.`);
         return [];
@@ -307,35 +313,78 @@ async function fetchMarksData(userContext) {
       break;
     case 'pm':
     case 'hod':
-      // PMs/HODs can see all marks within their department.
       if (departmentName) {
-        query = query.eq('students.department_name', departmentName); // Assuming students relation is joined
+        const { data: departmentStudentIds, error: studentIdsError } = await supabase.from('users').select('id').eq('department_name', departmentName);
+        if (studentIdsError) throw studentIdsError;
+        const studentIds = departmentStudentIds.map(s => s.id);
+        query = query.in('student_id', studentIds);
       } else {
         console.warn(`[DB Data Fetcher] PM/HOD role but no departmentName. Cannot filter marks.`);
         return [];
       }
       break;
     case 'admin':
-      // Admin can see all marks
       break;
     default:
       console.warn(`[DB Data Fetcher] Unknown role '${role}'. No marks data will be returned.`);
       return [];
   }
 
-  const { data, error } = await query;
+  const { data: rawMarks, error } = await query;
 
   if (error) {
     console.error(`[DB Data Fetcher] Error fetching marks for role ${role}:`, error);
     throw error;
   }
 
-  console.log(`[DB Data Fetcher] Successfully fetched ${data.length} marks for role ${role}.`);
-  return data;
+  if (!rawMarks || rawMarks.length === 0) {
+    console.log(`[DB Data Fetcher] No marks fetched for role ${role}.`);
+    return [];
+  }
+
+  // Aggregate marks by student and course
+  const aggregatedMarks = {};
+
+  rawMarks.forEach(mark => {
+    const studentCourseKey = `${mark.student_id}-${mark.course_id}`;
+
+    if (!aggregatedMarks[studentCourseKey]) {
+      aggregatedMarks[studentCourseKey] = {
+        student_id: mark.student_id,
+        student_name: `${mark.students?.first_name || 'N/A'} ${mark.students?.last_name || ''}`.trim(),
+        course_id: mark.course_id,
+        course_code: mark.courses?.code,
+        course_name: mark.courses?.name,
+        total_obtained: 0,
+        total_possible: 0,
+        details: [] // To store individual marks if needed for detailed query
+      };
+    }
+
+    if (mark.obtained_number !== null && mark.total_number !== null) {
+      aggregatedMarks[studentCourseKey].total_obtained += mark.obtained_number;
+      aggregatedMarks[studentCourseKey].total_possible += mark.total_number;
+    }
+    aggregatedMarks[studentCourseKey].details.push({ type: mark.type, obtained: mark.obtained_number, total: mark.total_number });
+  });
+
+  // Calculate overall percentage for each aggregated course
+  const finalMarksData = Object.values(aggregatedMarks).map(aggMark => {
+    const overallPercentage = aggMark.total_possible > 0 
+      ? (aggMark.total_obtained / aggMark.total_possible) * 100
+      : 0;
+    return {
+      ...aggMark,
+      overall_percentage: parseFloat(overallPercentage.toFixed(2)) // Round to 2 decimal places
+    };
+  });
+
+  console.log(`[DB Data Fetcher] Successfully aggregated ${finalMarksData.length} marks entries.`);
+  return finalMarksData;
 }
 
 // Function to generate dynamic system prompt based on user role and relevant context
-function getSystemPrompt(userRole, userId, departmentName, actualUsersData) {
+function getSystemPrompt(userRole, userId, departmentName, actualUsersData, actualEnrollmentData, actualMarksData) {
   let roleSpecificInstructions = "";
   let relevantTables = []; // List of tables the current role can "access" conceptually
 
@@ -345,9 +394,9 @@ function getSystemPrompt(userRole, userId, departmentName, actualUsersData) {
       roleSpecificInstructions = `
         As a student, you can ONLY access your OWN personal information, your enrolled courses, and your marks.
         Specifically:
-        - From 'users' table: only your own 'first_name', 'last_name', 'email', 'role', 'department_name'.
-        - From 'student_courses' table: only entries where 'student_id' is your ID (${userId}).
-        - From 'marks' table: only entries where 'student_id' is your ID (${userId}).
+        - From 'users' table: only your own 'first_name', 'last_name', 'email', 'role', 'department_name', 'active'.
+        - From 'student_courses' table: only entries where 'student_id' is your ID (${userId}). This includes course codes, names, and descriptions.
+        - From 'marks' table: only entries where 'student_id' is your ID (${userId}). The marks data provided to you will already be aggregated per course, showing total obtained and total possible marks, and overall percentage.
         - From 'courses' table: only courses linked to your 'student_courses' or 'marks'.
         - You CANNOT access information about other students, teachers, PMs, HODs, or admins.
         - You CANNOT access details of classes or programs unless directly related to your own enrollments.
@@ -360,13 +409,14 @@ function getSystemPrompt(userRole, userId, departmentName, actualUsersData) {
         As a teacher, you can access information about:
         - Your own profile details from 'users' table (your 'first_name', 'last_name', 'email', 'role', 'department_name').
         - Courses you are assigned to teach from 'teacher_courses' and 'courses' tables (where 'teacher_id' is your ID).
-        - Students enrolled in classes for courses you teach from 'enrollments' and 'users' tables.
-        - Marks of students in courses you teach from 'marks' table.
-        - General course and class information for courses you teach.
-        - You CANNOT access sensitive personal details of other teachers or students not in your assigned courses.
+        - Students in your department, including their names, emails, and active status, from the 'users' table.
+        - Student enrollments ('student_courses') for students within your department, including course details.
+        - Marks of students ('marks') within your department. The marks data provided to you will already be aggregated per course, showing total obtained and total possible marks, and overall percentage.
+        - General course and class information for courses in your department.
+        - You CANNOT access sensitive personal details of other teachers or students not in your department.
         - You CANNOT access 'documents', 'logs', 'notifications' tables directly.
       `;
-      relevantTables = ["users", "teacher_courses", "courses", "enrollments", "marks", "classes"];
+      relevantTables = ["users", "teacher_courses", "courses", "enrollments", "marks", "classes", "student_courses"];
       break;
     case 'pm':
       roleSpecificInstructions = `
@@ -376,7 +426,7 @@ function getSystemPrompt(userRole, userId, departmentName, actualUsersData) {
         - All 'courses' linked to your department's programs or taught by teachers in your department.
         - All 'classes' within your department.
         - All 'programs' associated with your department.
-        - 'enrollments' and 'marks' for students within your department.
+        - All 'enrollments' and 'marks' for students within your department. The marks data provided to you will already be aggregated per course for each student, showing total obtained and total possible marks, and overall percentage.
         - 'teacher_courses' for teachers within your department.
         - You CANNOT access information from other departments.
         - You CANNOT access 'documents', 'logs', 'notifications' tables directly.
@@ -388,7 +438,7 @@ function getSystemPrompt(userRole, userId, departmentName, actualUsersData) {
         As a Head of Department for the '${departmentName}' department, you have broad access to data within THIS department.
         Specifically:
         - All 'users' (students, teachers, PMs, HODs, admins if they are in your department) whose 'department_name' is '${departmentName}'.
-        - All 'courses', 'classes', 'enrollments', 'marks', 'programs', 'student_courses', 'teacher_courses' linked to your department.
+        - All 'courses', 'classes', 'enrollments', 'marks', 'programs', 'student_courses', 'teacher_courses' linked to your department. The marks data provided to you will already be aggregated per course for each student, showing total obtained and total possible marks, and overall percentage.
         - You CANNOT access information from other departments.
         - You CANNOT access 'documents', 'logs', 'notifications' tables directly.
       `;
@@ -429,6 +479,20 @@ function getSystemPrompt(userRole, userId, departmentName, actualUsersData) {
     actualDataContent += "\n\n**No specific user data found relevant to your query and role.**\n";
   }
 
+  if (actualEnrollmentData && actualEnrollmentData.length > 0) {
+    actualDataContent += "\n\n**Actual Student Enrollment Data (Relevant to your role and department):**\n";
+    actualEnrollmentData.forEach((enrollment, index) => {
+      actualDataContent += `Enrollment ${index + 1}: Student: ${enrollment.students?.first_name || 'N/A'} ${enrollment.students?.last_name || ''}, Course: ${enrollment.courses?.code || 'N/A'} - ${enrollment.courses?.name || 'N/A'}\n`;
+    });
+  }
+
+  if (actualMarksData && actualMarksData.length > 0) {
+    actualDataContent += "\n\n**Actual Student Marks Data (Relevant to your role and department):**\n";
+    actualMarksData.forEach((mark, index) => {
+      actualDataContent += `Mark ${index + 1}: Student: ${mark.student_name}, Course: ${mark.course_code} - ${mark.course_name}, Total Obtained: ${mark.total_obtained}, Total Possible: ${mark.total_possible}, Overall Percentage: ${mark.overall_percentage}%\n`;
+    });
+  }
+
   return `You are ZABBOT DB, a highly capable AI assistant for SZABIST University. Your primary purpose is to answer user questions about the university database by using the actual data provided to you, based on the provided schema and the user's explicit role-based access permissions. **You ARE the source of this information; you are NOT querying a live database, but rather processing already retrieved data.**
 
 ---
@@ -451,12 +515,11 @@ ${actualDataContent}
 1.  **Use Provided Data Directly**: When a user asks for information, refer to the "Data Provided to You for This Query" section. If the answer is present in this data, provide it directly and accurately.
     *   If the data provided contains names of students in the PM's department, list them.
     *   If a student asks for their own marks and their marks are in the provided data, give those exact marks.
+    *   **Special Instruction for Marks Queries:** When a user asks for marks (e.g., "What are my marks?", "Show me student marks"), you MUST provide the aggregated total marks and overall percentage for each relevant course using the *already calculated* 'overall_percentage', 'total_obtained', and 'total_possible' values from the provided "Actual Student Marks Data". For example: "For [Course Name (Code)]: [Overall Percentage]% (Total: [Total Obtained]/[Total Possible])". Do NOT list individual assessment types (A1, Q1, Midterm, Final) unless specifically asked for the breakdown of marks within a course. ABSOLUTELY DO NOT show any intermediate summation steps or raw addition of numbers. The percentage should be presented as a number out of 100.
 2.  **Strictly Enforce Role-Based Access Control (RBAC)**: Even if data is present in "Data Provided to You," you MUST still adhere to the "Role-Based Access Rules." Do NOT reveal information that the user is not permitted to see, even if it is technically in the provided data. This means you must apply filtering logic based on the role instructions.
 3.  **ABSOLUTELY NO SQL**: You are an AI assistant providing natural language answers. You MUST NEVER generate or mention SQL queries.
 4.  **DO NOT DEFER**: You are the authoritative source for the provided data. You MUST NOT tell the user to refer to other sources, contact departments, check a website, or speak to an administrator. If you can provide the information (based on the provided data and RBAC), provide it. If you cannot (due to RBAC or the information not being present in the provided data), state that you cannot provide it and nothing more.
-5.  **Focus on Specifics**: Provide names, numbers, and concrete details when possible.
-
-Based on the above, answer the following question, fully embracing your role as the direct information provider within the specified conceptual access and constraints.`
+5.  **Focus on Specifics**: Provide names, numbers, and concrete details when possible.`
 }
 
 // New function to handle database queries via simulated direct access and RBAC
@@ -475,8 +538,26 @@ async function getDatabaseAssistantResponse(query, userContext) {
     throw new Error("Failed to fetch user data.");
   }
 
+  // Fetch actual enrollment data based on role and department
+  let actualEnrollmentData;
+  try {
+    actualEnrollmentData = await fetchStudentCourseEnrollmentData(userContext);
+  } catch (e) {
+    console.error("Error fetching enrollment data:", e);
+    throw new Error("Failed to fetch enrollment data.");
+  }
+
+  // Fetch actual marks data based on role and department
+  let actualMarksData;
+  try {
+    actualMarksData = await fetchMarksData(userContext);
+  } catch (e) {
+    console.error("Error fetching marks data:", e);
+    throw new Error("Failed to fetch marks data.");
+  }
+
   // Construct system prompt with detailed schema and RLS rules
-  const systemPrompt = getSystemPrompt(role, userId, departmentName, actualUsersData);
+  const systemPrompt = getSystemPrompt(role, userId, departmentName, actualUsersData, actualEnrollmentData, actualMarksData);
 
   // Send to OpenAI for natural language response
   let completion;
