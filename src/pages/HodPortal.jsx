@@ -64,6 +64,7 @@ import {
   CheckboxGroup,
   Checkbox,
   Stack as ChakraStack,
+  Textarea,
 } from "@chakra-ui/react";
 import {
   FaUniversity,
@@ -84,54 +85,16 @@ import {
   FaEyeSlash,
   FaLink,
   FaBrain,
+  FaChevronDown,
+  FaChevronUp,
+  FaRobot,
+  FaSave,
 } from "react-icons/fa";
 import DashboardLayout from "../components/DashboardLayout";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../services/supabaseService";
 import { useNavigate } from 'react-router-dom';
 import DatabaseChatbot from "../components/DatabaseChatbot";
-
-// --- Academic Calendar Data ---
-const academicCalendarData = {
-  title: "Academic Calendar (Spring - 2025)",
-  duration: "February 2025 – June 2025",
-  semesterDates: "Start: Feb 10, 2025 | End: July 6, 2025",
-  exams: [
-    { type: "Midterm Exam", week: "8th", dates: "March 24 – March 30, 2025" },
-    { type: "Final Exam", week: "16th–17th", dates: "May 19 – June 1, 2025" },
-  ],
-  importantDates: [
-    { event: "Teaching Evaluation (1st)", dates: "March 10 – March 23, 2025" },
-    { event: "Course Withdrawal Deadline", dates: "April 27, 2025 (11th Week)" },
-    { event: "Teaching Evaluation (2nd)", dates: "April 28 – May 4, 2025" },
-    { event: "ZABDESK Closing", dates: "June 25, 2025" },
-    { event: "Change of Grade Deadline", dates: "June 30, 2025" },
-    { event: "Probation & Dismissal List", dates: "June 30, 2025" },
-  ],
-  holidays: [
-    { occasion: "Pakistan Day", dates: "March 23, 2025" },
-    { occasion: "Eid ul-Fitr", dates: "March 30 – April 1, 2025" },
-    { occasion: "Labor Day", dates: "May 1, 2025" },
-    { occasion: "Eid al-Adha", dates: "June 7 – 9, 2025" },
-  ],
-  dissertationDeadlines: [
-    { activity: "Proposal Submission", week: "1st Week" },
-    { activity: "Midterm Review", week: "8th Week" },
-    { activity: "Plagiarism Checking", week: "12th Week (May 4, 2025)" },
-    { activity: "Final Submission", week: "13th Week (May 7, 2025)" },
-    { activity: "Final Defence (IRS, Thesis, RP, etc.)", week: "16th–17th Week (June 2–8, 2025)" },
-    { activity: "MS Thesis Defence", week: "16th–17th Week (June 2–8, 2025)" },
-    { activity: "PhD Presentation", week: "17th Week (June 2–8, 2025)" },
-  ],
-  registrationDates: [
-      { activity: "Open Zabdesk Interface (PM/HoD)", date: "January 6, 2025" },
-      { activity: "Course Offering Completion by PM/HoD", date: "January 16, 2025" },
-      { activity: "Timetable Release", date: "January 18, 2025" },
-      { activity: "Course Registration (Online)", date: "February 1–16, 2025" },
-      { activity: "Manual Registration (with fine)", date: "February 17–18, 2025" },
-  ]
-};
-// --- End Academic Calendar Data ---
 
 function HodPortal() {
   const { user, logout } = useAuth();
@@ -156,6 +119,7 @@ function HodPortal() {
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isAssigningCourse, setIsAssigningCourse] = useState(false);
+  const [isEmbeddingText, setIsEmbeddingText] = useState(false);
 
   const { 
     isOpen: isAddPmOpen,
@@ -175,7 +139,6 @@ function HodPortal() {
     onClose: onAddCourseClose,
   } = useDisclosure();
 
-  const { isOpen: isCalendarOpen, onOpen: onCalendarOpen, onClose: onCalendarClose } = useDisclosure();
   const { isOpen: isApprovalDialogOpen, onOpen: onApprovalDialogOpen, onClose: onApprovalDialogClose } = useDisclosure();
   const { isOpen: isAssignCourseModalOpen, onOpen: onAssignCourseModalOpen, onClose: onAssignCourseModalClose } = useDisclosure();
 
@@ -188,6 +151,7 @@ function HodPortal() {
   const [selectedTeacherForAssignment, setSelectedTeacherForAssignment] = useState(null);
   const [coursesToAssign, setCoursesToAssign] = useState([]);
   const [teacherAssignedCourses, setTeacherAssignedCourses] = useState([]);
+  const [expandedCourseDetails, setExpandedCourseDetails] = useState({});
 
   const cardBg = useColorModeValue("white", "gray.700");
   const headerBg = useColorModeValue("red.50", "gray.800");
@@ -233,7 +197,7 @@ function HodPortal() {
       const [pmsRes, teachersRes, studentsRes, pendingRes, logsRes, allCoursesRes] = await Promise.all([
         supabase.from('users').select('id, first_name, last_name, email, user_id').eq('role', 'pm').eq('department_name', deptName).order('created_at', { ascending: false }),
         supabase.from('users').select('id, first_name, last_name, email, created_at').eq('role', 'teacher').eq('department_name', deptName).order('created_at', { ascending: false }),
-        supabase.from('users').select('id, first_name, last_name, email, created_at, active').eq('role', 'student').eq('department_name', deptName).order('created_at', { ascending: false }),
+        supabase.from('users').select('id, first_name, last_name, email, created_at, active, roll_number').eq('role', 'student').eq('department_name', deptName).order('created_at', { ascending: false }),
         supabase.from('users').select('*').eq('active', false).eq('role', 'student').order('created_at', { ascending: false }),
         supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(50),
         supabase.from('courses').select('id, code, name, description, credit_hours').order('code')
@@ -634,6 +598,7 @@ function HodPortal() {
 
   const menuItems = [
     { label: "Department Overview", icon: FaUniversity, path: "/hod-portal" },
+    { label: 'Train AI', icon: FaRobot, path: '/hod-portal#train-ai' },
   ];
 
   const openAssignCourseModal = async (teacher) => {
@@ -690,6 +655,49 @@ function HodPortal() {
     }
   };
 
+  const handleEmbedText = async () => {
+    const textToEmbed = document.getElementById('ai-training-textarea').value;
+
+    if (!textToEmbed || textToEmbed.trim() === '') {
+      toast({ title: 'No Text Provided', description: 'Please enter text to train the AI.', status: 'warning', duration: 3000 });
+      return;
+    }
+
+    setIsEmbeddingText(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/embed-text`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.session.access_token}`,
+        },
+        body: JSON.stringify({
+          text: textToEmbed,
+          userContext: {
+            userId: user.id,
+            role: user.role,
+            departmentName: departmentName,
+          }
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to embed text on server.');
+      }
+
+      toast({ title: 'Text Embedding Successful', description: result.message || 'Text has been successfully embedded and stored.', status: 'success', duration: 5000 });
+      document.getElementById('ai-training-textarea').value = '';
+
+    } catch (error) {
+      console.error("Error embedding text:", error);
+      toast({ title: 'Error Embedding Text', description: error.message, status: 'error', duration: 5000 });
+    } finally {
+      setIsEmbeddingText(false);
+    }
+  };
+
   if (isLoading) {
   return (
       <DashboardLayout title={`HOD Dashboard (Loading...)`} menuItems={menuItems} userRole="HOD" roleColor="red">
@@ -710,7 +718,6 @@ function HodPortal() {
           <Heading size="lg">Department Management</Heading>
                 <HStack>
             <Button as={Link} href="https://szabist-isb.edu.pk/timetable-all/" isExternal colorScheme="teal" size="sm" leftIcon={<FaExternalLinkAlt />}>View Timetable</Button>
-            <Button colorScheme="purple" size="sm" leftIcon={<FaCalendarAlt />} onClick={onCalendarOpen}>Academic Calendar</Button>
                 </HStack>
         </Flex>
 
@@ -731,6 +738,7 @@ function HodPortal() {
             <Tab><Icon as={FaEye} mr={2}/>Course View</Tab>
             <Tab><Icon as={FaListAlt} mr={2}/>Activity Log</Tab>
             <Tab><Icon as={FaBrain} mr={2}/>DB Assistant</Tab>
+            <Tab><Icon as={FaRobot} mr={2}/>Train AI</Tab>
         </TabList>
         
           <TabPanels>
@@ -803,8 +811,8 @@ function HodPortal() {
                   {students.length > 0 ? (
                     <Box overflowX="auto">
                       <Table variant="simple" size="sm">
-                        <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Status</Th><Th>Joined</Th></Tr></Thead>
-                        <Tbody>{students.map(student => ( <Tr key={student.id}><Td>{student.first_name} {student.last_name}</Td><Td>{student.email}</Td><Td><Badge colorScheme={student.active ? 'green' : 'yellow'} borderRadius="md">{student.active ? 'Active' : 'Pending'}</Badge></Td><Td>{new Date(student.created_at).toLocaleDateString()}</Td></Tr>))}</Tbody>
+                        <Thead><Tr><Th>Name</Th><Th>Roll No.</Th><Th>Status</Th><Th>Joined</Th></Tr></Thead>
+                        <Tbody>{students.map(student => ( <Tr key={student.id}><Td>{student.first_name} {student.last_name}</Td><Td>{student.roll_number || 'N/A'}</Td><Td><Badge colorScheme={student.active ? 'green' : 'yellow'} borderRadius="md">{student.active ? 'Active' : 'Pending'}</Badge></Td><Td>{new Date(student.created_at).toLocaleDateString()}</Td></Tr>))}</Tbody>
                       </Table>
               </Box>
                   ) : (<Text>No students found.</Text>)}
@@ -897,12 +905,30 @@ function HodPortal() {
                                  <Heading size="sm" mb={2}>Assigned Teacher(s)</Heading>
                                  {course.teachers.length > 0 ? (
                                    <List spacing={1} fontSize="sm">
-                                     {course.teachers.map(teacher => (
+                                     {(expandedCourseDetails[course.id]?.teachers ? course.teachers : course.teachers.slice(0, 5)).map(teacher => (
                                        <ListItem key={teacher.id}>
                                          <ListIcon as={FaChalkboardTeacher} color="teal.500" />
                                          {teacher.first_name} {teacher.last_name}
                                        </ListItem>
                                      ))}
+                                     {course.teachers.length > 5 && (
+                                       <Button 
+                                         size="xs" 
+                                         variant="link" 
+                                         colorScheme="blue" 
+                                         mt={2} 
+                                         onClick={() => setExpandedCourseDetails(prev => ({
+                                           ...prev, 
+                                           [course.id]: { 
+                                             ...prev[course.id], 
+                                             teachers: !prev[course.id]?.teachers 
+                                           }
+                                         }))}
+                                         leftIcon={expandedCourseDetails[course.id]?.teachers ? <FaChevronUp/> : <FaChevronDown/>}
+                                       >
+                                         {expandedCourseDetails[course.id]?.teachers ? 'Show Less' : `Show All (${course.teachers.length})`}
+                                       </Button>
+                                     )}
                                    </List>
                                  ) : (
                                    <Text fontSize="sm" fontStyle="italic">No teachers currently assigned from this department.</Text>
@@ -912,12 +938,30 @@ function HodPortal() {
                                  <Heading size="sm" mb={2}>Enrolled Student(s)</Heading>
                                   {course.students.length > 0 ? (
                                     <List spacing={1} fontSize="sm">
-                                      {course.students.map(student => (
+                                      {(expandedCourseDetails[course.id]?.students ? course.students : course.students.slice(0, 5)).map(student => (
                                         <ListItem key={student.id}>
                                            <ListIcon as={FaUserGraduate} color="purple.500" />
                                           {student.first_name} {student.last_name}
                                         </ListItem>
                                       ))}
+                                      {course.students.length > 5 && (
+                                        <Button 
+                                          size="xs" 
+                                          variant="link" 
+                                          colorScheme="blue" 
+                                          mt={2} 
+                                          onClick={() => setExpandedCourseDetails(prev => ({
+                                            ...prev, 
+                                            [course.id]: { 
+                                              ...prev[course.id],
+                                              students: !prev[course.id]?.students 
+                                            }
+                                          }))}
+                                          leftIcon={expandedCourseDetails[course.id]?.students ? <FaChevronUp/> : <FaChevronDown/>}
+                                        >
+                                          {expandedCourseDetails[course.id]?.students ? 'Show Less' : `Show All (${course.students.length})`}
+                                        </Button>
+                                      )}
                                     </List>
                                   ) : (
                                     <Text fontSize="sm" fontStyle="italic">No students currently enrolled from this department.</Text>
@@ -962,6 +1006,49 @@ function HodPortal() {
                       <Text>Loading user context for Database Assistant...</Text>
                     </Flex>
                   )}
+                </CardBody>
+              </Card>
+            </TabPanel>
+
+            <TabPanel px={0}>
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
+                <CardHeader bg={headerBg} py={3}>
+                  <Heading size="md">
+                    <Flex align="center">
+                      <Icon as={FaRobot} mr={2}/> Train RAG Assistant
+                    </Flex>
+                  </Heading>
+                </CardHeader>
+                <CardBody>
+                  <VStack spacing={4} align="stretch">
+                    <Text fontSize="md">
+                      Enter text below to train the RAG assistant. This will create an embedding of the content and store it in the `documents` table.
+                    </Text>
+                    <FormControl>
+                      <FormLabel htmlFor="ai-training-textarea">Text to Embed</FormLabel>
+                      <Textarea
+                        id="ai-training-textarea"
+                        placeholder="Enter the text you want to train the AI with..."
+                        rows={10}
+                        borderRadius="md"
+                        border="1px solid"
+                        borderColor="gray.300"
+                        _dark={{ borderColor: "gray.600" }}
+                      />
+                    </FormControl>
+                    <Button
+                      colorScheme="purple"
+                      leftIcon={<FaSave />}
+                      onClick={handleEmbedText}
+                      isLoading={isEmbeddingText}
+                      borderRadius="md"
+                    >
+                      Embed and Save Text
+                    </Button>
+                    <Text fontSize="sm" color="gray.500">
+                      Note: Large texts will be chunked automatically.
+                    </Text>
+                  </VStack>
                 </CardBody>
               </Card>
             </TabPanel>
@@ -1085,95 +1172,6 @@ function HodPortal() {
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={isCalendarOpen} onClose={onCalendarClose} size="3xl" scrollBehavior="inside">
-        <ModalOverlay />
-        <ModalContent borderRadius="lg">
-          <ModalHeader>{academicCalendarData.title}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <VStack align="stretch" spacing={5}>
-              <Text fontWeight="bold">{academicCalendarData.duration}</Text>
-              <Text fontSize="sm">Semester Dates: {academicCalendarData.semesterDates}</Text>
-
-              <Box>
-                <Heading size="sm" mb={2}>Examination Schedule</Heading>
-                <Table variant="simple" size="sm">
-                  <Thead>
-                    <Tr>
-                      <Th>Type</Th>
-                      <Th>Week</Th>
-                      <Th>Dates</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {academicCalendarData.exams.map((exam, i) => (
-                      <Tr key={i}>
-                        <Td>{exam.type}</Td>
-                        <Td>{exam.week}</Td>
-                        <Td>{exam.dates}</Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </Box>
-
-              <Box>
-                <Heading size="sm" mb={2}>Important Academic Dates</Heading>
-                <List spacing={1} fontSize="sm">
-                  {academicCalendarData.importantDates.map((item, i) => (
-                    <ListItem key={i}>
-                      <ListIcon as={FaCalendarAlt} color="green.500" />
-                      <b>{item.event}:</b> {item.dates}
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
-
-              <Box>
-                <Heading size="sm" mb={2}>Course Offering / Registration</Heading>
-                <List spacing={1} fontSize="sm">
-                  {academicCalendarData.registrationDates.map((item, i) => (
-                    <ListItem key={i}>
-                      <ListIcon as={FaCalendarAlt} color="blue.500" />
-                      <b>{item.activity}:</b> {item.date}
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
-
-              <Box>
-                <Heading size="sm" mb={2}>Dissertation / Thesis / IS Deadlines</Heading>
-                <List spacing={1} fontSize="sm">
-                  {academicCalendarData.dissertationDeadlines.map((item, i) => (
-                    <ListItem key={i}>
-                      <ListIcon as={FaCalendarAlt} color="orange.500" />
-                      <b>{item.activity}:</b> {item.week}
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
-
-              <Box>
-                <Heading size="sm" mb={2}>Holidays</Heading>
-                <List spacing={1} fontSize="sm">
-                  {academicCalendarData.holidays.map((holiday, i) => (
-                    <ListItem key={i}>
-                      <ListIcon as={FaCalendarAlt} color="red.500" />
-                      <b>{holiday.occasion}:</b> {holiday.dates}
-                    </ListItem>
-                  ))}
-                </List>
-                <Text fontSize="xs" mt={1}>
-                  <i>Note: Holidays compensated on following Sunday. Ramadan dates highlighted in yellow (March/April - based on moon sighting).</i>
-                </Text>
-              </Box>
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button onClick={onCalendarClose} borderRadius="md">Close</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
     </DashboardLayout>
   );
 }

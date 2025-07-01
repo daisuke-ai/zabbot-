@@ -143,30 +143,25 @@ function DashboardLayout({
           </Badge>
         </Flex>
         
-        <Menu>
-          <MenuButton
-            as={Button}
-            rounded="full"
-            variant="link"
-            cursor="pointer"
-            minW={0}
-          >
-            <Flex align="center">
-              <Text mr={2} display={{ base: 'none', md: 'block' }}>
-                {user?.user_metadata?.first_name || user?.email}
-              </Text>
-              <Avatar
-                size="sm"
-                name={user?.user_metadata?.first_name || user?.email}
-              />
-            </Flex>
-          </MenuButton>
-          <MenuList>
-            <MenuItem icon={<FaUserCircle />}>Profile</MenuItem>
-            <MenuItem icon={<FaHome />} onClick={() => navigate('/')}>Home</MenuItem>
-            <MenuItem icon={<FaSignOutAlt />} onClick={handleLogout}>Logout</MenuItem>
-          </MenuList>
-        </Menu>
+        <Flex
+          align="center"
+          cursor="pointer"
+          onClick={() => {
+            const path = userRole === 'student' ? '/student-dashboard' :
+                         userRole === 'Program Manager' ? '/pm-dashboard' :
+                         userRole === 'HOD' ? '/hod-portal' : '/portal';
+            navigate(path);
+          }}
+          _hover={{ opacity: 0.8 }}
+        >
+          <Text mr={2} display={{ base: 'none', md: 'block' }}>
+            {user?.first_name} {user?.last_name || user?.email}
+          </Text>
+          <Avatar
+            size="sm"
+            name={user?.first_name || user?.last_name || user?.email}
+          />
+        </Flex>
       </Flex>
 
       <Flex>

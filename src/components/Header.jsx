@@ -18,7 +18,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { HamburgerIcon } from '@chakra-ui/icons';
 import szabistLogo from '../public/images/images.png';
 import { useAuth } from '../context/AuthContext';
-import { FaTools } from 'react-icons/fa';
+import { FaTools, FaSignInAlt } from 'react-icons/fa';
 
 function Header() {
   const { user, logout } = useAuth();
@@ -139,8 +139,19 @@ function Header() {
             <Button
               as={Link}
               to="/portal"
-              colorScheme="szabist"
-              variant="ghost"
+              colorScheme="blue"
+              variant="solid"
+              size="lg"
+              fontWeight="700"
+              px={6}
+              bg="blue.600"
+              fontFamily="'Poppins', sans-serif"
+              _hover={{
+                bg: 'blue.700',
+                transform: 'translateY(-2px)',
+                shadow: 'lg'
+              }}
+              leftIcon={<FaSignInAlt />}
             >
               Portal
             </Button>
@@ -187,7 +198,15 @@ function Header() {
                 <MenuItem as={Link} to="/research">Research</MenuItem>
                 <MenuItem as={Link} to="/blog">University Blog</MenuItem>
                 <MenuItem as={Link} to="/chatbot">AI Assistant</MenuItem>
-                <MenuItem as={Link} to="/portal">Portal</MenuItem>
+                <MenuItem 
+                  as={Link} 
+                  to="/portal" 
+                  color="blue.500" 
+                  fontWeight="bold"
+                  icon={<FaSignInAlt />}
+                >
+                  Portal
+                </MenuItem>
                 <MenuItem as={Link} to="/admin-login">Admin Tools</MenuItem>
                 
                 {user && (

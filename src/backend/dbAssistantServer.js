@@ -23,6 +23,14 @@ app.use(cors({
   credentials: true
 }));
 
+const chunkText = (text, chunkSize = 1000) => {
+  const chunks = [];
+  for (let i = 0; i < text.length; i += chunkSize) {
+    chunks.push(text.substring(i, i + chunkSize));
+  }
+  return chunks;
+};
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const supabase = createClient(
@@ -30,8 +38,6 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
-// --- Database Schema (Informational for AI's general knowledge, not for SQL generation) ---
-// This detailed schema information will be part of the system prompt to guide the AI.
 const databaseSchema = [
   {
     "table_name": "users",
@@ -42,6 +48,7 @@ const databaseSchema = [
       {"name": "email", "type": "text", "description": "User's email address, unique."},
       {"name": "first_name", "type": "text", "description": "User's first name."},
       {"name": "last_name", "type": "text", "description": "User's last name."},
+      {"name": "roll_number", "type": "text", "description": "Student's roll number (unique student identifier)."},
       {"name": "role", "type": "text", "description": "User's role (e.g., 'student', 'teacher', 'pm', 'hod', 'admin')."},
       {"name": "department_name", "type": "text", "description": "Department the user belongs to (e.g., 'Artificial Intelligence', 'Computer Science')."},
       {"name": "active", "type": "boolean", "description": "Whether the user account is active. Students require PM approval."},
@@ -149,8 +156,7 @@ const databaseSchema = [
       {"name": "embedding", "type": "vector", "description": "Vector embedding of the document content."},
       {"name": "source", "type": "text", "description": "Source of the document (e.g., 'markdown', 'blog')."},
       {"name": "student_id", "type": "uuid", "description": "Optional: Student ID this document is relevant to."},
-      {"name": "teacher_id", "type": "uuid", "description": "Optional: Teacher ID this document is relevant to."},
-      {"name": "department_id", "type": "uuid", "description": "Optional: Department ID this document is relevant to."}
+      {"name": "teacher_id", "type": "uuid", "description": "Optional: Teacher ID this document is relevant to."}
     ]
   },
   {
@@ -160,7 +166,7 @@ const databaseSchema = [
       {"name": "id", "type": "bigint", "description": "Unique notification identifier."},
       {"name": "created_at", "type": "timestamp with time zone", "description": "Timestamp of notification creation."},
       {"name": "notification", "type": "text", "description": "Content of the notification."},
-      {"name": "student_id", "type": "uuid", "description": "Optional: Student ID this notification is relevant to."}
+      {"name": "student_id", "type": "uuid", "description": "Optional: Student ID this notification is relevant to."}  
     ]
   },
   {
@@ -170,7 +176,7 @@ const databaseSchema = [
       {"name": "id", "type": "uuid", "description": "Unique log identifier."},
       {"name": "user_id", "type": "uuid", "description": "ID of the user who performed the action."},
       {"name": "action", "type": "text", "description": "Description of the action performed."},
-      {"name": "timestamp", "type": "timestamp with time zone", "description": "Timestamp of the action."}
+      {"name": "timestamp", "type": "timestamp with time zone", "description": "Timestamp of the action."}  
     ]
   }
 ];
@@ -178,7 +184,7 @@ const databaseSchema = [
 // Function to fetch user data based on role and department
 async function fetchUsersData(userContext) {
   const { role, userId, departmentName } = userContext;
-  let query = supabase.from('users').select('id, first_name, last_name, email, role, department_name, active');
+  let query = supabase.from('users').select('id, first_name, last_name, roll_number, email, role, department_name, active');
 
   console.log(`[DB Data Fetcher] Fetching users for role: ${role}, department: ${departmentName}`);
 
@@ -222,7 +228,7 @@ async function fetchStudentCourseEnrollmentData(userContext) {
     .select(`
       id,
       student_id,
-      students:users(first_name, last_name, email, department_name),
+      students:users(first_name, last_name, email, department_name, roll_number),
       course_id,
       courses(code, name, description)
     `);
@@ -289,7 +295,7 @@ async function fetchMarksData(userContext) {
       total_number,
       obtained_number,
       student_id,
-      students:users(first_name, last_name, email, department_name),
+      students:users(first_name, last_name, email, department_name, roll_number),
       course_id,
       courses(code, name)
     `);
@@ -352,6 +358,7 @@ async function fetchMarksData(userContext) {
       aggregatedMarks[studentCourseKey] = {
         student_id: mark.student_id,
         student_name: `${mark.students?.first_name || 'N/A'} ${mark.students?.last_name || ''}`.trim(),
+        student_roll_number: mark.students?.roll_number || 'N/A',
         course_id: mark.course_id,
         course_code: mark.courses?.code,
         course_name: mark.courses?.name,
@@ -383,8 +390,62 @@ async function fetchMarksData(userContext) {
   return finalMarksData;
 }
 
+// New function to fetch teacher course assignment data
+async function fetchTeacherCoursesData(userContext) {
+  const { role, userId, departmentName } = userContext;
+  let query = supabase
+    .from('teacher_courses')
+    .select(`
+      teacher_id,
+      teachers:users(first_name, last_name, email, department_name),
+      course_id,
+      courses(code, name, description)
+    `);
+
+  console.log(`[DB Data Fetcher] Fetching teacher course assignments for role: ${role}, department: ${departmentName}`);
+
+  switch (role) {
+    case 'student':
+      // Students typically don't need to see teacher assignments globally
+      // If a student queries about their own teacher, this might need refinement
+      return []; // No data for students by default
+    case 'teacher':
+      query = query.eq('teacher_id', userId); // Only see their own assignments
+      break;
+    case 'pm':
+    case 'hod':
+      // PMs/HODs can see all assignments within their department.
+      if (departmentName) {
+        const { data: departmentTeacherIds, error: teacherIdsError } = await supabase.from('users').select('id').eq('department_name', departmentName).eq('role', 'teacher');
+        if (teacherIdsError) throw teacherIdsError;
+        const teacherIds = departmentTeacherIds.map(t => t.id);
+        query = query.in('teacher_id', teacherIds); 
+      } else {
+        console.warn(`[DB Data Fetcher] PM/HOD role but no departmentName. Cannot filter teacher assignments.`);
+        return [];
+      }
+      break;
+    case 'admin':
+      // Admin can see all assignments
+      break;
+    default:
+      console.warn(`[DB Data Fetcher] Unknown role '${role}'. No teacher assignment data will be returned.`);
+      return [];
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error(`[DB Data Fetcher] Error fetching teacher course assignments for role ${role}:`, error);
+    throw error;
+  }
+
+  console.log(`[DB Data Fetcher] Successfully fetched ${data.length} teacher course assignments for role ${role}.`);
+  return data;
+}
+
 // Function to generate dynamic system prompt based on user role and relevant context
-function getSystemPrompt(userRole, userId, departmentName, actualUsersData, actualEnrollmentData, actualMarksData) {
+function getSystemPrompt(userRole, userId, departmentName, actualUsersData, actualEnrollmentData, actualMarksData, actualTeacherCoursesData) {
   let roleSpecificInstructions = "";
   let relevantTables = []; // List of tables the current role can "access" conceptually
 
@@ -392,9 +453,9 @@ function getSystemPrompt(userRole, userId, departmentName, actualUsersData, actu
   switch (userRole) {
     case 'student':
       roleSpecificInstructions = `
-        As a student, you can ONLY access your OWN personal information, your enrolled courses, and your marks.
+        As a student, you can ONLY access your OWN personal information, your enrolled courses, your roll number, and your marks.
         Specifically:
-        - From 'users' table: only your own 'first_name', 'last_name', 'email', 'role', 'department_name', 'active'.
+        - From 'users' table: only your own 'first_name', 'last_name', 'email', 'role', 'department_name', 'active', and 'roll_number'.
         - From 'student_courses' table: only entries where 'student_id' is your ID (${userId}). This includes course codes, names, and descriptions.
         - From 'marks' table: only entries where 'student_id' is your ID (${userId}). The marks data provided to you will already be aggregated per course, showing total obtained and total possible marks, and overall percentage.
         - From 'courses' table: only courses linked to your 'student_courses' or 'marks'.
@@ -408,7 +469,7 @@ function getSystemPrompt(userRole, userId, departmentName, actualUsersData, actu
       roleSpecificInstructions = `
         As a teacher, you can access information about:
         - Your own profile details from 'users' table (your 'first_name', 'last_name', 'email', 'role', 'department_name').
-        - Courses you are assigned to teach from 'teacher_courses' and 'courses' tables (where 'teacher_id' is your ID).
+        - Courses you are assigned to teach from 'teacher_courses' and 'courses' tables (where 'teacher_id' is your ID). You can answer questions about the number and names of courses you are assigned to teach.
         - Students in your department, including their names, emails, and active status, from the 'users' table.
         - Student enrollments ('student_courses') for students within your department, including course details.
         - Marks of students ('marks') within your department. The marks data provided to you will already be aggregated per course, showing total obtained and total possible marks, and overall percentage.
@@ -422,8 +483,8 @@ function getSystemPrompt(userRole, userId, departmentName, actualUsersData, actu
       roleSpecificInstructions = `
         As a Program Manager for the '${departmentName}' department, you have comprehensive access to information related to THIS department only.
         Specifically:
-        - You CAN retrieve the names (first_name, last_name), email, and active status of ALL students and teachers belonging to the '${departmentName}' department from the 'users' table.
-        - All 'courses' linked to your department's programs or taught by teachers in your department.
+        - You CAN retrieve the names (first_name, last_name), email, active status, and 'roll_number' of ALL students and teachers belonging to the '${departmentName}' department from the 'users' table.
+        - All 'courses' linked to your department's programs or taught by teachers in your department. This includes knowing which teachers are assigned to which courses.
         - All 'classes' within your department.
         - All 'programs' associated with your department.
         - All 'enrollments' and 'marks' for students within your department. The marks data provided to you will already be aggregated per course for each student, showing total obtained and total possible marks, and overall percentage.
@@ -437,8 +498,9 @@ function getSystemPrompt(userRole, userId, departmentName, actualUsersData, actu
       roleSpecificInstructions = `
         As a Head of Department for the '${departmentName}' department, you have broad access to data within THIS department.
         Specifically:
-        - All 'users' (students, teachers, PMs, HODs, admins if they are in your department) whose 'department_name' is '${departmentName}'.
-        - All 'courses', 'classes', 'enrollments', 'marks', 'programs', 'student_courses', 'teacher_courses' linked to your department. The marks data provided to you will already be aggregated per course for each student, showing total obtained and total possible marks, and overall percentage.
+        - All 'users' (students, teachers, PMs, HODs, admins if they are in your department) whose 'department_name' is '${departmentName}', including their 'roll_number'.
+        - All 'courses', 'classes', 'enrollments', 'marks', 'programs', 'student_courses', 'teacher_courses' linked to your department. This includes knowing which teachers are assigned to which courses.
+        - The marks data provided to you will already be aggregated per course for each student, showing total obtained and total possible marks, and overall percentage.
         - You CANNOT access information from other departments.
         - You CANNOT access 'documents', 'logs', 'notifications' tables directly.
       `;
@@ -473,7 +535,7 @@ function getSystemPrompt(userRole, userId, departmentName, actualUsersData, actu
   if (actualUsersData && actualUsersData.length > 0) {
     actualDataContent += "\n\n**Actual User Data (Relevant to your role and department):**\n";
     actualUsersData.forEach((user, index) => {
-      actualDataContent += `User ${index + 1}: Name: ${user.first_name} ${user.last_name}, Email: ${user.email}, Role: ${user.role}, Department: ${user.department_name || 'N/A'}, Active: ${user.active}\n`;
+      actualDataContent += `User ${index + 1}: Name: ${user.first_name} ${user.last_name}, Roll Number: ${user.roll_number || 'N/A'}, Email: ${user.email}, Role: ${user.role}, Department: ${user.department_name || 'N/A'}, Active: ${user.active}\n`;
     });
   } else {
     actualDataContent += "\n\n**No specific user data found relevant to your query and role.**\n";
@@ -482,14 +544,21 @@ function getSystemPrompt(userRole, userId, departmentName, actualUsersData, actu
   if (actualEnrollmentData && actualEnrollmentData.length > 0) {
     actualDataContent += "\n\n**Actual Student Enrollment Data (Relevant to your role and department):**\n";
     actualEnrollmentData.forEach((enrollment, index) => {
-      actualDataContent += `Enrollment ${index + 1}: Student: ${enrollment.students?.first_name || 'N/A'} ${enrollment.students?.last_name || ''}, Course: ${enrollment.courses?.code || 'N/A'} - ${enrollment.courses?.name || 'N/A'}\n`;
+      actualDataContent += `Enrollment ${index + 1}: Student: ${enrollment.students?.first_name || 'N/A'} ${enrollment.students?.last_name || ''} (Roll No: ${enrollment.students?.roll_number || 'N/A'}), Course: ${enrollment.courses?.code || 'N/A'} - ${enrollment.courses?.name || 'N/A'}\n`;
     });
   }
 
   if (actualMarksData && actualMarksData.length > 0) {
     actualDataContent += "\n\n**Actual Student Marks Data (Relevant to your role and department):**\n";
     actualMarksData.forEach((mark, index) => {
-      actualDataContent += `Mark ${index + 1}: Student: ${mark.student_name}, Course: ${mark.course_code} - ${mark.course_name}, Total Obtained: ${mark.total_obtained}, Total Possible: ${mark.total_possible}, Overall Percentage: ${mark.overall_percentage}%\n`;
+      actualDataContent += `Mark ${index + 1}: Student: ${mark.student_name} (Roll No: ${mark.student_roll_number}), Course: ${mark.course_code} - ${mark.course_name}, Total Obtained: ${mark.total_obtained}, Total Possible: ${mark.total_possible}, Overall Percentage: ${mark.overall_percentage}%\n`;
+    });
+  }
+
+  if (actualTeacherCoursesData && actualTeacherCoursesData.length > 0) {
+    actualDataContent += "\n\n**Actual Teacher Course Assignments (Relevant to your role and department):**\n";
+    actualTeacherCoursesData.forEach((assignment, index) => {
+      actualDataContent += `Assignment ${index + 1}: Teacher: ${assignment.teachers?.first_name || 'N/A'} ${assignment.teachers?.last_name || ''} (Email: ${assignment.teachers?.email || 'N/A'}), Course: ${assignment.courses?.code || 'N/A'} - ${assignment.courses?.name || 'N/A'}\n`;
     });
   }
 
@@ -515,11 +584,14 @@ ${actualDataContent}
 1.  **Use Provided Data Directly**: When a user asks for information, refer to the "Data Provided to You for This Query" section. If the answer is present in this data, provide it directly and accurately.
     *   If the data provided contains names of students in the PM's department, list them.
     *   If a student asks for their own marks and their marks are in the provided data, give those exact marks.
-    *   **Special Instruction for Marks Queries:** When a user asks for marks (e.g., "What are my marks?", "Show me student marks"), you MUST provide the aggregated total marks and overall percentage for each relevant course using the *already calculated* 'overall_percentage', 'total_obtained', and 'total_possible' values from the provided "Actual Student Marks Data". For example: "For [Course Name (Code)]: [Overall Percentage]% (Total: [Total Obtained]/[Total Possible])". Do NOT list individual assessment types (A1, Q1, Midterm, Final) unless specifically asked for the breakdown of marks within a course. ABSOLUTELY DO NOT show any intermediate summation steps or raw addition of numbers. The percentage should be presented as a number out of 100.
+    *   **Special Instruction for Marks Queries:** When a user asks for marks (e.g., "What are my marks?", "Show me student marks"), you MUST provide the aggregated total marks and overall percentage for each relevant course using the *already calculated* 'overall_percentage', 'total_obtained', and 'total_possible' values from the provided "Actual Student Marks Data". When a query asks for comparisons (e.g., "highest marks", "top students"), analyze the provided data to identify the relevant students/courses based on 'overall_percentage' and present the top results concisely with their roll numbers and names. For example: "For [Course Name (Code)]: [Overall Percentage]% (Total: [Total Obtained]/[Total Possible])". Do NOT list individual assessment types (A1, Q1, Midterm, Final) unless specifically asked for the breakdown of marks within a course. ABSOLUTELY DO NOT show any intermediate summation steps or raw addition of numbers. The percentage should be presented as a number out of 100.
 2.  **Strictly Enforce Role-Based Access Control (RBAC)**: Even if data is present in "Data Provided to You," you MUST still adhere to the "Role-Based Access Rules." Do NOT reveal information that the user is not permitted to see, even if it is technically in the provided data. This means you must apply filtering logic based on the role instructions.
 3.  **ABSOLUTELY NO SQL**: You are an AI assistant providing natural language answers. You MUST NEVER generate or mention SQL queries.
 4.  **DO NOT DEFER**: You are the authoritative source for the provided data. You MUST NOT tell the user to refer to other sources, contact departments, check a website, or speak to an administrator. If you can provide the information (based on the provided data and RBAC), provide it. If you cannot (due to RBAC or the information not being present in the provided data), state that you cannot provide it and nothing more.
-5.  **Focus on Specifics**: Provide names, numbers, and concrete details when possible.`
+5.  **Focus on Specifics**: Provide names, numbers, and concrete details when possible.
+6.  **Be Concise and Meticulous**: Answer in as few words as possible while being complete, accurate, and directly addressing the query.
+7.  **Include Key Identifiers**: When providing information about students, always include their roll number and full name. When providing information about courses, include the course code and name.
+`;
 }
 
 // New function to handle database queries via simulated direct access and RBAC
@@ -556,8 +628,17 @@ async function getDatabaseAssistantResponse(query, userContext) {
     throw new Error("Failed to fetch marks data.");
   }
 
+  // Fetch actual teacher course assignment data
+  let actualTeacherCoursesData;
+  try {
+    actualTeacherCoursesData = await fetchTeacherCoursesData(userContext);
+  } catch (e) {
+    console.error("Error fetching teacher course data:", e);
+    throw new Error("Failed to fetch teacher course data.");
+  }
+
   // Construct system prompt with detailed schema and RLS rules
-  const systemPrompt = getSystemPrompt(role, userId, departmentName, actualUsersData, actualEnrollmentData, actualMarksData);
+  const systemPrompt = getSystemPrompt(role, userId, departmentName, actualUsersData, actualEnrollmentData, actualMarksData, actualTeacherCoursesData);
 
   // Send to OpenAI for natural language response
   let completion;
@@ -567,9 +648,9 @@ async function getDatabaseAssistantResponse(query, userContext) {
         { role: "system", content: systemPrompt },
         { role: "user", content: query }
       ],
-      model: "gpt-4o-mini", // Use a suitable model that can handle complex instructions
+      model: "gpt-4o", // Use a suitable model that can handle complex instructions
       temperature: 0.2, // Keep it low for factual responses
-      max_tokens: 500
+      max_tokens: 1000
     });
   } catch (e) {
     console.error("Error with OpenAI completion:", e);
@@ -609,7 +690,79 @@ app.post("/api/db-assistant-query", async (req, res) => {
   }
 });
 
+// Endpoint for AI Training - Embedding Text
+app.post('/api/embed-text', async (req, res) => {
+  try {
+    const { text, userContext } = req.body;
+    const { role, departmentName } = userContext;
+
+    // Validate user role for access to this endpoint
+    if (!userContext || (role !== 'hod' && role !== 'pm' && role !== 'admin')) {
+      return res.status(403).json({ success: false, error: 'Access Denied: Only HODs, PMs, and Admins can train the AI.' });
+    }
+
+    if (!text || text.trim() === '') {
+      return res.status(400).json({ success: false, error: 'No text provided for embedding.' });
+    }
+
+    // Chunk the text to manage embedding limits and improve retrieval
+    const textChunks = chunkText(text);
+    const embeddingsToInsert = [];
+
+    // Determine the next available ID from 1-600
+    const { data: maxIdData, error: maxIdError } = await supabase
+      .from('documents')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1);
+
+    if (maxIdError) {
+      console.error('Error fetching max ID:', maxIdError);
+      return res.status(500).json({ success: false, error: 'Failed to retrieve existing document IDs.' });
+    }
+
+    let nextId = 1;
+    if (maxIdData && maxIdData.length > 0 && typeof maxIdData[0].id === 'number') {
+      nextId = (maxIdData[0].id % 600) + 1; // Wrap around from 1 to 600
+    }
+
+    for (const chunk of textChunks) {
+      const embeddingResponse = await openai.embeddings.create({
+        model: "text-embedding-ada-002",
+        input: chunk,
+      });
+
+      if (!embeddingResponse || !embeddingResponse.data || embeddingResponse.data.length === 0) {
+        throw new Error("Failed to generate embedding for a text chunk.");
+      }
+
+      embeddingsToInsert.push({
+        id: nextId, // Assign the calculated numerical ID
+        content: chunk,
+        embedding: embeddingResponse.data[0].embedding,
+        source: 'admin',
+      });
+      nextId = (nextId % 600) + 1; // Increment for the next chunk, wrapping around
+    }
+
+    const { error: insertError } = await supabase
+      .from('documents')
+      .insert(embeddingsToInsert);
+
+    if (insertError) {
+      console.error('Supabase insert error:', insertError);
+      return res.status(500).json({ success: false, error: `Failed to save embeddings: ${insertError.message}` });
+    }
+
+    res.status(200).json({ success: true, message: `Successfully embedded and stored ${textChunks.length} text chunks.` });
+
+  } catch (error) {
+    console.error("[Embed Text Error]:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 const DB_ASSISTANT_PORT = process.env.DB_ASSISTANT_PORT || 3036;
 app.listen(DB_ASSISTANT_PORT, () => {
   console.log(`DB Assistant Server is running on port ${DB_ASSISTANT_PORT}`);
-}); 
+});

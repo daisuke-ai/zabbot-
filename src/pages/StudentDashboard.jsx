@@ -354,6 +354,16 @@ function StudentDashboard() {
           <Card bg={cardBg} boxShadow="md" borderRadius="lg">
             <CardBody>
               <Stat>
+                <StatLabel><Icon as={FaUserGraduate} mr={2}/>Roll Number</StatLabel>
+                <StatNumber>{user?.roll_number || 'N/A'}</StatNumber>
+                <StatHelpText>Your unique ID</StatHelpText>
+              </Stat>
+            </CardBody>
+          </Card>
+          
+          <Card bg={cardBg} boxShadow="md" borderRadius="lg">
+            <CardBody>
+              <Stat>
                 <StatLabel><Icon as={FaBook} mr={2}/>Enrolled Courses</StatLabel>
                 <StatNumber>{studentEnrollments.length}</StatNumber>
                 <StatHelpText>Current Term</StatHelpText>

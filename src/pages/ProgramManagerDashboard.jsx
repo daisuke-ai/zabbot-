@@ -87,7 +87,9 @@ import {
   FaRobot,
   FaBrain,
   FaSave,
-  FaUsers
+  FaUsers,
+  FaChevronDown,
+  FaChevronUp
 } from 'react-icons/fa';
 import DashboardLayout from '../components/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
@@ -124,6 +126,7 @@ function ProgramManagerDashboard() {
   const [departmentCourseDetails, setDepartmentCourseDetails] = useState([]);
   const [isFetchingCourses, setIsFetchingCourses] = useState(false);
   const [isAssigningCourse, setIsAssigningCourse] = useState(false);
+  const [isEmbeddingText, setIsEmbeddingText] = useState(false);
   
   const { 
     isOpen: isApprovalDialogOpen, 
@@ -165,8 +168,7 @@ function ProgramManagerDashboard() {
   const [selectedTeacherForAssignment, setSelectedTeacherForAssignment] = useState(null);
   const [coursesToAssign, setCoursesToAssign] = useState([]);
   const [teacherAssignedCourses, setTeacherAssignedCourses] = useState([]);
-  const [aiTrainingText, setAiTrainingText] = useState('');
-  const [isEmbeddingText, setIsEmbeddingText] = useState(false);
+  const [expandedCourseDetails, setExpandedCourseDetails] = useState({});
   
   // Construct currentUserContext for the chatbot
   const currentUserContext = useMemo(() => {
@@ -209,7 +211,7 @@ function ProgramManagerDashboard() {
 
       const { data: studentsData, error: studentsError } = await supabase
         .from('users')
-        .select('id, first_name, last_name, email, created_at, active')
+        .select('id, first_name, last_name, email, created_at, active, roll_number')
         .eq('role', 'student')
         .eq('department_name', departmentName)
         .order('created_at', { ascending: false });
@@ -563,21 +565,29 @@ function ProgramManagerDashboard() {
   };
 
   const handleEmbedText = async () => {
-    if (!aiTrainingText.trim()) {
-      toast({ title: 'Empty Text', description: 'Text cannot be empty.', status: 'warning', duration: 3000 });
+    const textToEmbed = document.getElementById('pm-ai-training-textarea').value;
+
+    if (!textToEmbed || textToEmbed.trim() === '') {
+      toast({ title: 'No Text Provided', description: 'Please enter text to train the AI.', status: 'warning', duration: 3000 });
       return;
     }
 
     setIsEmbeddingText(true);
     try {
-      // Make API call to your backend server to embed and save the text
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/embed-text`, {
+      const response = await fetch(`http://localhost:3036/api/embed-text`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}` // Pass token if authentication is needed on backend
+          'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ text: aiTrainingText })
+        body: JSON.stringify({
+          text: textToEmbed,
+          userContext: {
+            userId: user.id,
+            role: user.role,
+            departmentName: pmDepartmentName,
+          }
+        }),
       });
 
       const result = await response.json();
@@ -587,7 +597,7 @@ function ProgramManagerDashboard() {
       }
 
       toast({ title: 'Text Embedding Successful', description: result.message || 'Text has been successfully embedded and stored.', status: 'success', duration: 5000 });
-      setAiTrainingText('');
+      document.getElementById('pm-ai-training-textarea').value = '';
 
     } catch (error) {
       console.error("Error embedding text:", error);
@@ -600,6 +610,7 @@ function ProgramManagerDashboard() {
   const menuItems = [
     { label: 'Dashboard', icon: FaUserTie, path: '/pm-dashboard' },
     { label: 'Database Assistant', icon: FaBrain, path: '/pm-dashboard#db-assistant'},
+    { label: 'Train AI', icon: FaRobot, path: '/pm-dashboard#train-ai' },
   ];
   
   const calculatedStats = useMemo(() => ({
@@ -637,14 +648,6 @@ function ProgramManagerDashboard() {
                  >
                     View Timetable
                  </Button>
-                 <Button
-                    colorScheme="purple"
-                    size="sm"
-                    leftIcon={<FaCalendarAlt />}
-                    onClick={onCalendarOpen}
-                 >
-                    Academic Calendar
-                 </Button>
              </HStack>
          </Flex>
 
@@ -674,9 +677,9 @@ function ProgramManagerDashboard() {
                    {students.length > 0 ? (
                       <Box overflowX="auto">
                           <Table variant="simple" size="sm">
-                              <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Status</Th><Th>Joined</Th></Tr></Thead>
+                              <Thead><Tr><Th>Name</Th><Th>Roll No.</Th><Th>Status</Th><Th>Joined</Th></Tr></Thead>
                               <Tbody>
-                                {students.map(student => ( <Tr key={student.id}> <Td>{student.first_name} {student.last_name}</Td> <Td>{student.email}</Td> <Td><Badge colorScheme={student.active ? 'green' : 'yellow'} borderRadius="md">{student.active ? 'Active' : 'Pending'}</Badge></Td> <Td>{new Date(student.created_at).toLocaleDateString()}</Td> </Tr> ))}
+                                {students.map(student => ( <Tr key={student.id}> <Td>{student.first_name} {student.last_name}</Td> <Td>{student.roll_number || 'N/A'}</Td> <Td><Badge colorScheme={student.active ? 'green' : 'yellow'} borderRadius="md">{student.active ? 'Active' : 'Pending'}</Badge></Td> <Td>{new Date(student.created_at).toLocaleDateString()}</Td> </Tr> ))}
                               </Tbody>
                            </Table>
                       </Box>
@@ -702,11 +705,11 @@ function ProgramManagerDashboard() {
                                <Thead><Tr><Th>Name</Th><Th>Email</Th><Th>Joined</Th><Th>Actions</Th></Tr></Thead>
                                <Tbody>
                                  {teachers.map(teacher => ( 
-                                     <Tr key={teacher.id}> 
-                                         <Td>{teacher.first_name} {teacher.last_name}</Td> 
-                                         <Td>{teacher.email}</Td> 
-                                         <Td>{new Date(teacher.created_at).toLocaleDateString()}</Td>
-                                         <Td>
+                                    <Tr key={teacher.id}> 
+                                        <Td>{teacher.first_name} {teacher.last_name}</Td> 
+                                        <Td>{teacher.email}</Td> 
+                                        <Td>{new Date(teacher.created_at).toLocaleDateString()}</Td>
+                                        <Td>
                                             <Button 
                                                 size="xs" 
                                                 colorScheme="teal"
@@ -835,12 +838,30 @@ function ProgramManagerDashboard() {
                                  <Heading size="sm" mb={2}>Assigned Teacher(s)</Heading>
                                  {course.teachers.length > 0 ? (
                                    <List spacing={1} fontSize="sm">
-                                     {course.teachers.map(teacher => (
+                                     {(expandedCourseDetails[course.id]?.teachers ? course.teachers : course.teachers.slice(0, 5)).map(teacher => (
                                        <ListItem key={teacher.id}>
                                          <ListIcon as={FaChalkboardTeacher} color="teal.500" />
                                          {teacher.first_name} {teacher.last_name}
                                        </ListItem>
                                      ))}
+                                     {course.teachers.length > 5 && (
+                                       <Button 
+                                         size="xs" 
+                                         variant="link" 
+                                         colorScheme="blue" 
+                                         mt={2} 
+                                         onClick={() => setExpandedCourseDetails(prev => ({
+                                           ...prev, 
+                                           [course.id]: { 
+                                             ...prev[course.id], 
+                                             teachers: !prev[course.id]?.teachers 
+                                           }
+                                         }))}
+                                         leftIcon={expandedCourseDetails[course.id]?.teachers ? <FaChevronUp/> : <FaChevronDown/>}
+                                       >
+                                         {expandedCourseDetails[course.id]?.teachers ? 'Show Less' : `Show All (${course.teachers.length})`}
+                                       </Button>
+                                     )}
                                    </List>
                                  ) : (
                                    <Text fontSize="sm" fontStyle="italic">No teachers currently assigned from this department.</Text>
@@ -850,12 +871,30 @@ function ProgramManagerDashboard() {
                                  <Heading size="sm" mb={2}>Enrolled Student(s)</Heading>
                                   {course.students.length > 0 ? (
                                     <List spacing={1} fontSize="sm">
-                                      {course.students.map(student => (
+                                      {(expandedCourseDetails[course.id]?.students ? course.students : course.students.slice(0, 5)).map(student => (
                                         <ListItem key={student.id}>
                                            <ListIcon as={FaUserGraduate} color="purple.500" />
                                           {student.first_name} {student.last_name}
                                         </ListItem>
                                       ))}
+                                      {course.students.length > 5 && (
+                                        <Button 
+                                          size="xs" 
+                                          variant="link" 
+                                          colorScheme="blue" 
+                                          mt={2} 
+                                          onClick={() => setExpandedCourseDetails(prev => ({
+                                            ...prev, 
+                                            [course.id]: { 
+                                              ...prev[course.id], 
+                                              students: !prev[course.id]?.students 
+                                            }
+                                          }))}
+                                          leftIcon={expandedCourseDetails[course.id]?.students ? <FaChevronUp/> : <FaChevronDown/>}
+                                        >
+                                          {expandedCourseDetails[course.id]?.students ? 'Show Less' : `Show All (${course.students.length})`}
+                                        </Button>
+                                      )}
                                     </List>
                                   ) : (
                                     <Text fontSize="sm" fontStyle="italic">No students currently enrolled from this department.</Text>
@@ -922,18 +961,18 @@ function ProgramManagerDashboard() {
                 <CardBody>
                   <VStack spacing={4} align="stretch">
                     <Text fontSize="md">
-                      Enter text below to train the RAG assistant. This will create an embedding of the text and store it in the `documents` table, making it available for the AI to reference in future queries.
+                      Enter text below to train the RAG assistant. This will create an embedding of the content and store it in the `documents` table.
                     </Text>
                     <FormControl>
-                      <FormLabel htmlFor="ai-training-text">Training Data Text</FormLabel>
+                      <FormLabel htmlFor="pm-ai-training-textarea">Text to Embed</FormLabel>
                       <Textarea
-                        id="ai-training-text"
-                        placeholder="Type or paste your training data here..."
-                        value={aiTrainingText}
-                        onChange={(e) => setAiTrainingText(e.target.value)}
-                        size="md"
+                        id="pm-ai-training-textarea"
+                        placeholder="Enter the text you want to train the AI with..."
                         rows={10}
                         borderRadius="md"
+                        border="1px solid"
+                        borderColor="gray.300"
+                        _dark={{ borderColor: "gray.600" }}
                       />
                     </FormControl>
                     <Button
@@ -941,13 +980,12 @@ function ProgramManagerDashboard() {
                       leftIcon={<FaSave />}
                       onClick={handleEmbedText}
                       isLoading={isEmbeddingText}
-                      isDisabled={!aiTrainingText.trim()}
                       borderRadius="md"
                     >
                       Embed and Save Text
                     </Button>
                     <Text fontSize="sm" color="gray.500">
-                      Note: Large texts will be chunked automatically. Ensure text is relevant university information.
+                      Note: Large texts will be chunked automatically.
                     </Text>
                   </VStack>
                 </CardBody>

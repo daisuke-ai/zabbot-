@@ -22,8 +22,12 @@
         "gtts": "^0.2.1",
         "langchain": "^0.3.11",
         "mailjet": "^0.0.1",
+        "mammoth": "^1.8.0",
+        "multer": "^1.4.5-lts.1",
         "node-mailjet": "^6.0.2",
-        "openai": "^4.79.1"
+        "openai": "^4.79.1",
+        "pdf-parse": "^1.1.1",
+        "szabist-website": "file:../.."
     },
     "devDependencies": {
         "@esbuild-kit/esm-loader": "^2.6.5",
