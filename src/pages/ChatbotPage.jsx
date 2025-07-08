@@ -40,8 +40,28 @@ function ChatbotPage() {
   ];
 
   return (
-    <Box minH="90vh" bg={bgColor} pb={24}>
-      <Container maxW="container.md" py={4}>
+    <Box
+      minH="100vh"
+      pb={24}
+      sx={{
+        position: 'relative',
+        overflow: 'hidden',
+        // Base gradient background
+        background: 'linear-gradient(135deg, #cce3ff 0%, #e0e7ff 50%, #b3d9ff 100%)', // Dynamic blue gradient
+        // Overlay a repeating hexagon pattern with more visibility
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          inset: 0,
+          zIndex: 0,
+          backgroundImage: `url("data:image/svg+xml;utf8,<svg width='150' height='130' viewBox='0 0 150 130' fill='none' xmlns='http://www.w3.org/2000/svg'><g opacity='0.25' stroke='%238cbaff' stroke-width='2'><polygon points='75,5 145,40 145,100 75,135 5,100 5,40'/></g></svg>")`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '150px 130px',
+          pointerEvents: 'none',
+        },
+      }}
+    >
+      <Container maxW="container.md" py={4} position="relative" zIndex={1}>
         {/* Header Section */}
         <VStack spacing={1} mb={6}>
           <Flex align="center" gap={2}>

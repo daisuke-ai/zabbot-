@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Box, 
   Heading, 
@@ -56,11 +56,13 @@ import {
   FaPlus,
   FaEdit,
   FaEye,
-  FaSave
+  FaSave,
+  FaBrain
 } from 'react-icons/fa';
 import DashboardLayout from '../components/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseService';
+import DatabaseChatbot from '../components/DatabaseChatbot';
 
 // --- Define Mark Types and Totals --- 
 const MARK_TYPES = {
@@ -86,6 +88,7 @@ function TeacherDashboard() {
   const [assignedCourses, setAssignedCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingMarks, setIsSavingMarks] = useState(false);
+  const [teacherDepartmentName, setTeacherDepartmentName] = useState('');
   
   // State for the marks modal
   const { isOpen: isMarksModalOpen, onOpen: onMarksModalOpen, onClose: onMarksModalClose } = useDisclosure();
@@ -99,11 +102,37 @@ function TeacherDashboard() {
   const headerBg = useColorModeValue('green.50', 'gray.800');
   const borderColor = useColorModeValue('green.500', 'green.400');
 
+  const tabColorScheme = "green";
+
+  // Define currentUserContext for the chatbot
+  const currentUserContext = useMemo(() => {
+    if (user && user.id && user.role) {
+      return {
+        userId: user.id,
+        role: user.role,
+        departmentName: teacherDepartmentName || 'N/A'
+      };
+    }
+    return null;
+  }, [user, teacherDepartmentName]);
+
   // --- Data Fetching --- 
   const fetchTeacherData = useCallback(async () => {
     if (!user?.id) return;
     setIsLoading(true);
     try {
+      // Fetch teacher's department name
+      const { data: teacherProfile, error: profileError } = await supabase
+        .from('users')
+        .select('department_name')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !teacherProfile?.department_name) {
+        console.warn('Teacher department not found or profile incomplete.', profileError);
+      }
+      setTeacherDepartmentName(teacherProfile?.department_name || '');
+
       // 1. Fetch course IDs assigned to the teacher
       const { data: courseAssignments, error: assignmentError } = await supabase
         .from('teacher_courses')
@@ -278,6 +307,7 @@ function TeacherDashboard() {
 
   // --- Menu Items (Adjust as needed) --- 
   const menuItems = [
+    { label: 'DB Assistant', icon: FaBrain, path: '#db-assistant' },
     { label: 'My Courses', icon: FaChalkboardTeacher, path: '/teacher-dashboard' },
   ];
 
@@ -297,55 +327,87 @@ function TeacherDashboard() {
       roleColor="green"
     >
       <Stack spacing={6}>
-        {/* Assigned Courses List */}
-        <Card bg={cardBg} boxShadow="md" borderTop="4px solid" borderColor={borderColor}>
-          <CardHeader bg={headerBg} py={3}>
-            <Heading size="md">
-              <Flex align="center">
-                <Icon as={FaChalkboardTeacher} mr={2} />
-                My Assigned Courses
-              </Flex>
-            </Heading>
-          </CardHeader>
-          <CardBody>
-            {assignedCourses.length > 0 ? (
-              <Box overflowX="auto">
-                <Table variant="simple" size="sm">
-                  <Thead>
-                    <Tr>
-                      <Th>Code</Th>
-                      <Th>Name</Th>
-                      <Th>Credits</Th>
-                      <Th>Actions</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {assignedCourses.map((course) => (
-                      <Tr key={course.id}>
-                        <Td fontWeight="bold">{course.code}</Td>
-                        <Td>{course.name}</Td>
-                        <Td textAlign="center">{course.credit_hours}</Td>
-                        <Td>
-                          <Button 
-                            size="xs" 
-                            colorScheme="blue" 
-                            variant="outline"
-                            leftIcon={<FaUsers />}
-                            onClick={() => openMarksModal(course)}
-                          >
-                            Manage Students & Marks
-                          </Button>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </Box>
-            ) : (
-              <Text>You are not currently assigned to any courses.</Text>
-            )}
-          </CardBody>
-        </Card>
+        <Tabs colorScheme={tabColorScheme} variant="enclosed" isLazy>
+          <TabList>
+              <Tab><Icon as={FaBrain} mr={2} fontSize="xl"/> DB Assistant</Tab>
+              <Tab><Icon as={FaChalkboardTeacher} mr={2}/>My Assigned Courses</Tab>
+          </TabList>
+          
+          <TabPanels>
+              <TabPanel px={0}>
+                  <Card bg={cardBg} boxShadow="md" borderTop="4px solid" borderColor={borderColor}>
+                      <CardHeader bg={headerBg} py={3}>
+                          <Heading size="md">
+                              <Flex align="center">
+                                  <Icon as={FaBrain} mr={2}/> My Database Assistant
+                              </Flex>
+                          </Heading>
+                      </CardHeader>
+                      <CardBody>
+                          {currentUserContext ? (
+                              <DatabaseChatbot currentUserContext={currentUserContext} />
+                          ) : (
+                              <Flex justify="center" align="center" h="200px">
+                                  <Spinner size="xl" mr={3}/>
+                                  <Text>Loading user context for Database Assistant...</Text>
+                              </Flex>
+                          )}
+                      </CardBody>
+                  </Card>
+              </TabPanel>
+
+              <TabPanel px={0}>
+                  <Card bg={cardBg} boxShadow="md" borderTop="4px solid" borderColor={borderColor}>
+                      <CardHeader bg={headerBg} py={3}>
+                          <Heading size="md">
+                              <Flex align="center">
+                                  <Icon as={FaChalkboardTeacher} mr={2} />
+                                  My Assigned Courses
+                              </Flex>
+                          </Heading>
+                      </CardHeader>
+                      <CardBody>
+                          {assignedCourses.length > 0 ? (
+                              <Box overflowX="auto">
+                                  <Table variant="simple" size="sm">
+                                      <Thead>
+                                          <Tr>
+                                              <Th>Code</Th>
+                                              <Th>Name</Th>
+                                              <Th>Credits</Th>
+                                              <Th>Actions</Th>
+                                          </Tr>
+                                      </Thead>
+                                      <Tbody>
+                                          {assignedCourses.map((course) => (
+                                              <Tr key={course.id}>
+                                                  <Td fontWeight="bold">{course.code}</Td>
+                                                  <Td>{course.name}</Td>
+                                                  <Td textAlign="center">{course.credit_hours}</Td>
+                                                  <Td>
+                                                      <Button 
+                                                          size="xs" 
+                                                          colorScheme="blue" 
+                                                          variant="outline"
+                                                          leftIcon={<FaUsers />}
+                                                          onClick={() => openMarksModal(course)}
+                                                      >
+                                                          Manage Students & Marks
+                                                      </Button>
+                                                  </Td>
+                                              </Tr>
+                                          ))}
+                                      </Tbody>
+                                  </Table>
+                              </Box>
+                          ) : (
+                              <Text>You are not currently assigned to any courses.</Text>
+                          )}
+                      </CardBody>
+                  </Card>
+              </TabPanel>
+          </TabPanels>
+        </Tabs>
       </Stack>
       
       {/* Marks Modal */}
@@ -393,7 +455,7 @@ function TeacherDashboard() {
                     ))}
                   </Tbody>
                 </Table>
-    </Box>
+              </Box>
             )}
           </ModalBody>
           <ModalFooter>

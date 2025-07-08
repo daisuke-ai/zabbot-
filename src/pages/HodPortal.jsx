@@ -730,6 +730,7 @@ function HodPortal() {
 
         <Tabs colorScheme={tabColorScheme} variant="enclosed" isLazy>
         <TabList>
+            <Tab><Icon as={FaBrain} mr={2} fontSize="xl"/> DB Assistant</Tab>
             <Tab><Icon as={FaUserTie} mr={2}/>Program Managers</Tab>
             <Tab><Icon as={FaChalkboardTeacher} mr={2}/>Teachers</Tab>
             <Tab><Icon as={FaUserGraduate} mr={2}/>Students</Tab>
@@ -737,12 +738,33 @@ function HodPortal() {
             <Tab><Icon as={FaBook} mr={2}/>Courses</Tab>
             <Tab><Icon as={FaEye} mr={2}/>Course View</Tab>
             <Tab><Icon as={FaListAlt} mr={2}/>Activity Log</Tab>
-            <Tab><Icon as={FaBrain} mr={2}/>DB Assistant</Tab>
             <Tab><Icon as={FaRobot} mr={2}/>Train AI</Tab>
         </TabList>
         
           <TabPanels>
-          <TabPanel px={0}>
+            <TabPanel px={0}>
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
+                <CardHeader bg={headerBg} py={3}>
+                  <Heading size="md">
+                    <Flex align="center">
+                      <Icon as={FaBrain} mr={2}/> Department Database Assistant
+                    </Flex>
+                  </Heading>
+                </CardHeader>
+                <CardBody>
+                  {currentUserContext ? (
+                    <DatabaseChatbot currentUserContext={currentUserContext} />
+                  ) : (
+                    <Flex justify="center" align="center" h="200px">
+                      <Spinner size="xl" mr={3}/>
+                      <Text>Loading user context for Database Assistant...</Text>
+                    </Flex>
+                  )}
+                </CardBody>
+              </Card>
+            </TabPanel>
+
+            <TabPanel px={0}>
               <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}>
                   <Flex justify="space-between" align="center">
@@ -986,28 +1008,6 @@ function HodPortal() {
                    )}
                  </CardBody>
                </Card>
-            </TabPanel>
-
-            <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
-                <CardHeader bg={headerBg} py={3}>
-                  <Heading size="md">
-                    <Flex align="center">
-                      <Icon as={FaBrain} mr={2}/> Department Database Assistant
-                    </Flex>
-                  </Heading>
-                </CardHeader>
-                <CardBody>
-                  {currentUserContext ? (
-                    <DatabaseChatbot currentUserContext={currentUserContext} />
-                  ) : (
-                    <Flex justify="center" align="center" h="200px">
-                      <Spinner size="xl" mr={3}/>
-                      <Text>Loading user context for Database Assistant...</Text>
-                    </Flex>
-                  )}
-                </CardBody>
-              </Card>
             </TabPanel>
 
             <TabPanel px={0}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Box, 
   Heading, 
@@ -105,6 +105,8 @@ function StudentDashboard() {
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [fetchError, setFetchError] = useState(null);
   const [gpaInfo, setGpaInfo] = useState({ gpa: 0, totalCredits: 0, averagePercentage: 0 });
+  const [studentDepartmentName, setStudentDepartmentName] = useState('');
+  const [studentRollNumber, setStudentRollNumber] = useState('');
 
   const cardBg = useColorModeValue('white', 'gray.700');
   const headerBg = useColorModeValue('gray.50', 'gray.800');
@@ -116,11 +118,12 @@ function StudentDashboard() {
       return {
         userId: user.id,
         role: user.role,
-        departmentName: user.user_metadata?.department_name || 'N/A' // Assuming department_name might be in user_metadata or set from profile fetch
+        departmentName: studentDepartmentName || 'N/A',
+        rollNumber: studentRollNumber || 'N/A'
       };
     }
     return null;
-  }, [user]);
+  }, [user, studentDepartmentName, studentRollNumber]);
 
   useEffect(() => {
     if (user && user.id) {
@@ -174,12 +177,29 @@ function StudentDashboard() {
       setStudentMarks(marksData || []);
       console.log("Fetched student marks:", marksData);
 
+      // Fetch student's department name and roll number
+      const { data: studentProfile, error: profileError } = await supabase
+        .from('users')
+        .select('department_name, roll_number')
+        .eq('id', studentId)
+        .single();
+
+      if (profileError || !studentProfile) {
+        console.error('Error fetching student profile:', profileError?.message);
+        toast({ title: 'Error', description: 'Could not load student profile.', status: 'error' });
+        // Do not return here, continue with other fetches even if department/roll is missing
+      }
+      setStudentDepartmentName(studentProfile?.department_name || '');
+      setStudentRollNumber(studentProfile?.roll_number || '');
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       setFetchError(error.message || 'Failed to load dashboard data.');
       setAllCourses([]);
       setStudentEnrollments([]);
       setStudentMarks([]);
+      setStudentDepartmentName('');
+      setStudentRollNumber('');
     } finally {
       setIsLoading(false);
     }
@@ -294,6 +314,7 @@ function StudentDashboard() {
   };
   
   const menuItems = [
+    { label: 'DB Assistant', icon: FaBrain, path: '#db-assistant' },
     { label: 'My Dashboard', icon: FaUserGraduate, path: '/student-dashboard' },
     { label: 'Register Courses', icon: FaPlusSquare, path: '/student-dashboard' },
   ];
@@ -355,7 +376,7 @@ function StudentDashboard() {
             <CardBody>
               <Stat>
                 <StatLabel><Icon as={FaUserGraduate} mr={2}/>Roll Number</StatLabel>
-                <StatNumber>{user?.roll_number || 'N/A'}</StatNumber>
+                <StatNumber>{studentRollNumber || 'N/A'}</StatNumber>
                 <StatHelpText>Your unique ID</StatHelpText>
               </Stat>
             </CardBody>
@@ -384,16 +405,38 @@ function StudentDashboard() {
         
         <Tabs colorScheme="purple" variant='soft-rounded'>
           <TabList>
+            <Tab><Icon as={FaBrain} mr={2} fontSize="xl"/> DB Assistant</Tab>
             <Tab><Icon as={FaBook} mr={2} />My Courses & Marks</Tab>
             <Tab><Icon as={FaPlusSquare} mr={2} />Register for Courses</Tab>
-            <Tab><Icon as={FaBrain} mr={2} />My Database Assistant</Tab>
           </TabList>
 
           <TabPanels>
             <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
+              <Card bg={cardBg} boxShadow="md" borderTop="4px solid" borderColor={borderColor}>
                 <CardHeader bg={headerBg} py={3}>
-                  <Heading size="md">My Enrolled Courses & Marks Breakdown</Heading>
+                  <Heading size="md">
+                    <Flex align="center">
+                      <Icon as={FaBrain} mr={2}/> My Database Assistant
+                    </Flex>
+                  </Heading>
+                </CardHeader>
+                <CardBody>
+                  {currentUserContext ? (
+                    <DatabaseChatbot currentUserContext={currentUserContext} />
+                  ) : (
+                    <Flex justify="center" align="center" h="200px">
+                      <Spinner size="xl" mr={3}/>
+                      <Text>Loading user context for Database Assistant...</Text>
+                    </Flex>
+                  )}
+                </CardBody>
+              </Card>
+            </TabPanel>
+
+            <TabPanel px={0}>
+              <Card bg={cardBg} boxShadow="md" borderTop="4px solid" borderColor={borderColor}>
+                <CardHeader bg={headerBg} py={3}>
+                  <Heading size="md"><Icon as={FaBook} mr={2}/>My Enrolled Courses & Marks Breakdown</Heading>
                 </CardHeader>
                 <CardBody>
                   {studentEnrollments.length > 0 ? (
@@ -480,7 +523,7 @@ function StudentDashboard() {
             </TabPanel>
 
             <TabPanel px={0}>
-               <Card bg={cardBg} boxShadow="md" borderRadius="lg">
+               <Card bg={cardBg} boxShadow="md" borderTop="4px solid" borderColor={borderColor}>
                 <CardHeader bg={headerBg} py={3}>
                     <Flex justify="space-between" align="center" wrap="wrap" gap={2}>
                         <Heading size="md">Available Courses for Registration</Heading>
@@ -549,29 +592,6 @@ function StudentDashboard() {
                     )}
                 </CardBody>
                 </Card>
-            </TabPanel>
-            
-            {/* New Tab for Database Assistant */}
-            <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
-                <CardHeader bg={headerBg} py={3}>
-                  <Heading size="md">
-                    <Flex align="center">
-                      <Icon as={FaBrain} mr={2}/> My Database Assistant
-                    </Flex>
-                  </Heading>
-                </CardHeader>
-                <CardBody>
-                  {currentUserContext ? (
-                    <DatabaseChatbot currentUserContext={currentUserContext} />
-                  ) : (
-                    <Flex justify="center" align="center" h="200px">
-                      <Spinner size="xl" mr={3}/>
-                      <Text>Loading user context for Database Assistant...</Text>
-                    </Flex>
-                  )}
-                </CardBody>
-              </Card>
             </TabPanel>
           </TabPanels>
         </Tabs>

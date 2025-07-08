@@ -12,7 +12,8 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  Divider
+  Divider,
+  Spacer
 } from '@chakra-ui/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HamburgerIcon } from '@chakra-ui/icons';
@@ -75,12 +76,12 @@ function Header() {
       transition="all 0.2s"
     >
       <Container maxW="container.xl">
-        <Flex alignItems="center" height="80px" justify="space-between">
+        <Flex alignItems="center" height="120px" justify="space-between">
           <Link to="/">
             <Image
               src={szabistLogo}
               alt="SZABIST Logo"
-              height="100px"
+              height="110px"
               objectFit="contain"
               transition="transform 0.2s"
               _hover={{ transform: 'scale(1.05)' }}
@@ -90,92 +91,100 @@ function Header() {
 
           {/* Desktop Navigation */}
           <HStack spacing={1} display={{ base: 'none', lg: 'flex' }}>
-            <NavButton 
-              as="a" 
-              href="http://edc.szabist.edu.pk/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              EDC
-            </NavButton>
-            <NavButton 
-              as="a" 
-              href="https://zabcms.szabist.edu.pk/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              CMS
-            </NavButton>
-            <NavButton to="/about">About</NavButton>
-            <NavButton to="/academics">Academics</NavButton>
-            <NavButton to="/admissions">Admissions</NavButton>
-            <NavButton to="/research">Research</NavButton>
-            <NavButton to="/blog">Blog</NavButton>
-            
-            <Button
-              onClick={() => handleNavigation('/chatbot')}
-              colorScheme="szabist"
-              variant="solid"
-              size="lg"
-              fontWeight="700"
-              px={6}
-              bg="szabist.600"
-              fontFamily="'Poppins', sans-serif"
-              _hover={{ 
-                bg: 'szabist.700',
-                transform: 'translateY(-2px)',
-                shadow: 'lg'
-              }}
-              leftIcon={
-                <Box as="span" fontSize="1.3em" role="img" aria-label="AI">
-                  🤖
-                </Box>
-              }
-              transition="all 0.2s"
-            >
-              AI Assistant
-            </Button>
-            
-            <Button
-              as={Link}
-              to="/portal"
-              colorScheme="blue"
-              variant="solid"
-              size="lg"
-              fontWeight="700"
-              px={6}
-              bg="blue.600"
-              fontFamily="'Poppins', sans-serif"
-              _hover={{
-                bg: 'blue.700',
-                transform: 'translateY(-2px)',
-                shadow: 'lg'
-              }}
-              leftIcon={<FaSignInAlt />}
-            >
-              Portal
-            </Button>
-            
-            <Button
-              as={Link}
-              to="/admin-login"
-              colorScheme="blue"
-              variant="outline"
-              leftIcon={<FaTools />}
-            >
-              Admin Tools
-            </Button>
-            
-            {user && (
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                colorScheme="red"
-                leftIcon={<Box as="span" fontSize="1.2em" role="img" aria-label="Logout">🚪</Box>}
+            {/* Group 1: Main Navigation Links */}
+            <HStack spacing={1}>
+              <NavButton 
+                as="a" 
+                href="http://edc.szabist.edu.pk/" 
+                target="_blank" 
+                rel="noopener noreferrer"
               >
-                Logout
+                EDC
+              </NavButton>
+              <NavButton 
+                as="a" 
+                href="https://zabcms.szabist.edu.pk/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                CMS
+              </NavButton>
+              <NavButton to="/about">About</NavButton>
+              <NavButton to="/academics">Academics</NavButton>
+              <NavButton to="/admissions">Admissions</NavButton>
+              <NavButton to="/research">Research</NavButton>
+              <NavButton to="/blog">Blog</NavButton>
+            </HStack>
+
+            <Spacer /> {/* This will push the second group of buttons to the far right */}
+            
+            {/* Group 2: Action Buttons */}
+            <HStack spacing={1}>
+              <Button
+                onClick={() => handleNavigation('/chatbot')}
+                colorScheme="szabist"
+                variant="solid"
+                size="lg"
+                fontWeight="700"
+                px={6}
+                bg="szabist.600"
+                fontFamily="'Poppins', sans-serif"
+                _hover={{
+                  bg: 'szabist.700',
+                  transform: 'translateY(-2px)',
+                  shadow: 'lg'
+                }}
+                leftIcon={
+                  <Box as="span" fontSize="1.3em" role="img" aria-label="AI">
+                    🤖
+                  </Box>
+                }
+                transition="all 0.2s"
+              >
+                AI Assistant
               </Button>
-            )}
+              
+              <Button
+                as={Link}
+                to="/portal"
+                colorScheme="blue"
+                variant="solid"
+                size="lg"
+                fontWeight="700"
+                px={6}
+                bg="blue.600"
+                fontFamily="'Poppins', sans-serif"
+                _hover={{
+                  bg: 'blue.700',
+                  transform: 'translateY(-2px)',
+                  shadow: 'lg'
+                }}
+                leftIcon={<FaSignInAlt />}
+              >
+                Portal
+              </Button>
+              
+              <Button
+                as={Link}
+                to="/admin-login"
+                colorScheme="blue"
+                variant="outline"
+                leftIcon={<FaTools />}
+              >
+                Admin Tools
+              </Button>
+              
+              {user && (
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  colorScheme="red"
+                  leftIcon={<Box as="span" fontSize="1.2em" role="img" aria-label="Logout">🚪</Box>}
+                >
+                  Logout
+                </Button>
+              )}
+            </HStack>
           </HStack>
 
           {/* Mobile Navigation */}

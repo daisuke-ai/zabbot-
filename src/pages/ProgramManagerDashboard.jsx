@@ -97,19 +97,6 @@ import { supabase } from '../services/supabaseService';
 import { useNavigate } from 'react-router-dom';
 import DatabaseChatbot from '../components/DatabaseChatbot';
 
-// --- Academic Calendar Data (Same as HOD Portal) ---
-const academicCalendarData = {
-  title: "Academic Calendar (Spring - 2025)",
-  duration: "February 2025 – June 2025",
-  semesterDates: "Start: Feb 10, 2025 | End: July 6, 2025",
-  exams: [ { type: "Midterm Exam", week: "8th", dates: "March 24 – March 30, 2025" }, { type: "Final Exam", week: "16th–17th", dates: "May 19 – June 1, 2025" }, ],
-  importantDates: [ { event: "Teaching Evaluation (1st)", dates: "March 10 – March 23, 2025" }, { event: "Course Withdrawal Deadline", dates: "April 27, 2025 (11th Week)" }, { event: "Teaching Evaluation (2nd)", dates: "April 28 – May 4, 2025" }, { event: "ZABDESK Closing", dates: "June 25, 2025" }, { event: "Change of Grade Deadline", dates: "June 30, 2025" }, { event: "Probation & Dismissal List", dates: "June 30, 2025" }, ],
-  holidays: [ { occasion: "Pakistan Day", dates: "March 23, 2025" }, { occasion: "Eid ul-Fitr", dates: "March 30 – April 1, 2025" }, { occasion: "Labor Day", dates: "May 1, 2025" }, { occasion: "Eid al-Adha", dates: "June 7 – 9, 2025" }, ],
-  dissertationDeadlines: [ { activity: "Proposal Submission", week: "1st Week" }, { activity: "Midterm Review", week: "8th Week" }, { activity: "Plagiarism Checking", week: "12th Week (May 4, 2025)" }, { activity: "Final Submission", week: "13th Week (May 7, 2025)" }, { activity: "Final Defence (IRS, Thesis, RP, etc.)", week: "16th–17th Week (June 2–8, 2025)" }, { activity: "MS Thesis Defence", week: "16th–17th Week (June 2–8, 2025)" }, { activity: "PhD Presentation", week: "17th Week (June 2–8, 2025)" }, ],
-  registrationDates: [ { activity: "Open Zabdesk Interface (PM/HoD)", date: "January 6, 2025" }, { activity: "Course Offering Completion by PM/HoD", date: "January 16, 2025" }, { activity: "Timetable Release", date: "January 18, 2025" }, { activity: "Course Registration (Online)", date: "February 1–16, 2025" }, { activity: "Manual Registration (with fine)", date: "February 17–18, 2025" }, ]
-};
-// --- End Academic Calendar Data ---
-
 function ProgramManagerDashboard() {
   const { user, session } = useAuth();
   const navigate = useNavigate();
@@ -146,8 +133,6 @@ function ProgramManagerDashboard() {
     onClose: onAddCourseModalClose 
   } = useDisclosure();
   
-  const { isOpen: isCalendarOpen, onOpen: onCalendarOpen, onClose: onCalendarClose } = useDisclosure();
-  
   const { isOpen: isAssignCourseModalOpen, onOpen: onAssignCourseModalOpen, onClose: onAssignCourseModalClose } = useDisclosure();
   
   const toast = useToast();
@@ -169,6 +154,7 @@ function ProgramManagerDashboard() {
   const [coursesToAssign, setCoursesToAssign] = useState([]);
   const [teacherAssignedCourses, setTeacherAssignedCourses] = useState([]);
   const [expandedCourseDetails, setExpandedCourseDetails] = useState({});
+  const [currentTabIndex, setCurrentTabIndex] = useState(0);
   
   // Construct currentUserContext for the chatbot
   const currentUserContext = useMemo(() => {
@@ -501,8 +487,7 @@ function ProgramManagerDashboard() {
     } catch (error) {
       toast({ title: 'Action Error', description: error.message, status: 'error' });
       console.error("Error during user action:", error);
-    }
-    finally {
+    } finally {
       setIsActionLoading(false);
       onApprovalDialogClose();
       setSelectedUserForAction(null);
@@ -608,10 +593,43 @@ function ProgramManagerDashboard() {
   };
 
   const menuItems = [
-    { label: 'Dashboard', icon: FaUserTie, path: '/pm-dashboard' },
-    { label: 'Database Assistant', icon: FaBrain, path: '/pm-dashboard#db-assistant'},
+    { label: 'DB Assistant', icon: FaBrain, path: '/pm-dashboard#db-assistant'},
+    { label: 'Teachers', icon: FaChalkboardTeacher, path: '/pm-dashboard#teachers' },
+    { label: 'Students', icon: FaUserGraduate, path: '/pm-dashboard#students' },
+    { label: 'Student Approvals', icon: FaCheck, path: '/pm-dashboard#student-approvals' },
+    { label: 'Courses', icon: FaBook, path: '/pm-dashboard#courses' },
+    { label: 'Course View', icon: FaEye, path: '/pm-dashboard#course-view' },
+    { label: 'Activity Log', icon: FaListAlt, path: '/pm-dashboard#activity-log' },
     { label: 'Train AI', icon: FaRobot, path: '/pm-dashboard#train-ai' },
   ];
+  
+  // Map hash to tab index
+  const tabPathMap = useMemo(() => ({
+    '#db-assistant': 0,
+    '#teachers': 1,
+    '#students': 2,
+    '#student-approvals': 3,
+    '#courses': 4,
+    '#course-view': 5,
+    '#activity-log': 6,
+    '#train-ai': 7,
+  }), []);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      console.log('Hash changed to:', hash);
+      const index = tabPathMap[hash] !== undefined ? tabPathMap[hash] : 0; // Default to first tab
+      setCurrentTabIndex(index);
+    };
+
+    handleHashChange(); // Set initial tab based on hash
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [tabPathMap]);
   
   const calculatedStats = useMemo(() => ({
     totalTeachers: teachers.length,
@@ -621,7 +639,7 @@ function ProgramManagerDashboard() {
   
   if (isLoading && !pmDepartmentName) {
     return (
-      <DashboardLayout title="PM Dashboard (Loading...)" menuItems={menuItems} userRole="Program Manager" roleColor="blue">
+      <DashboardLayout title="PM Dashboard (Loading...)" userRole="Program Manager" roleColor="blue">
          <Flex justify="center" align="center" h="50vh"><Spinner size="xl" /></Flex>
       </DashboardLayout>
     );
@@ -630,7 +648,6 @@ function ProgramManagerDashboard() {
   return (
     <DashboardLayout 
       title={`PM Dashboard (${pmDepartmentName || 'Loading Department...'})`}
-      menuItems={menuItems}
       userRole="Program Manager"
       roleColor="blue"
     >
@@ -657,37 +674,52 @@ function ProgramManagerDashboard() {
           <Card bg={cardBg} boxShadow="md" borderRadius="lg"><CardBody><Stat><StatLabel>Pending Approvals</StatLabel><StatNumber>{calculatedStats.pendingApprovals}</StatNumber><StatHelpText>Dept. Students Waiting</StatHelpText></Stat></CardBody></Card>
         </SimpleGrid>
         
-        <Tabs colorScheme="blue" variant="enclosed" isLazy>
+        <Tabs colorScheme="blue" variant="enclosed" isLazy index={currentTabIndex} onChange={index => {
+          const hash = Object.keys(tabPathMap).find(key => tabPathMap[key] === index); 
+          if (hash) navigate(hash); 
+          setCurrentTabIndex(index);
+        }}>
         <TabList>
-            <Tab><ChakraIcon as={FaUserGraduate} mr={2}/>Students</Tab>
+            <Tab sx={{
+              '@keyframes pulse': {
+                '0%': { transform: 'scale(1)', boxShadow: '0 0 0 rgba(0, 107, 182, 0.4)' },
+                '70%': { transform: 'scale(1.02)', boxShadow: '0 0 0 10px rgba(0, 107, 182, 0)' },
+                '100%': { transform: 'scale(1)', boxShadow: '0 0 0 rgba(0, 107, 182, 0)' },
+              },
+              animation: 'pulse 2s infinite',
+          }}><ChakraIcon as={FaBrain} mr={2}/> DB Assistant</Tab>
             <Tab><ChakraIcon as={FaChalkboardTeacher} mr={2}/>Teachers</Tab>
+            <Tab><ChakraIcon as={FaUserGraduate} mr={2}/>Students</Tab>
             <Tab><ChakraIcon as={FaCheck} mr={2}/>Student Approvals <Badge ml={1} colorScheme={calculatedStats.pendingApprovals > 0 ? 'red' : 'green'}>{calculatedStats.pendingApprovals}</Badge></Tab>
             <Tab><ChakraIcon as={FaBook} mr={2}/>Courses</Tab>
             <Tab><ChakraIcon as={FaEye} mr={2}/>Course View</Tab>
-            <Tab><ChakraIcon as={FaBrain} mr={2}/>DB Assistant</Tab>
             <Tab><ChakraIcon as={FaListAlt} mr={2}/>Activity Log</Tab>
             <Tab><ChakraIcon as={FaRobot} mr={2}/>Train AI</Tab>
         </TabList>
         
         <TabPanels>
             <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
-                <CardHeader bg={headerBg} py={3}><Heading size="md">Students in {pmDepartmentName || 'Department'}</Heading></CardHeader>
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg" borderTop="4px solid" borderColor={useColorModeValue('blue.500', 'blue.400')}>
+                <CardHeader bg={useColorModeValue('blue.50', 'gray.800')} py={3}>
+                  <Heading size="md">
+                    <Flex align="center">
+                      <ChakraIcon as={FaBrain} mr={2}/> My Database Assistant
+                    </Flex>
+                  </Heading>
+                </CardHeader>
                 <CardBody>
-                   {students.length > 0 ? (
-                      <Box overflowX="auto">
-                          <Table variant="simple" size="sm">
-                              <Thead><Tr><Th>Name</Th><Th>Roll No.</Th><Th>Status</Th><Th>Joined</Th></Tr></Thead>
-                              <Tbody>
-                                {students.map(student => ( <Tr key={student.id}> <Td>{student.first_name} {student.last_name}</Td> <Td>{student.roll_number || 'N/A'}</Td> <Td><Badge colorScheme={student.active ? 'green' : 'yellow'} borderRadius="md">{student.active ? 'Active' : 'Pending'}</Badge></Td> <Td>{new Date(student.created_at).toLocaleDateString()}</Td> </Tr> ))}
-                              </Tbody>
-                           </Table>
-                      </Box>
-                   ) : (<Text>No students found in this department.</Text>)}
+                  {currentUserContext ? (
+                    <DatabaseChatbot currentUserContext={currentUserContext} />
+                  ) : (
+                    <Flex justify="center" align="center" h="200px">
+                      <Spinner size="xl" mr={3}/> 
+                      <Text>Loading user context for Database Assistant...</Text>
+                    </Flex>
+                  )}
                 </CardBody>
               </Card>
-          </TabPanel>
-          
+            </TabPanel>
+
             <TabPanel px={0}>
               <Card bg={cardBg} boxShadow="md" borderRadius="lg">
                 <CardHeader bg={headerBg} py={3}>
@@ -727,6 +759,24 @@ function ProgramManagerDashboard() {
                            </Table>
                        </Box>
                     ) : (<Text>No teachers found in this department.</Text>)}
+                </CardBody>
+              </Card>
+            </TabPanel>
+
+            <TabPanel px={0}>
+              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
+                <CardHeader bg={headerBg} py={3}><Heading size="md">Students in {pmDepartmentName || 'Department'}</Heading></CardHeader>
+                <CardBody>
+                   {students.length > 0 ? (
+                      <Box overflowX="auto">
+                          <Table variant="simple" size="sm">
+                              <Thead><Tr><Th>Name</Th><Th>Roll No.</Th><Th>Status</Th><Th>Joined</Th></Tr></Thead>
+                              <Tbody>
+                                {students.map(student => ( <Tr key={student.id}> <Td>{student.first_name} {student.last_name}</Td> <Td>{student.roll_number || 'N/A'}</Td> <Td><Badge colorScheme={student.active ? 'green' : 'yellow'} borderRadius="md">{student.active ? 'Active' : 'Pending'}</Badge></Td> <Td>{new Date(student.created_at).toLocaleDateString()}</Td> </Tr> ))}
+                              </Tbody>
+                           </Table>
+                      </Box>
+                   ) : (<Text>No students found in this department.</Text>)}
                 </CardBody>
               </Card>
             </TabPanel>
@@ -891,11 +941,11 @@ function ProgramManagerDashboard() {
                                             }
                                           }))}
                                           leftIcon={expandedCourseDetails[course.id]?.students ? <FaChevronUp/> : <FaChevronDown/>}
-                                        >
+                                       >
                                           {expandedCourseDetails[course.id]?.students ? 'Show Less' : `Show All (${course.students.length})`}
-                                        </Button>
-                                      )}
-                                    </List>
+                                       </Button>
+                                     )}
+                                   </List>
                                   ) : (
                                     <Text fontSize="sm" fontStyle="italic">No students currently enrolled from this department.</Text>
                                   )}
@@ -908,28 +958,6 @@ function ProgramManagerDashboard() {
                     )}
                   </CardBody>
                 </Card>
-            </TabPanel>
-
-            <TabPanel px={0}>
-              <Card bg={cardBg} boxShadow="md" borderRadius="lg">
-                <CardHeader bg={headerBg} py={3}>
-                  <Heading size="md">
-                    <Flex align="center">
-                      <ChakraIcon as={FaBrain} mr={2}/> Department Database Assistant
-                    </Flex>
-                  </Heading>
-                </CardHeader>
-                <CardBody>
-                  {currentUserContext ? (
-                    <DatabaseChatbot currentUserContext={currentUserContext} />
-                  ) : (
-                    <Flex justify="center" align="center" h="200px">
-                      <Spinner size="xl" mr={3}/> 
-                      <Text>Loading user context for Database Assistant...</Text>
-                    </Flex>
-                  )}
-                </CardBody>
-              </Card>
             </TabPanel>
 
             <TabPanel px={0}>
@@ -1144,26 +1172,6 @@ function ProgramManagerDashboard() {
               Save Assignments ({coursesToAssign.length})
             </Button>
           </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      <Modal isOpen={isCalendarOpen} onClose={onCalendarClose} size="3xl" scrollBehavior="inside">
-        <ModalOverlay />
-        <ModalContent borderRadius="lg">
-          <ModalHeader>{academicCalendarData.title}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <VStack align="stretch" spacing={5}>
-              <Text fontWeight="bold">{academicCalendarData.duration}</Text>
-              <Text fontSize="sm">Semester Dates: {academicCalendarData.semesterDates}</Text>
-              <Box><Heading size="sm" mb={2}>Examination Schedule</Heading><Table variant="simple" size="sm"><Thead><Tr><Th>Type</Th><Th>Week</Th><Th>Dates</Th></Tr></Thead><Tbody>{academicCalendarData.exams.map((e, i) => (<Tr key={i}><Td>{e.type}</Td><Td>{e.week}</Td><Td>{e.dates}</Td></Tr>))}</Tbody></Table></Box>
-              <Box><Heading size="sm" mb={2}>Important Academic Dates</Heading><List spacing={1} fontSize="sm">{academicCalendarData.importantDates.map((d, i) => (<ListItem key={i}><ListIcon as={FaCalendarAlt} color="green.500" /><b>{d.event}:</b> {d.dates}</ListItem>))}</List></Box>
-              <Box><Heading size="sm" mb={2}>Course Offering / Registration</Heading><List spacing={1} fontSize="sm">{academicCalendarData.registrationDates.map((r, i) => (<ListItem key={i}><ListIcon as={FaCalendarAlt} color="blue.500" /><b>{r.activity}:</b> {r.date}</ListItem>))}</List></Box>
-              <Box><Heading size="sm" mb={2}>Dissertation / Thesis / IS Deadlines</Heading><List spacing={1} fontSize="sm">{academicCalendarData.dissertationDeadlines.map((d, i) => (<ListItem key={i}><ListIcon as={FaCalendarAlt} color="orange.500" /><b>{d.activity}:</b> {d.week}</ListItem>))}</List></Box>
-              <Box><Heading size="sm" mb={2}>Holidays</Heading><List spacing={1} fontSize="sm">{academicCalendarData.holidays.map((h, i) => (<ListItem key={i}><ListIcon as={FaCalendarAlt} color="red.500" /><b>{h.occasion}:</b> {h.dates}</ListItem>))}</List><Text fontSize="xs" mt={1}><i>Note: Holidays compensated on following Sunday. Ramadan dates highlighted in yellow (March/April - based on moon sighting).</i></Text></Box>
-            </VStack>
-          </ModalBody>
-          <ModalFooter> <Button onClick={onCalendarClose} borderRadius="md">Close</Button> </ModalFooter>
         </ModalContent>
       </Modal>
 

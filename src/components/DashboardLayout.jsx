@@ -82,6 +82,16 @@ function DashboardLayout({
         </DrawerHeader>
         <DrawerBody>
           <VStack align="stretch" spacing={4} mt={4}>
+            {user && user.first_name && (
+              <Text
+                fontSize="lg"
+                fontWeight="bold"
+                color="szabist.700"
+                mb={4}
+              >
+                Hello, {user.first_name} {user.last_name || ''}
+              </Text>
+            )}
             {menuItems.map((item, index) => (
               <Button
                 key={index}
@@ -178,6 +188,16 @@ function DashboardLayout({
             display={{ base: 'none', lg: 'block' }}
           >
             <VStack align="stretch" spacing={4}>
+              {user && user.first_name && (
+                <Text
+                  fontSize="lg"
+                  fontWeight="bold"
+                  color="szabist.700"
+                  mb={4}
+                >
+                  Hello, {user.first_name} {user.last_name || ''}
+                </Text>
+              )}
               {menuItems.map((item, index) => (
                 <Button
                   key={index}
@@ -191,17 +211,7 @@ function DashboardLayout({
                 >
                   {item.label}
                 </Button>
-              ))}\
-              <Spacer minH="20px" />
-              <Button
-                leftIcon={<Icon as={FaSignOutAlt} />}
-                colorScheme="red"
-                variant="outline"
-                onClick={handleLogout}
-                mt={4}
-              >
-                Logout
-              </Button>
+              ))}
             </VStack>
           </Box>
         )}
