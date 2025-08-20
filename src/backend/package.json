@@ -6,6 +6,9 @@
     "scripts": {
         "test": "echo Error: no test specified && exit 1",
         "dev": "nodemon --watch routes --watch controllers --ext ts,json --exec node --loader @esbuild-kit/esm-loader server.js",
+        "dev:unified": "nodemon unified-server.js",
+        "start": "node unified-server.js",
+        "start:production": "node unified-server.js",
         "setup-user-function": "echo Please run the SQL script db/create_user_function.sql in your Supabase SQL Editor"
     },
     "keywords": [],

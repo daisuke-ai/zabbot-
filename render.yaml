@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: zabbot-backend
+    env: node
+    buildCommand: cd src/backend && npm install
+    startCommand: cd src/backend && npm run start:production
+    plan: free
+    rootDir: .
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        fromDatabase: false
+        sync: false
+        generateValue: false
+        value: 10000

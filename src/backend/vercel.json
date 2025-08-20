@@ -2,18 +2,18 @@
     "version": 2,
     "builds": [
         {
-            "src": "server.js",
+            "src": "unified-server.js",
             "use": "@vercel/node"
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "server.js"
+            "dest": "unified-server.js"
         }
     ],
     "functions": {
-        "server.js": {
+        "unified-server.js": {
             "memory": 1024,
             "maxDuration": 60
         }

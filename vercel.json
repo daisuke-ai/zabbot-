@@ -1,21 +1,13 @@
 {
-    "version": 2,
-    "builds": [
-        {
-            "src": "src/backend/server.js",
-            "use": "@vercel/node"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "src/backend/server.js"
-        }
-    ],
-    "functions": {
-        "src/backend/server.js": {
-            "memory": 1024,
-            "maxDuration": 60
-        }
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
+  ]
 }
