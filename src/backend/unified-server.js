@@ -1261,10 +1261,11 @@ app.post("/synthesize", async (req, res) => {
     console.log('Synthesize request received. Body:', req.body);
     
     const { text } = req.body;
+    console.log('Extracted text for synthesis:', text);
     
-    if (!text || text.trim().length === 0) {
-      console.error('No text provided for synthesis');
-      return res.status(400).json({ error: 'Text is required for speech synthesis' });
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      console.error('No valid text provided for synthesis. Type:', typeof text, 'Value:', text);
+      return res.status(400).json({ error: 'Text is required for speech synthesis and must be a non-empty string' });
     }
 
     if (text.length > 4000) {
