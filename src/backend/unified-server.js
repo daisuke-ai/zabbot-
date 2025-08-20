@@ -76,7 +76,7 @@ const supabase = createClient(
 
 const memory = new BufferMemory();
 
-// Initialize Contentful client only if credentials are available
+// Initialize Contentful client only if credentials are available. This is used to fetch blog posts.
 let contentfulClient = null;
 if (process.env.VITE_CONTENTFUL_SPACE_ID && process.env.VITE_CONTENTFUL_ACCESS_TOKEN) {
   try {
@@ -1328,3 +1328,5 @@ app.listen(PORT, async () => {
   console.log(`🌐 Allowed origins: ${allowedOrigins.join(', ')}`);
   await initializeEmbeddings();
 });
+
+// This is a new unique comment for deployment trigger.
