@@ -97,6 +97,8 @@ import { supabase } from '../services/supabaseService';
 import { useNavigate } from 'react-router-dom';
 import DatabaseChatbot from '../components/DatabaseChatbot';
 
+const VITE_DB_ASSISTANT_URL = import.meta.env.VITE_DB_ASSISTANT_URL || 'http://localhost:3036';
+
 function ProgramManagerDashboard() {
   const { user, session } = useAuth();
   const navigate = useNavigate();
@@ -559,7 +561,7 @@ function ProgramManagerDashboard() {
 
     setIsEmbeddingText(true);
     try {
-      const response = await fetch(`http://localhost:3036/api/embed-text`, {
+      const response = await fetch(`${VITE_DB_ASSISTANT_URL}/api/embed-text`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
