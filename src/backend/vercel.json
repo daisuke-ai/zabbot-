@@ -3,11 +3,11 @@
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "unified-server.js"
+            "dest": "/api/unified-server.js"
         }
     ],
     "functions": {
-        "unified-server.js": {
+        "api/unified-server.js": {
             "memory": 1024,
             "maxDuration": 60
         }

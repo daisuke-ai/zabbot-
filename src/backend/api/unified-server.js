@@ -280,7 +280,7 @@ async function getBlogPosts() {
 
 async function generateAndStoreEmbeddings() {
   // Handle markdown file
-  const filePath = path.join(__dirname, "../data/rag_Data.md");
+  const filePath = path.join(__dirname, "../../data/rag_Data.md");
   let markdownChunks = [];
   
   if (fs.existsSync(filePath)) {
