@@ -1330,3 +1330,14 @@ app.listen(PORT, async () => {
 });
 
 // This is a new unique comment for deployment trigger.
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Application specific logging, throwing an error, or other logic here
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Application specific logging, throwing an error, or other logic here
+  process.exit(1); // mandatory exit after uncaught exception
+});
