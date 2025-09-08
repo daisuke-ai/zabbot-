@@ -34,8 +34,8 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
       'https://zabbot-git-main-zabbot.vercel.app', 
       'https://zabbot.vercel.app', 
-      'https://your-frontend-domain.vercel.app', // Replace with your actual domain
-      frontendUrl
+      'https://zabbot-frontend.vercel.app',
+      process.env.FRONTEND_URL // Ensure this is explicitly included
     ]
   : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'];
 
