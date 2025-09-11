@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      # Ensure this matches the URL where your backend is accessible from the frontend
+      - VITE_BACKEND_URL=http://localhost:3001 # Or the service name if using Docker's internal network
+      - VITE_DB_ASSISTANT_URL=http://localhost:3001 # Points to the unified backend
+    networks:
+      - zabbot-network
+
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      # These are crucial for the backend to function
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - FRONTEND_URL=http://localhost # Frontend access for CORS, ensure it matches your frontend service
+      - NODE_ENV=development # Set to production for Vercel deployment
+    volumes:
+      - ./src/data:/app/src/data # Mount the data folder for RAG
+    networks:
+      - zabbot-network
+
+networks:
+  zabbot-network:
+    driver: bridge
